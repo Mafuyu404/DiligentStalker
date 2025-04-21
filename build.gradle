@@ -149,6 +149,22 @@ repositories {
     // flatDir {
     //     dir 'libs'
     // }
+    maven {
+        // Add curse maven to repositories
+        name = "Curse Maven"
+        url = "https://www.cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
+    maven {
+        name = 'GeckoLib'
+        url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
+        content {
+            includeGroupByRegex("software\\.bernie.*")
+            includeGroup("com.eliotlash.mclib")
+        }
+    }
 }
 
 dependencies {
@@ -175,6 +191,11 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
 
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+
+    implementation fg.deobf("curse.maven:jade-324717:6271651")
+
+//    implementation fg.deobf("software.bernie.geckolib:geckolib-forge-${minecraft_version}:4.7.1.2")
+//    implementation("com.eliotlash.mclib:mclib:20")
 
 }
 

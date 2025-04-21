@@ -5,7 +5,8 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "diligentstalker.refmap.json",
   "mixins": [
-    "EntityMixin"
+    "EntityMixin",
+    "LivingEntityMixin"
   ],
   "client": [
     "CameraMixin",
