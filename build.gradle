@@ -193,6 +193,8 @@ dependencies {
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 
     implementation fg.deobf("curse.maven:jade-324717:6271651")
+    implementation fg.deobf("curse.maven:codechicken-lib-1-8-242818:5753868")
+    implementation fg.deobf("curse.maven:chicken-chunks-1-8-243883:5292574")
 
 //    implementation fg.deobf("software.bernie.geckolib:geckolib-forge-${minecraft_version}:4.7.1.2")
 //    implementation("com.eliotlash.mclib:mclib:20")

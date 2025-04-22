@@ -58,10 +58,16 @@ public class Tools {
             }
         }
         if (input.getBoolean("Jump")) {
-            y = speed;
+            y = speed * 1.3f;
         }
         if (input.getBoolean("Shift")) {
-            y = -speed;
+            y = -speed * 1.3f;
+        }
+        float length = (float) new Vec3(x, 0, z).length();
+        if (Math.round(length * 100) / 100f > speed) {
+            float scale = length / speed;
+            x /= scale;
+            z /= scale;
         }
         return new Vec3(x, y, z);
     }

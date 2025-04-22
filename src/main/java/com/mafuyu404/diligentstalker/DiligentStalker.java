@@ -1,36 +1,13 @@
 package com.mafuyu404.diligentstalker;
 
-import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
-import com.mafuyu404.diligentstalker.init.ModBlocks;
-import com.mafuyu404.diligentstalker.init.ModEntities;
-import com.mafuyu404.diligentstalker.init.ModItems;
+import com.mafuyu404.diligentstalker.registry.ModBlocks;
+import com.mafuyu404.diligentstalker.registry.ModEntities;
+import com.mafuyu404.diligentstalker.registry.ModItems;
 import com.mafuyu404.diligentstalker.init.NetworkHandler;
 import com.mojang.logging.LogUtils;
-import net.minecraft.client.Minecraft;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.food.FoodProperties;
-import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.CreativeModeTabs;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.material.MapColor;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
-import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
 import org.slf4j.Logger;
 
 // The value here should match an entry in the META-INF/mods.toml file
@@ -40,7 +17,7 @@ public class DiligentStalker {
     // Define mod id in a common place for everything to reference
     public static final String MODID = "diligentstalker";
     // Directly reference a slf4j logger
-    private static final Logger LOGGER = LogUtils.getLogger();
+    public static final Logger LOGGER = LogUtils.getLogger();
 
     // Creates a new Block with the id "diligentstalker:example_block", combining the namespace and path
 

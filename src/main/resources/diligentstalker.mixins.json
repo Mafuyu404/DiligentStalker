@@ -10,7 +10,8 @@
   ],
   "client": [
     "CameraMixin",
-    "MinecraftMixin"
+    "MinecraftMixin",
+    "ViewAreaMixin"
   ],
   "injectors": {
     "defaultRequire": 1

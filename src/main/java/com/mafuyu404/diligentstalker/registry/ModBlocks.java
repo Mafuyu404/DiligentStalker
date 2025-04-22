@@ -1,4 +1,4 @@
-package com.mafuyu404.diligentstalker.init;
+package com.mafuyu404.diligentstalker.registry;
 
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;

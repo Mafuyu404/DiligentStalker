@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.Mixin;
 public class LivingEntityMixin {
 //    @Inject(method = "aiStep", at = @At("RETURN"), cancellable = true)
 //    private void noAI(CallbackInfo ci) {
-//        if (CameraEntityManage.targetEntity != null || ServerEvent.entityId != -1) {
+//        if (CameraEntityManage.targetEntity != null || ServerStalker.entityId != -1) {
 //            ci.cancel();
 //        }
 //    }

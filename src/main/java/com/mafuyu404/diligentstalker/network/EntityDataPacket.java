@@ -1,0 +1,39 @@
+package com.mafuyu404.diligentstalker.network;
+
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraftforge.network.NetworkEvent;
+
+import java.util.function.Supplier;
+
+public class EntityDataPacket {
+    private final int entityId;
+    private final CompoundTag nbt;
+
+    public EntityDataPacket(int entityId, CompoundTag nbt) {
+        this.entityId = entityId;
+        this.nbt = nbt;
+    }
+
+    public static void encode(EntityDataPacket msg, FriendlyByteBuf buffer) {
+        buffer.writeInt(msg.entityId);
+        buffer.writeNbt(msg.nbt);
+    }
+
+    public static EntityDataPacket decode(FriendlyByteBuf buffer) {
+        return new EntityDataPacket(buffer.readInt(), buffer.readNbt());
+    }
+
+    public static void handle(EntityDataPacket msg, Supplier<NetworkEvent.Context> ctx) {
+        ctx.get().enqueueWork(() -> {
+            ServerPlayer player = ctx.get().getSender();
+            if (player == null) return;
+            Entity entity = player.level().getEntity(msg.entityId);
+            if (entity == null) return;
+            entity.getPersistentData().merge(msg.nbt);
+        });
+        ctx.get().setPacketHandled(true);
+    }
+}

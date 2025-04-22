@@ -1,4 +1,4 @@
-package com.mafuyu404.diligentstalker.init;
+package com.mafuyu404.diligentstalker.registry;
 
 import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import net.minecraft.resources.ResourceLocation;
@@ -16,7 +16,7 @@ public class ModEntities {
 
     public static final RegistryObject<EntityType<DroneStalkerEntity>> DRONE_STALKER = ENTITIES.register(
             "drone_stalker",
-            () -> EntityType.Builder.of(DroneStalkerEntity::new, MobCategory.MISC)
+            () -> EntityType.Builder.<DroneStalkerEntity>of(DroneStalkerEntity::new, MobCategory.MISC)
                     .sized(0.8f, 0.4f)
                     .clientTrackingRange(8)
                     .setUpdateInterval(3)

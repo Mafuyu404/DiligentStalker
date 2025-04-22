@@ -3,12 +3,13 @@ package com.mafuyu404.diligentstalker.event;
 import com.mafuyu404.diligentstalker.DiligentStalker;
 import com.mafuyu404.diligentstalker.init.NetworkHandler;
 import com.mafuyu404.diligentstalker.init.Tools;
-import com.mafuyu404.diligentstalker.network.MovePacket;
+import com.mafuyu404.diligentstalker.network.EntityDataPacket;
 import com.mafuyu404.diligentstalker.network.RClickBlockPacket;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -36,7 +37,7 @@ public class CameraEntityAction {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
         Options options = Minecraft.getInstance().options;
-        if (!CameraEntityManage.isEnable()) return;
+        if (!CameraEntityManage.isEnable(player)) return;
         ArrayList<Integer> controlKey = new ArrayList<>();
         if (event.getKey() == options.keySprint.getKey().getValue()) {
             options.keySprint.setDown(false);
@@ -50,14 +51,14 @@ public class CameraEntityAction {
             controlKey.add(options.keyJump.getKey().getValue());
             controlKey.add(options.keyShift.getKey().getValue());
             if (controlKey.contains(event.getKey())) {
-                postAction();
+                syncData();
             }
         }
     }
 
     @SubscribeEvent
     public static void onUse(PlayerInteractEvent.RightClickBlock event) {
-        if (event.getEntity().isLocalPlayer() && CameraEntityManage.isEnable()) {
+        if (event.getEntity().isLocalPlayer() && CameraEntityManage.isEnable(event.getEntity())) {
             event.setCanceled(true);
         }
     }
@@ -67,14 +68,13 @@ public class CameraEntityAction {
         if (Minecraft.getInstance().screen != null) return;
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
-        if (!CameraEntityManage.isEnable()) return;
+        if (!CameraEntityManage.isEnable(player)) return;
         if (event.getAction() != InputConstants.PRESS) return;
         if (interactLock) {
             interactLock = false;
             return;
         } else interactLock = true;
         BlockHitResult traceResult = Tools.rayTraceBlocks(player.level(), CameraEntityManage.getCameraPosition(), CameraEntityManage.getViewVector(), 4);
-        System.out.print(event.getAction()+"-"+event.getButton()+"-"+event.getPhase()+"\n");
         if (traceResult.getType() == HitResult.Type.BLOCK ) {
             if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
                 NetworkHandler.CHANNEL.sendToServer(new RClickBlockPacket(CameraEntityManage.getCameraPosition(), CameraEntityManage.getViewVector()));
@@ -97,12 +97,19 @@ public class CameraEntityAction {
         return input;
     }
 
-    public static void postAction() {
-        NetworkHandler.CHANNEL.sendToServer(new MovePacket(CameraEntityManage.targetEntity.getId(), handleInput()));
+    public static void syncData() {
+        Player player = Minecraft.getInstance().player;
+        if (player == null) return;
+        NetworkHandler.CHANNEL.sendToServer(new EntityDataPacket(player.getId(), player.getPersistentData()));
     }
 
     public static void RightClickBlock(Player player, Vec3 position, Vec3 viewVec) {
         Level level = player.level();
+        if (level instanceof ServerLevel serverLevel) {
+            serverLevel.getForcedChunks().forEach(value -> {
+                System.out.print(value+"\n");
+            });
+        }
         BlockHitResult traceResult = Tools.rayTraceBlocks(level, position, viewVec, 4);
         BlockState state = level.getBlockState(traceResult.getBlockPos());
         InteractionResult result = state.use(level, player, InteractionHand.MAIN_HAND, traceResult);

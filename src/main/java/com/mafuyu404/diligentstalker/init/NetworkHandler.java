@@ -1,7 +1,8 @@
 package com.mafuyu404.diligentstalker.init;
 
 import com.mafuyu404.diligentstalker.DiligentStalker;
-import com.mafuyu404.diligentstalker.network.MovePacket;
+import com.mafuyu404.diligentstalker.network.CameraEntityStatePacket;
+import com.mafuyu404.diligentstalker.network.EntityDataPacket;
 import com.mafuyu404.diligentstalker.network.RClickBlockPacket;
 import com.mafuyu404.diligentstalker.network.UnlockPacket;
 import net.minecraft.resources.ResourceLocation;
@@ -22,9 +23,11 @@ public class NetworkHandler {
     // 注册数据包
     public static void register() {
         int packetId = 0;
-        CHANNEL.registerMessage(packetId++, MovePacket.class, MovePacket::encode, MovePacket::decode, MovePacket::handle);
         CHANNEL.registerMessage(packetId++, UnlockPacket.class, UnlockPacket::encode, UnlockPacket::decode, UnlockPacket::handle);
         CHANNEL.registerMessage(packetId++, RClickBlockPacket.class, RClickBlockPacket::encode, RClickBlockPacket::decode, RClickBlockPacket::handle);
+        CHANNEL.registerMessage(packetId++, EntityDataPacket.class, EntityDataPacket::encode, EntityDataPacket::decode, EntityDataPacket::handle);
+        CHANNEL.registerMessage(packetId++, CameraEntityStatePacket.class, CameraEntityStatePacket::encode, CameraEntityStatePacket::decode, CameraEntityStatePacket::handle);
+
     }
 
     // 发送数据包到客户端

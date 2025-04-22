@@ -1,7 +1,7 @@
 package com.mafuyu404.diligentstalker.item;
 
 import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
-import com.mafuyu404.diligentstalker.init.ModEntities;
+import com.mafuyu404.diligentstalker.registry.ModEntities;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.UseOnContext;
@@ -15,7 +15,7 @@ public class DroneStalkerItem extends Item {
 
     @Override
     public @NotNull InteractionResult useOn(UseOnContext context) {
-        if (context.getPlayer() != null && context.getPlayer().isShiftKeyDown()) {
+        if (context.getPlayer() != null) {
             Level level = context.getLevel();
             DroneStalkerEntity drone = new DroneStalkerEntity(ModEntities.DRONE_STALKER.get(), level);
             drone.setPos(context.getClickLocation());
