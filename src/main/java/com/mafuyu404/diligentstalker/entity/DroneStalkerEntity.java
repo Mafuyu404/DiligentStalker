@@ -47,6 +47,7 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
     @Nullable
     private ResourceLocation lootTable;
     private long lootTableSeed;
+    public ServerPlayer fakePlayer;
 
     public DroneStalkerEntity(EntityType<? extends Boat> p_219869_, Level level) {
         super(p_219869_, level);
@@ -95,6 +96,13 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
         else if (player.isLocalPlayer()) {
             CameraEntityManage.launch(this, player);
         }
+        else {
+            ServerPlayer serverPlayer = (ServerPlayer) player;
+            if (this.fakePlayer == null) {
+                this.fakePlayer = new ServerPlayer(serverPlayer.server, serverPlayer.serverLevel(), player.getGameProfile());
+            }
+            this.fakePlayer.startRiding(this);
+        }
         return InteractionResult.FAIL;
     }
 
@@ -110,6 +118,7 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
     @Override
     public void tick() {
         super.tick();
+//        if (this.fakePlayer != null) System.out.print(this.fakePlayer.getUUID()+"\n");
         if (!this.level().isClientSide) {
             ServerLevel serverLevel = (ServerLevel) this.level();
             ChunkPos currentCenter = new ChunkPos(blockPosition());
@@ -120,7 +129,10 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
                 lastCenter = currentCenter;
             }
         }
-        else NetworkHandler.CHANNEL.sendToServer(new CameraEntityStatePacket(this.getId(), this.underControlling()));
+//        else NetworkHandler.CHANNEL.sendToServer(new CameraEntityStatePacket(this.getId(), this.underControlling()));
+        else {
+            NetworkHandler.CHANNEL.sendToServer(new CameraEntityStatePacket(this.getId(), true));
+        }
         boolean shouldLoad = this.underControlling();
         CompoundTag data = this.getPersistentData();
 
@@ -160,6 +172,7 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
         for (int x = -LOAD_RADIUS; x <= LOAD_RADIUS; x++) {
             for (int z = -LOAD_RADIUS; z <= LOAD_RADIUS; z++) {
                 newChunks.add(new ChunkPos(center.x + x, center.z + z).toLong());
+                level.getChunkSource().updateChunkForced(new ChunkPos(center.x + x, center.z + z), true);
             }
         }
 
@@ -179,10 +192,17 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
 
         loadedChunks.clear();
         loadedChunks.addAll(newChunks);
+        for (int x = -LOAD_RADIUS; x <= LOAD_RADIUS; x++) {
+            for (int z = -LOAD_RADIUS; z <= LOAD_RADIUS; z++) {
+                level.getChunkSource().updateChunkForced(new ChunkPos(center.x + x, center.z + z), true);
+            }
+        }
     }
 
     @Override
     public void remove(RemovalReason reason) {
+        System.out.print(this.level().isClientSide+"/"+reason.toString()+"\n");
+        if (this.fakePlayer != null) this.fakePlayer.remove(reason);
         if (!this.level().isClientSide && reason.shouldDestroy()) {
             Containers.dropContents(this.level(), this, this);
         }

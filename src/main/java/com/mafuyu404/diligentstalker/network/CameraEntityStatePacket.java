@@ -1,5 +1,6 @@
 package com.mafuyu404.diligentstalker.network;
 
+import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import com.mafuyu404.diligentstalker.event.ServerStalker;
 import com.mafuyu404.diligentstalker.init.ChunkLoader;
 import net.minecraft.network.FriendlyByteBuf;
@@ -37,6 +38,9 @@ public class CameraEntityStatePacket {
             Level level = player.level();
             Entity entity = level.getEntity(msg.entityId);
             if (entity == null) return;
+            if (entity instanceof DroneStalkerEntity droneStalker) {
+                droneStalker.fakePlayer = null;
+            }
             boolean wasLoading = entity.getPersistentData().getBoolean("forceLoadChunks");
 //            System.out.print(msg.state+"\n");
             if (wasLoading != msg.state) {

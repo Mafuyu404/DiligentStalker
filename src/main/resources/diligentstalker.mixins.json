@@ -5,12 +5,18 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "diligentstalker.refmap.json",
   "mixins": [
+    "ChunkMapMixin",
     "EntityMixin",
-    "LivingEntityMixin"
+    "LivingEntityMixin",
+    "ServerChunkCacheMixin",
+    "ServerPlayerMixin"
   ],
   "client": [
     "CameraMixin",
+    "ChunkRenderDispatcherRenderChunkMixin",
+    "LevelRendererMixin",
     "MinecraftMixin",
+    "PlayerRendererMixin",
     "ViewAreaMixin"
   ],
   "injectors": {

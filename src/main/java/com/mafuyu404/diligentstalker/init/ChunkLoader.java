@@ -37,8 +37,8 @@ public class ChunkLoader {
     public void activate() {
         if (!active) {
             // 添加区块加载票据
-            level.getChunkSource().addRegionTicket(ticketType, center, 5, center);
-            System.out.print(level.getChunkSource().getChunkDebugData(center));
+            level.getChunkSource().addRegionTicket(ticketType, center, 33, center);
+//            System.out.print(level.getChunkSource().getChunkDebugData(center));
             active = true;
         }
     }
@@ -46,8 +46,8 @@ public class ChunkLoader {
     public void deactivate() {
         if (active) {
             // 移除区块加载票据
-            level.getChunkSource().removeRegionTicket(ticketType, center, 5, center);
-            System.out.print(level.getChunkSource().getChunkDebugData(center));
+            level.getChunkSource().removeRegionTicket(ticketType, center, 33, center);
+//            System.out.print(level.getChunkSource().getChunkDebugData(center));
             active = false;
         }
     }
