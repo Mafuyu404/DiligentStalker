@@ -15,6 +15,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -80,10 +81,27 @@ public class CameraEntityManage {
 //        }
 //    }
     @SubscribeEvent
+    public static void onEnter(EntityJoinLevelEvent event) {
+        if (event.getEntity() instanceof DroneStalkerEntity entity) {
+            if (entity.level().isClientSide) entity.disconnect();
+            else entity.fakePlayer = null;
+        }
+        if (event.getEntity() instanceof Player player) {
+            player.getPersistentData().putInt("StalkerEntityId", -1);
+        }
+    }
+    @SubscribeEvent
     public static void onUnload(EntityLeaveLevelEvent event) {
+        if (event.getEntity() instanceof DroneStalkerEntity entity) {
+            if (entity.level().isClientSide) entity.disconnect();
+            else entity.fakePlayer = null;
+        }
         if (targetEntity == null) return;
         if (targetEntity.getUUID() == event.getEntity().getUUID() || event.getEntity().getUUID() == Minecraft.getInstance().player.getUUID()) {
             quit();
+        }
+        if (event.getEntity() instanceof Player player) {
+            player.getPersistentData().putInt("StalkerEntityId", -1);
         }
     }
     @SubscribeEvent

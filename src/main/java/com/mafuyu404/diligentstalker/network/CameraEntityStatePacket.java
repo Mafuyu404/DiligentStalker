@@ -39,7 +39,9 @@ public class CameraEntityStatePacket {
             Entity entity = level.getEntity(msg.entityId);
             if (entity == null) return;
             if (entity instanceof DroneStalkerEntity droneStalker) {
-                droneStalker.fakePlayer = null;
+                if (!msg.state) {
+                    droneStalker.fakePlayer = null;
+                }
             }
             boolean wasLoading = entity.getPersistentData().getBoolean("forceLoadChunks");
 //            System.out.print(msg.state+"\n");
@@ -51,6 +53,7 @@ public class CameraEntityStatePacket {
                     loader.activate();
                     ServerStalker.chunkLoader.put(msg.entityId, loader);
                 } else {
+
                     // 停用并移除ChunkLoader
                     System.out.print("close"+"\n");
                     ChunkLoader loader = ServerStalker.chunkLoader.get(msg.entityId);

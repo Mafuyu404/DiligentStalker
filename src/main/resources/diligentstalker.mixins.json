@@ -6,14 +6,21 @@
   "refmap": "diligentstalker.refmap.json",
   "mixins": [
     "ChunkMapMixin",
+    "DistanceManagerMixin",
     "EntityMixin",
+    "IForgeEntityMixin",
     "LivingEntityMixin",
     "ServerChunkCacheMixin",
-    "ServerPlayerMixin"
+    "ServerEntityMixin",
+    "ServerGamePacketListenerImplMixin",
+    "ServerPlayerMixin",
+    "TrackedEntityMixin"
   ],
   "client": [
     "CameraMixin",
     "ChunkRenderDispatcherRenderChunkMixin",
+    "ClientLevelMixin",
+    "ClientPacketListenerMixin",
     "LevelRendererMixin",
     "MinecraftMixin",
     "PlayerRendererMixin",

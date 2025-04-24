@@ -1,6 +1,7 @@
 package com.mafuyu404.diligentstalker.event;
 
 import com.mafuyu404.diligentstalker.DiligentStalker;
+import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import com.mafuyu404.diligentstalker.init.ChunkLoader;
 import com.mafuyu404.diligentstalker.init.Tools;
 import net.minecraft.client.Minecraft;

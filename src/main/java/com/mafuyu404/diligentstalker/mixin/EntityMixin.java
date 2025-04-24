@@ -1,5 +1,6 @@
 package com.mafuyu404.diligentstalker.mixin;
 
+import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import com.mafuyu404.diligentstalker.event.CameraEntityManage;
 import com.mafuyu404.diligentstalker.event.ServerStalker;
 import net.minecraft.world.entity.Entity;
@@ -51,4 +52,19 @@ public class EntityMixin {
             }
         }
     }
+    @Inject(method = "setRemoved", at = @At("HEAD"), cancellable = true)
+    private void wwaaaa(Entity.RemovalReason p_146876_, CallbackInfo ci) {
+        if (((Object) this) instanceof DroneStalkerEntity droneStalker) {
+//            if (droneStalker.underControlling()) ci.cancel();
+        }
+    }
+//    @Inject(method = "isAddedToWorld", at = @At("HEAD"), cancellable = true)
+//    private void wwwaaaa(CallbackInfoReturnable<Boolean> cir) {
+//        if (((Object) this) instanceof DroneStalkerEntity droneStalker) {
+//            if (droneStalker.underControlling()) {
+//                System.out.print("???\n");
+//                cir.setReturnValue(true);
+//            }
+//        }
+//    }
 }
