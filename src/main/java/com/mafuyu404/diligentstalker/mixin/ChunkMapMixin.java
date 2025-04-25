@@ -143,6 +143,6 @@ public abstract class ChunkMapMixin {
 
     @Inject(method = "removeEntity", at = @At("HEAD"))
     private void wwwaxxx(Entity p_140332_, CallbackInfo ci) {
-        System.out.print(p_140332_+"\n");
+//        System.out.print(p_140332_+"\n");
     }
 }

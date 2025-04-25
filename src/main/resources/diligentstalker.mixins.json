@@ -19,6 +19,7 @@
   "client": [
     "CameraMixin",
     "ChunkRenderDispatcherRenderChunkMixin",
+    "ClientChunkCacheMixin",
     "ClientLevelMixin",
     "ClientPacketListenerMixin",
     "LevelRendererMixin",

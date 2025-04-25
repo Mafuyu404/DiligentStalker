@@ -1,5 +1,6 @@
 package com.mafuyu404.diligentstalker.entity;
 
+import com.mafuyu404.diligentstalker.DiligentStalker;
 import com.mafuyu404.diligentstalker.event.CameraEntityManage;
 import com.mafuyu404.diligentstalker.init.NetworkHandler;
 import com.mafuyu404.diligentstalker.init.VirtualPlayerCreator;
@@ -32,6 +33,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.common.world.ForgeChunkManager;
 
 import javax.annotation.Nullable;
 import java.util.HashSet;
@@ -129,14 +131,14 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
         super.tick();
 //        if (this.fakePlayer != null) System.out.print(this.fakePlayer.getUUID()+"\n");
         if (!this.level().isClientSide) {
-//            ServerLevel serverLevel = (ServerLevel) this.level();
-//            ChunkPos currentCenter = new ChunkPos(blockPosition());
+            ServerLevel serverLevel = (ServerLevel) this.level();
+            ChunkPos currentCenter = new ChunkPos(blockPosition());
 //
-//            // 每2秒（40 tick）检查位置变化
-//            if (this.tickCount % 40 == 0 || !currentCenter.equals(lastCenter)) {
-//                updateChunkLoading(serverLevel, currentCenter);
-//                lastCenter = currentCenter;
-//            }
+            // 每2秒（40 tick）检查位置变化
+            if (this.tickCount % 40 == 0 || !currentCenter.equals(lastCenter)) {
+                updateChunkLoading(serverLevel, currentCenter);
+                lastCenter = currentCenter;
+            }
             if (this.underControlling()) {
                 if (this.fakePlayer != null) {
                     this.fakePlayer.setPos(this.position());
@@ -146,93 +148,60 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
         }
         else {
             if (this.tickCount %40 == 0) {
-                NetworkHandler.CHANNEL.sendToServer(new CameraEntityStatePacket(this.getId(), this.underControlling()));
+//                NetworkHandler.CHANNEL.sendToServer(new CameraEntityStatePacket(this.getId(), this.underControlling()));
             }
         }
-//        else {
-//            NetworkHandler.CHANNEL.sendToServer(new CameraEntityStatePacket(this.getId(), true));
-//        }
-//        boolean shouldLoad = this.underControlling();
-//        CompoundTag data = this.getPersistentData();
-
-//        if (shouldLoad) {
-//            // 每5 ticks更新一次位置
-//            if (this.level() instanceof ServerLevel serverLevel) {
-//                ServerPlayer fakePlayer = FakePlayerManager.getOrCreate(serverLevel, this);
-//
-//                // 同步假人位置（重要！）
-//                fakePlayer.setPos(this.getX(), this.getY(), this.getZ());
-////                fakePlayer.connection.resetPosition();
-//
-//                // 强制加载区块
-//                int viewDistance = 10;
-//                ChunkPos center = new ChunkPos(this.blockPosition());
-//                for (int x = -viewDistance; x <= viewDistance; x++) {
-//                    for (int z = -viewDistance; z <= viewDistance; z++) {
-//                        serverLevel.getChunkSource().addRegionTicket(
-//                                TicketType.PLAYER,
-//                                new ChunkPos(center.x + x, center.z + z),
-//                                10,
-//                                center
-//                        );
-//                    }
-//                }
-//            }
-//        } else {
-//            FakePlayerManager.remove(this.uuid);
-//            data.remove("chunkLoaderActive");
-//        }
     }
 
-//    private void updateChunkLoading(ServerLevel level, ChunkPos center) {
-//        Set<Long> newChunks = new HashSet<>();
-//
-//        // 生成5x5区块区域
-//        for (int x = -LOAD_RADIUS; x <= LOAD_RADIUS; x++) {
-//            for (int z = -LOAD_RADIUS; z <= LOAD_RADIUS; z++) {
-//                newChunks.add(new ChunkPos(center.x + x, center.z + z).toLong());
-//                level.getChunkSource().updateChunkForced(new ChunkPos(center.x + x, center.z + z), true);
-//            }
-//        }
-//
-//        // 释放旧的区块
-//        Set<Long> toRemove = new HashSet<>(loadedChunks);
-//        toRemove.removeAll(newChunks);
-//        toRemove.forEach(chunk ->
-//                ForgeChunkManager.forceChunk(level, DiligentStalker.MODID, this.getUUID(),
-//                        ChunkPos.getX(chunk), ChunkPos.getZ(chunk), false, false)
-//        );
-//
-//        // 加载新的区块
-//        newChunks.forEach(chunk ->
-//                ForgeChunkManager.forceChunk(level, DiligentStalker.MODID, this.getUUID(),
-//                        ChunkPos.getX(chunk), ChunkPos.getZ(chunk), true, true)
-//        );
-//
-//        loadedChunks.clear();
-//        loadedChunks.addAll(newChunks);
-//        for (int x = -LOAD_RADIUS; x <= LOAD_RADIUS; x++) {
-//            for (int z = -LOAD_RADIUS; z <= LOAD_RADIUS; z++) {
-//                level.getChunkSource().updateChunkForced(new ChunkPos(center.x + x, center.z + z), true);
-//            }
-//        }
-//    }
-//
-//    @Override
-//    public void remove(RemovalReason reason) {
-//        System.out.print(this.level().isClientSide+"/"+reason.toString()+"\n");
-//        if (this.fakePlayer != null) this.fakePlayer.remove(reason);
-//        if (!this.level().isClientSide && reason.shouldDestroy()) {
-//            Containers.dropContents(this.level(), this, this);
-//        }
-//        if (!this.level().isClientSide) {
-//            loadedChunks.forEach(chunk ->
-//                    ForgeChunkManager.forceChunk((ServerLevel) this.level(), DiligentStalker.MODID,
-//                            this.getUUID(), ChunkPos.getX(chunk), ChunkPos.getZ(chunk), false, false)
-//            );
-//        }
-//        super.remove(reason);
-//    }
+    private void updateChunkLoading(ServerLevel level, ChunkPos center) {
+        Set<Long> newChunks = new HashSet<>();
+
+        // 生成5x5区块区域
+        for (int x = -LOAD_RADIUS; x <= LOAD_RADIUS; x++) {
+            for (int z = -LOAD_RADIUS; z <= LOAD_RADIUS; z++) {
+                newChunks.add(new ChunkPos(center.x + x, center.z + z).toLong());
+                level.getChunkSource().updateChunkForced(new ChunkPos(center.x + x, center.z + z), true);
+            }
+        }
+
+        // 释放旧的区块
+        Set<Long> toRemove = new HashSet<>(loadedChunks);
+        toRemove.removeAll(newChunks);
+        toRemove.forEach(chunk ->
+                ForgeChunkManager.forceChunk(level, DiligentStalker.MODID, this.getUUID(),
+                        ChunkPos.getX(chunk), ChunkPos.getZ(chunk), false, false)
+        );
+
+        // 加载新的区块
+        newChunks.forEach(chunk ->
+                ForgeChunkManager.forceChunk(level, DiligentStalker.MODID, this.getUUID(),
+                        ChunkPos.getX(chunk), ChunkPos.getZ(chunk), true, true)
+        );
+
+        loadedChunks.clear();
+        loadedChunks.addAll(newChunks);
+        for (int x = -LOAD_RADIUS; x <= LOAD_RADIUS; x++) {
+            for (int z = -LOAD_RADIUS; z <= LOAD_RADIUS; z++) {
+                level.getChunkSource().updateChunkForced(new ChunkPos(center.x + x, center.z + z), true);
+            }
+        }
+    }
+
+    @Override
+    public void remove(RemovalReason reason) {
+        System.out.print(this.level().isClientSide+"/"+reason.toString()+"\n");
+        if (this.fakePlayer != null) this.fakePlayer.remove(reason);
+        if (!this.level().isClientSide && reason.shouldDestroy()) {
+            Containers.dropContents(this.level(), this, this);
+        }
+        if (!this.level().isClientSide) {
+            loadedChunks.forEach(chunk ->
+                    ForgeChunkManager.forceChunk((ServerLevel) this.level(), DiligentStalker.MODID,
+                            this.getUUID(), ChunkPos.getX(chunk), ChunkPos.getZ(chunk), false, false)
+            );
+        }
+        super.remove(reason);
+    }
 
 //    private void releaseAllChunks(ServerLevel level) {
 //        for (ChunkPos pos : forcedChunks) {

@@ -4,14 +4,16 @@ import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import com.mafuyu404.diligentstalker.event.ServerStalker;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientboundSetChunkCacheCenterPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerPlayerGameMode;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -19,9 +21,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import javax.annotation.Nullable;
 
@@ -40,6 +40,8 @@ public abstract class ServerPlayerMixin extends Player {
     @Shadow public abstract boolean isSpectator();
 
     @Shadow public abstract ServerLevel serverLevel();
+
+    @Shadow public ServerGamePacketListenerImpl connection;
 
     @ModifyArg(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerChunkCache;move(Lnet/minecraft/server/level/ServerPlayer;)V"))
     private ServerPlayer oodaa(ServerPlayer player) {
@@ -68,13 +70,15 @@ public abstract class ServerPlayerMixin extends Player {
 ////            cir.setReturnValue(ServerStalker.getCameraEntity(this));
 //        }
 //    }
-    @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "tick", at = @At("HEAD"))
     private void addd(CallbackInfo ci) {
         if (ServerStalker.getCameraEntity(this) != null) {
 //            this.camera = ServerStalker.getCameraEntity(this);
 //            this.setShiftKeyDown(false);
             if (ServerStalker.getCameraEntity(this) instanceof DroneStalkerEntity entity) {
                 if (this.tickCount % 40 == 0) {
+                    SectionPos sectionpos = SectionPos.of(entity);
+                    this.connection.send(new ClientboundSetChunkCacheCenterPacket(sectionpos.x(), sectionpos.z()));
                     this.serverLevel().getChunkSource().move((ServerPlayer) entity.getMasterPlayer());
                 }
             }
