@@ -28,7 +28,7 @@ public class Tools {
         float x = 0;
         float y = 0;
         float z = 0;
-        float speed = 0.3f;
+        float speed = 0.5f;
         if (input.getBoolean("Up") || input.getBoolean("Down")) {
             Vec3 lookAngle = calculateViewVector(xRot, yRot);
             double xz = Math.sqrt(lookAngle.x * lookAngle.x + lookAngle.z * lookAngle.z);

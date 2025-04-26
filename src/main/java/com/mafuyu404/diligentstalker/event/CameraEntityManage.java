@@ -11,7 +11,6 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
@@ -26,6 +25,7 @@ public class CameraEntityManage {
     public static Entity targetEntity;
     public static float fixedXRot, fixedYRot;
     public static float xRot, yRot;
+    public static boolean moribund = false;
 
     @SubscribeEvent
     public static void onTick(TickEvent.PlayerTickEvent event) {
@@ -40,22 +40,17 @@ public class CameraEntityManage {
         }
         targetEntity.setXRot(xRot);
         targetEntity.setYRot(yRot);
-        CompoundTag input = CameraEntityAction.handleInput();
+        CompoundTag input = StalkerAction.handleInput();
         player.getPersistentData().put("DroneStalkerInput", input);
-        CameraEntityAction.syncData();
+        StalkerAction.syncData();
 
         ClientLevel level = (ClientLevel) player.level();
-        ChunkPos center = new ChunkPos(targetEntity.blockPosition());
-        for (int x = -5; x <= 5; x++) {
-            for (int z = -5; z <= 5; z++) {
-                ChunkPos pos = new ChunkPos(center.x + x, center.z + z);
-                level.getChunkSource().updateViewRadius(10);
-                targetEntity.level().getChunkSource().updateChunkForced(pos, true);
-                Minecraft.getInstance().levelRenderer.setSectionDirty(pos.x, targetEntity.blockPosition().getY(), pos.z);
-                requestClientChunk(x, z);
-                targetEntity.level().getChunkSource().updateChunkForced(pos, true);
-            }
-        }
+
+//        if (level.getChunkSource().hasChunk(player.chunkPosition().x, player.chunkPosition().z)) {
+//            System.out.print("dddddddd\n");
+//            player.getPersistentData().putBoolean("LoadingChunk", false);
+//            StalkerAction.syncData();
+//        }
     }
 
     public static void launch(Entity entity, Player player) {
@@ -83,8 +78,11 @@ public class CameraEntityManage {
     @SubscribeEvent
     public static void onEnter(EntityJoinLevelEvent event) {
         if (event.getEntity() instanceof DroneStalkerEntity entity) {
-            if (entity.level().isClientSide) entity.disconnect();
-            else entity.fakePlayer = null;
+            if (entity.level().isClientSide) {
+                entity.getPersistentData().putUUID("MasterPlayer", entity.getUUID());
+                entity.disconnect();
+//                disconnect();
+            }
         }
         if (event.getEntity() instanceof Player player) {
             player.getPersistentData().putInt("StalkerEntityId", -1);
@@ -94,11 +92,10 @@ public class CameraEntityManage {
     public static void onUnload(EntityLeaveLevelEvent event) {
         if (event.getEntity() instanceof DroneStalkerEntity entity) {
             if (entity.level().isClientSide) entity.disconnect();
-            else entity.fakePlayer = null;
         }
         if (targetEntity == null) return;
         if (targetEntity.getUUID() == event.getEntity().getUUID() || event.getEntity().getUUID() == Minecraft.getInstance().player.getUUID()) {
-            quit();
+            if (event.getEntity().level().isClientSide) quit();
         }
         if (event.getEntity() instanceof Player player) {
             player.getPersistentData().putInt("StalkerEntityId", -1);
@@ -108,11 +105,20 @@ public class CameraEntityManage {
     public static void onDeath(LivingDeathEvent event) {
         if (targetEntity == null) return;
         if (targetEntity.getUUID() == event.getEntity().getUUID() || event.getEntity().getUUID() == Minecraft.getInstance().player.getUUID()) {
-            quit();
+            if (event.getEntity().level().isClientSide) quit();
         }
     }
 
     public static void quit() {
+//        if (targetEntity instanceof DroneStalkerEntity droneStalker) {
+//            if (!droneStalker.underControlling()) return;
+//            Player player = Minecraft.getInstance().player;
+//            if (player == null) return;
+//            NetworkHandler.CHANNEL.sendToServer(new CameraEntityStatePacket(targetEntity.getId(), false));
+//            moribund = true;
+//            targetEntity = null;
+//            Minecraft.getInstance().setCameraEntity(player);
+//        }
         if (targetEntity instanceof DroneStalkerEntity droneStalker) {
             droneStalker.disconnect();
         }
@@ -121,7 +127,20 @@ public class CameraEntityManage {
         if (player == null) return;
         Minecraft.getInstance().setCameraEntity(player);
         player.getPersistentData().putInt("StalkerEntityId", -1);
-        NetworkHandler.CHANNEL.sendToServer(new EntityDataPacket(player.getId(), player.getPersistentData()));
+        player.getPersistentData().putBoolean("LoadingChunk", true);
+        StalkerAction.syncData();
+        player.getPersistentData().putBoolean("LoadingChunk", false);
+    }
+    public static void disconnect() {
+        Player player = Minecraft.getInstance().player;
+        if (player == null) return;
+        if (targetEntity instanceof DroneStalkerEntity droneStalker) {
+            droneStalker.disconnect();
+        }
+        targetEntity = null;
+        Minecraft.getInstance().setCameraEntity(player);
+        player.getPersistentData().putInt("StalkerEntityId", -1);
+        StalkerAction.syncData();
     }
 
     public static Vec3 getViewVector() {
@@ -137,12 +156,5 @@ public class CameraEntityManage {
 
     public static Vec3 getCameraPosition() {
         return Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
-    }
-
-    private static void requestClientChunk(int chunkX, int chunkZ) {
-        ClientLevel level = Minecraft.getInstance().level;
-        if (level != null) {
-            level.getChunkSource().getChunkNow(chunkX, chunkZ);
-        }
     }
 }

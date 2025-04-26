@@ -1,4 +1,4 @@
-package com.mafuyu404.diligentstalker.mixin;
+package com.mafuyu404.diligentstalker.trash;
 
 import net.minecraft.world.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;

@@ -17,25 +17,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class CameraMixin implements ICamera {
     @Shadow protected abstract void setPosition(double p_90585_, double p_90586_, double p_90587_);
 
-//    public void setCameraPosition(double x, double y, double z) {
-//        this.setPosition(x, y, z);
-////        System.out.print(x+"-"+y+"-"+z+"\n");
-//    }
-//
-//    @Inject(method = "setup", at = @At("HEAD"), cancellable = true)
-//    private void onSetup(BlockGetter p_90576_, Entity p_90577_, boolean p_90578_, boolean p_90579_, float p_90580_, CallbackInfo ci) {
     @Shadow private float xRot;
 
     @Shadow private float yRot;
 
     @Shadow private Vec3 position;
 
-    ////        System.out.print("refresh");
-//        if (CameraEvent.isCameraMode) {
-//            this.setPosition(CameraEvent.cameraX, CameraEvent.cameraY, CameraEvent.cameraZ);
-//            ci.cancel();
-//        }
-//    }
     @ModifyVariable(method = "setPosition(Lnet/minecraft/world/phys/Vec3;)V", at = @At("HEAD"), argsOnly = true)
     private Vec3 modifyPosition(Vec3 pos1) {
         if (!CameraEntityManage.isEnable(Minecraft.getInstance().player)) return pos1;

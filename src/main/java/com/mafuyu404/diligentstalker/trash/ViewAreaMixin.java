@@ -1,4 +1,4 @@
-package com.mafuyu404.diligentstalker.mixin;
+package com.mafuyu404.diligentstalker.trash;
 
 import net.minecraft.client.renderer.ViewArea;
 import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher;
@@ -16,6 +16,6 @@ public class ViewAreaMixin {
 
     @Inject(method = "createChunks", at = @At("HEAD"))
     private void waaa(ChunkRenderDispatcher p_110865_, CallbackInfo ci) {
-        System.out.print(this.chunkGridSizeX+"/"+this.chunkGridSizeZ+"\n");
+//        System.out.print(this.chunkGridSizeX+"/"+this.chunkGridSizeZ+"\n");
     }
 }

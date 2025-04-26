@@ -5,6 +5,8 @@ import com.mafuyu404.diligentstalker.event.CameraEntityManage;
 import com.mafuyu404.diligentstalker.event.ServerStalker;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -18,12 +20,12 @@ import java.util.Set;
 import java.util.UUID;
 
 @Mixin(value = Entity.class)
-public class EntityMixin {
-    @Shadow @Final private Set<String> tags;
+public abstract class EntityMixin {
+    @Shadow public abstract Level level();
 
-    @Shadow private int id;
+    @Shadow private Level level;
 
-    @Shadow protected UUID uuid;
+    @Shadow private ChunkPos chunkPosition;
 
     @Inject(method = "setXRot", at = @At("HEAD"), cancellable = true)
     private void redirectXRot(float xRot, CallbackInfo ci) {
@@ -52,19 +54,14 @@ public class EntityMixin {
             }
         }
     }
-    @Inject(method = "setRemoved", at = @At("HEAD"), cancellable = true)
-    private void wwaaaa(Entity.RemovalReason p_146876_, CallbackInfo ci) {
-        if (((Object) this) instanceof DroneStalkerEntity droneStalker) {
-//            if (droneStalker.underControlling()) ci.cancel();
+    @Inject(method = "setPosRaw", at = @At("HEAD"), cancellable = true)
+    private void wwaaaa(double p_20210_, double p_20211_, double p_20212_, CallbackInfo ci) {
+        if (((Object) this) instanceof Player player) {
+            if (!this.level.isClientSide) return;
+            if (ServerStalker.getCameraEntity(player) == null) return;
+            if (!this.level.getChunkSource().hasChunk(this.chunkPosition.x, this.chunkPosition.z)) {
+                ci.cancel();
+            }
         }
     }
-//    @Inject(method = "isAddedToWorld", at = @At("HEAD"), cancellable = true)
-//    private void wwwaaaa(CallbackInfoReturnable<Boolean> cir) {
-//        if (((Object) this) instanceof DroneStalkerEntity droneStalker) {
-//            if (droneStalker.underControlling()) {
-//                System.out.print("???\n");
-//                cir.setReturnValue(true);
-//            }
-//        }
-//    }
 }

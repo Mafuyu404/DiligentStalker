@@ -1,4 +1,4 @@
-package com.mafuyu404.diligentstalker.mixin;
+package com.mafuyu404.diligentstalker.trash;
 
 import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import net.minecraft.client.multiplayer.ClientLevel;

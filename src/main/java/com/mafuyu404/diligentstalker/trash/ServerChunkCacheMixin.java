@@ -1,11 +1,7 @@
-package com.mafuyu404.diligentstalker.mixin;
+package com.mafuyu404.diligentstalker.trash;
 
-import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
-import com.mafuyu404.diligentstalker.event.ServerStalker;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ChunkPos;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -32,17 +28,17 @@ public abstract class ServerChunkCacheMixin {
 //        if (ServerStalker.getCameraEntity(player) != null) {
 //            this.setViewDistance(10);
 //        }
-        for (Entity entity : this.level.getEntities().getAll()) {
-            if (entity instanceof Player || entity instanceof DroneStalkerEntity) {
-                ChunkPos entityChunk = entity.chunkPosition();
-                int radius = entity instanceof DroneStalkerEntity ? 5 : 0;
-
-                if (Math.abs(pos.x - entityChunk.x) <= radius &&
-                        Math.abs(pos.z - entityChunk.z) <= radius) {
-                    ci.cancel(); // 阻止原版卸载逻辑
-                    return;
-                }
-            }
-        }
+//        for (Entity entity : this.level.getEntities().getAll()) {
+//            if (entity instanceof Player || entity instanceof DroneStalkerEntity) {
+//                ChunkPos entityChunk = entity.chunkPosition();
+//                int radius = entity instanceof DroneStalkerEntity ? 5 : 0;
+//
+//                if (Math.abs(pos.x - entityChunk.x) <= radius &&
+//                        Math.abs(pos.z - entityChunk.z) <= radius) {
+//                    ci.cancel(); // 阻止原版卸载逻辑
+//                    return;
+//                }
+//            }
+//        }
     }
 }

@@ -3,13 +3,16 @@ package com.mafuyu404.diligentstalker.entity;
 import com.mafuyu404.diligentstalker.DiligentStalker;
 import com.mafuyu404.diligentstalker.event.CameraEntityManage;
 import com.mafuyu404.diligentstalker.init.NetworkHandler;
+import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.init.VirtualPlayerCreator;
 import com.mafuyu404.diligentstalker.network.CameraEntityStatePacket;
 import com.mafuyu404.diligentstalker.network.EntityDataPacket;
 import com.mafuyu404.diligentstalker.registry.ModItems;
 import com.mojang.authlib.GameProfile;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -46,7 +49,6 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
     @Nullable
     private ResourceLocation lootTable;
     private long lootTableSeed;
-    public ServerPlayer fakePlayer;
 
     public DroneStalkerEntity(EntityType<? extends Boat> p_219869_, Level level) {
         super(p_219869_, level);
@@ -76,8 +78,18 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
     }
 
     public void disconnect() {
+        Player player = this.getMasterPlayer();
+        if (this.level().isClientSide) {
+            if (this.underControlling()) {
+                NetworkHandler.CHANNEL.sendToServer(new CameraEntityStatePacket(this.getId(), false));
+            }
+        }
         this.getPersistentData().putUUID("MasterPlayer", this.uuid);
         if (this.level().isClientSide) {
+            if (player != null) {
+                SectionPos sectionpos = SectionPos.of(player);
+                ((ClientLevel) this.level()).getChunkSource().updateViewCenter(sectionpos.x(), sectionpos.z());
+            }
             NetworkHandler.CHANNEL.sendToServer(new EntityDataPacket(this.getId(), this.getPersistentData()));
         }
     }
@@ -95,24 +107,12 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
             InteractionResult interactionresult = this.interactWithContainerVehicle(player);
             if (interactionresult.consumesAction()) {
                 this.gameEvent(GameEvent.CONTAINER_OPEN, player);
-//                PiglinAi.angerNearbyPiglins(player, true);
             }
             return interactionresult;
         }
         else if (player.isLocalPlayer()) {
+            Stalker.create(player, this);
             CameraEntityManage.launch(this, player);
-        }
-        else {
-            if (this.fakePlayer == null) {
-//                this.fakePlayer = new ServerPlayer(serverPlayer.serverLevel().getServer(), serverPlayer.serverLevel(), new GameProfile(UUID.randomUUID(), "ChunkLoader"));
-//                this.fakePlayer.connection = new ServerGamePacketListenerImpl(serverPlayer.serverLevel().getServer(), new Connection(PacketFlow.SERVERBOUND), this.fakePlayer);
-//                this.fakePlayer = new FakePlayer((ServerLevel) this.level(), new GameProfile(UUID.randomUUID(), "ChunkLoader"));
-//                this.fakePlayer.setPos(this.position());
-//                this.level().addFreshEntity(fakePlayer);
-//                this.fakePlayer = VirtualPlayerCreator.createVirtualPlayer((ServerLevel) this.level(), "ChunkLoader", this.getX(), this.getY(), this.getZ());
-//                this.fakePlayer.addTag("fake");
-//                this.fakePlayer.setCamera(this);
-            }
         }
         return InteractionResult.FAIL;
     }
@@ -139,17 +139,6 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
                 updateChunkLoading(serverLevel, currentCenter);
                 lastCenter = currentCenter;
             }
-            if (this.underControlling()) {
-                if (this.fakePlayer != null) {
-                    this.fakePlayer.setPos(this.position());
-                }
-//                System.out.print(this.fakePlayer+"\n");
-            }
-        }
-        else {
-            if (this.tickCount %40 == 0) {
-//                NetworkHandler.CHANNEL.sendToServer(new CameraEntityStatePacket(this.getId(), this.underControlling()));
-            }
         }
     }
 
@@ -172,6 +161,10 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
                         ChunkPos.getX(chunk), ChunkPos.getZ(chunk), false, false)
         );
 
+        if (this.underControlling()) {
+            newChunks.add(this.getMasterPlayer().chunkPosition().toLong());
+        }
+
         // 加载新的区块
         newChunks.forEach(chunk ->
                 ForgeChunkManager.forceChunk(level, DiligentStalker.MODID, this.getUUID(),
@@ -189,8 +182,6 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
 
     @Override
     public void remove(RemovalReason reason) {
-        System.out.print(this.level().isClientSide+"/"+reason.toString()+"\n");
-        if (this.fakePlayer != null) this.fakePlayer.remove(reason);
         if (!this.level().isClientSide && reason.shouldDestroy()) {
             Containers.dropContents(this.level(), this, this);
         }
@@ -203,12 +194,6 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
         super.remove(reason);
     }
 
-//    private void releaseAllChunks(ServerLevel level) {
-//        for (ChunkPos pos : forcedChunks) {
-//            level.setChunkForced(pos.x, pos.z, false);
-//        }
-//        forcedChunks.clear();
-//    }
 
 
 

@@ -16,7 +16,9 @@ public class MinecraftMixin {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
         if (CameraEntityManage.isEnable(player)) {
-            cir.setReturnValue(CameraEntityManage.targetEntity);
+            if (CameraEntityManage.targetEntity != null) {
+                cir.setReturnValue(CameraEntityManage.targetEntity);
+            }
         }
     }
 }

@@ -2,6 +2,7 @@ package com.mafuyu404.diligentstalker.event;
 
 import com.mafuyu404.diligentstalker.DiligentStalker;
 import com.mafuyu404.diligentstalker.init.NetworkHandler;
+import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.init.Tools;
 import com.mafuyu404.diligentstalker.network.EntityDataPacket;
 import com.mafuyu404.diligentstalker.network.RClickBlockPacket;
@@ -26,9 +27,10 @@ import net.minecraftforge.fml.common.Mod;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 @Mod.EventBusSubscriber(modid = DiligentStalker.MODID, value = Dist.CLIENT)
-public class CameraEntityAction {
+public class StalkerAction {
     private static boolean interactLock = true;
 
     @SubscribeEvent
@@ -39,8 +41,9 @@ public class CameraEntityAction {
         Options options = Minecraft.getInstance().options;
         if (!CameraEntityManage.isEnable(player)) return;
         ArrayList<Integer> controlKey = new ArrayList<>();
-        if (event.getKey() == options.keySprint.getKey().getValue()) {
+        if (event.getKey() == options.keyDrop.getKey().getValue()) {
             options.keySprint.setDown(false);
+            Objects.requireNonNull(Stalker.getInstance(player)).disconnect();
             CameraEntityManage.quit();
         }
         if (event.getAction() == InputConstants.PRESS) {

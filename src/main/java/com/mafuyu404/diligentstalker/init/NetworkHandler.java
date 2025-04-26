@@ -1,10 +1,7 @@
 package com.mafuyu404.diligentstalker.init;
 
 import com.mafuyu404.diligentstalker.DiligentStalker;
-import com.mafuyu404.diligentstalker.network.CameraEntityStatePacket;
-import com.mafuyu404.diligentstalker.network.EntityDataPacket;
-import com.mafuyu404.diligentstalker.network.RClickBlockPacket;
-import com.mafuyu404.diligentstalker.network.UnlockPacket;
+import com.mafuyu404.diligentstalker.network.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkRegistry;
@@ -27,6 +24,7 @@ public class NetworkHandler {
         CHANNEL.registerMessage(packetId++, RClickBlockPacket.class, RClickBlockPacket::encode, RClickBlockPacket::decode, RClickBlockPacket::handle);
         CHANNEL.registerMessage(packetId++, EntityDataPacket.class, EntityDataPacket::encode, EntityDataPacket::decode, EntityDataPacket::handle);
         CHANNEL.registerMessage(packetId++, CameraEntityStatePacket.class, CameraEntityStatePacket::encode, CameraEntityStatePacket::decode, CameraEntityStatePacket::handle);
+        CHANNEL.registerMessage(packetId++, StalkerSyncMsg.class, StalkerSyncMsg::encode, StalkerSyncMsg::decode, StalkerSyncMsg::handle);
 
     }
 

@@ -8,24 +8,13 @@
     "ChunkMapMixin",
     "DistanceManagerMixin",
     "EntityMixin",
-    "IForgeEntityMixin",
-    "LivingEntityMixin",
-    "ServerChunkCacheMixin",
-    "ServerEntityMixin",
-    "ServerGamePacketListenerImplMixin",
-    "ServerPlayerMixin",
     "TrackedEntityMixin"
   ],
   "client": [
     "CameraMixin",
-    "ChunkRenderDispatcherRenderChunkMixin",
-    "ClientChunkCacheMixin",
-    "ClientLevelMixin",
-    "ClientPacketListenerMixin",
     "LevelRendererMixin",
     "MinecraftMixin",
-    "PlayerRendererMixin",
-    "ViewAreaMixin"
+    "PlayerRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

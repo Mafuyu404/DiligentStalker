@@ -3,7 +3,9 @@ package com.mafuyu404.diligentstalker.network;
 import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import com.mafuyu404.diligentstalker.event.ServerStalker;
 import com.mafuyu404.diligentstalker.init.ChunkLoader;
+import net.minecraft.core.SectionPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.game.ClientboundSetChunkCacheCenterPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -40,37 +42,40 @@ public class CameraEntityStatePacket {
             if (entity == null) return;
             if (entity instanceof DroneStalkerEntity droneStalker) {
                 if (!msg.state) {
-                    droneStalker.fakePlayer = null;
+                    ServerStalker.MoribundStalker.add(player.getUUID());
+                    SectionPos sectionpos = SectionPos.of(player);
+                    player.connection.send(new ClientboundSetChunkCacheCenterPacket(sectionpos.x(), sectionpos.z()));
+                    player.serverLevel().getChunkSource().move(player);
                 }
             }
-            boolean wasLoading = entity.getPersistentData().getBoolean("forceLoadChunks");
-//            System.out.print(msg.state+"\n");
-            if (wasLoading != msg.state) {
-                if (msg.state) {
-                    System.out.print("active"+"\n");
-                    // 创建新的ChunkLoader并激活
-                    ChunkLoader loader = new ChunkLoader((ServerLevel) entity.level(), new ChunkPos(entity.blockPosition()));
-                    loader.activate();
-                    ServerStalker.chunkLoader.put(msg.entityId, loader);
-                } else {
-
-                    // 停用并移除ChunkLoader
-                    System.out.print("close"+"\n");
-                    ChunkLoader loader = ServerStalker.chunkLoader.get(msg.entityId);
-                    if (loader != null) loader.deactivate();
-                    ServerStalker.chunkLoader.remove(msg.entityId);
-                }
-                entity.getPersistentData().putBoolean("forceLoadChunks", msg.state);
-            }
-            if (msg.state) {
-                ChunkLoader loader = ServerStalker.chunkLoader.get(msg.entityId);
-                ChunkPos newPos = new ChunkPos(entity.blockPosition());
-                if (!loader.center.equals(newPos)) {
-                    loader.deactivate();
-                    loader.center = newPos;
-                    loader.activate();
-                }
-            }
+//            boolean wasLoading = entity.getPersistentData().getBoolean("forceLoadChunks");
+////            System.out.print(msg.state+"\n");
+//            if (wasLoading != msg.state) {
+//                if (msg.state) {
+//                    System.out.print("active"+"\n");
+//                    // 创建新的ChunkLoader并激活
+//                    ChunkLoader loader = new ChunkLoader((ServerLevel) entity.level(), new ChunkPos(entity.blockPosition()));
+//                    loader.activate();
+//                    ServerStalker.chunkLoader.put(msg.entityId, loader);
+//                } else {
+//
+//                    // 停用并移除ChunkLoader
+//                    System.out.print("close"+"\n");
+//                    ChunkLoader loader = ServerStalker.chunkLoader.get(msg.entityId);
+//                    if (loader != null) loader.deactivate();
+//                    ServerStalker.chunkLoader.remove(msg.entityId);
+//                }
+//                entity.getPersistentData().putBoolean("forceLoadChunks", msg.state);
+//            }
+//            if (msg.state) {
+//                ChunkLoader loader = ServerStalker.chunkLoader.get(msg.entityId);
+//                ChunkPos newPos = new ChunkPos(entity.blockPosition());
+//                if (!loader.center.equals(newPos)) {
+//                    loader.deactivate();
+//                    loader.center = newPos;
+//                    loader.activate();
+//                }
+//            }
         });
         ctx.get().setPacketHandled(true);
     }

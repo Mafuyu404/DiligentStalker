@@ -2,17 +2,15 @@ package com.mafuyu404.diligentstalker.event;
 
 import com.mafuyu404.diligentstalker.DiligentStalker;
 import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
-import com.mafuyu404.diligentstalker.init.ChunkLoader;
 import com.mafuyu404.diligentstalker.init.Tools;
-import net.minecraft.client.Minecraft;
+import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.network.protocol.game.ClientboundSetChunkCacheCenterPacket;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
@@ -21,16 +19,27 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Iterator;
+import java.util.UUID;
 
 @Mod.EventBusSubscriber(modid = DiligentStalker.MODID, value = Dist.CLIENT)
 public class ServerStalker {
-    public static HashMap<Integer, ChunkLoader> chunkLoader = new HashMap<>();
+    public static ArrayList<UUID> MoribundStalker = new ArrayList<>();
 
     @SubscribeEvent
-    public static void onServerTIck(TickEvent.PlayerTickEvent event) {
-        Player player = event.player;
-        if (player.isLocalPlayer()) return;
+    public static void onServerTick(TickEvent.PlayerTickEvent event) {
+        if (event.player.isLocalPlayer()) return;
+        ServerPlayer player = (ServerPlayer) event.player;
+//        if (!MoribundStalker.isEmpty()) {
+//            Iterator<Integer> iterator = MoribundStalker.iterator();
+//            while (iterator.hasNext()) {
+//                int id = iterator.next();
+//                if (player.level().getEntity(id) == null) return;
+//                if (player.level().getEntity(id) instanceof DroneStalkerEntity droneStalker) {
+//                    iterator.remove();
+//                }
+//            }
+//        }
         Entity entity = getCameraEntity(player);
         if (entity == null) {
             return;
@@ -49,30 +58,22 @@ public class ServerStalker {
                 entity.level().getChunkSource().updateChunkForced(pos, true);
             }
         }
-
-        boolean shouldLoad = true;
-        boolean wasLoading = entity.getPersistentData().getBoolean("forceLoadChunks");
-
-//        if (shouldLoad != wasLoading) {
-//            {
-//                // 创建新的ChunkLoader并激活
-//                ChunkLoader loader = new ChunkLoader((ServerLevel) entity.level(), new ChunkPos(entity.blockPosition()));
-//                entity.getPersistentData().put("chunkLoader", loader);
-//                loader.activate(3); // 3区块半径
-//            }
-//            entity.getPersistentData().putBoolean("forceLoadChunks", shouldLoad);
-//        }
-//
-//        // 更新加载器位置
-//        if (shouldLoad) {
-//            ChunkLoader loader = (ChunkLoader) entity.getPersistentData().get("chunkLoader");
-//            ChunkPos newPos = new ChunkPos(entity.blockPosition());
-//            if (!loader.center.equals(newPos)) {
-//                loader.deactivate(3);
-//                loader.center = newPos;
-//                loader.activate(3);
-//            }
-//        }
+        if (ServerStalker.getCameraEntity(player) != null) {
+            if (ServerStalker.getCameraEntity(player) instanceof DroneStalkerEntity droneStalker) {
+                if (ServerStalker.MoribundStalker.contains(droneStalker.getId())) {
+                    player.serverLevel().getChunkSource().move(player);
+                }
+                else if (player.tickCount % 40 == 0) {
+                    SectionPos sectionpos = SectionPos.of(droneStalker);
+                    player.connection.send(new ClientboundSetChunkCacheCenterPacket(sectionpos.x(), sectionpos.z()));
+                    player.serverLevel().getChunkSource().move(player);
+                    player.teleportRelative(0, 0, 0);
+                }
+            }
+        }
+        if (player.getPersistentData().getBoolean("LoadingChunk")) {
+            player.serverLevel().getChunkSource().setViewDistance(2);
+        }
     }
 
     @SubscribeEvent
@@ -93,12 +94,4 @@ public class ServerStalker {
     public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
         event.getEntity().getPersistentData().putInt("StalkerEntityId", -1);
     }
-
-//    @SubscribeEvent
-//    public static void onUse(PlayerInteractEvent.RightClickBlock event) {
-//        if (!event.getEntity().isLocalPlayer() && entityId != -1) {
-//            System.out.print("server\n");
-//            event.setCanceled(true);
-//        }
-//    }
 }
