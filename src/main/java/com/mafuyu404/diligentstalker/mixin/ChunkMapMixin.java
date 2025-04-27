@@ -1,11 +1,10 @@
 package com.mafuyu404.diligentstalker.mixin;
 
-import com.mafuyu404.diligentstalker.event.ServerStalker;
+import com.mafuyu404.diligentstalker.init.Stalker;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
 import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.LevelChunk;
 import org.apache.commons.lang3.mutable.MutableObject;
@@ -26,9 +25,8 @@ public abstract class ChunkMapMixin {
     @Inject(method = "move", at = @At("RETURN"))
     private void wwaaa(ServerPlayer player, CallbackInfo ci) {
         ChunkPos center = null;
-        Entity stalker = ServerStalker.getCameraEntity(player);
-        if (stalker != null) {
-            center = stalker.chunkPosition();
+        if (Stalker.hasInstanceOf(player)) {
+            center = Stalker.getInstanceOf(player).getStalker().chunkPosition();
         }
         if (player.getPersistentData().getBoolean("LoadingChunk")) {
             center = player.chunkPosition();

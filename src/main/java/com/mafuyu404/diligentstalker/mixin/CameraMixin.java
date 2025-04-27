@@ -1,7 +1,8 @@
 package com.mafuyu404.diligentstalker.mixin;
 
 import com.mafuyu404.diligentstalker.api.ICamera;
-import com.mafuyu404.diligentstalker.event.CameraEntityManage;
+import com.mafuyu404.diligentstalker.event.StalkerControl;
+import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.init.Tools;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -15,8 +16,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Camera.class)
 public abstract class CameraMixin implements ICamera {
-    @Shadow protected abstract void setPosition(double p_90585_, double p_90586_, double p_90587_);
-
     @Shadow private float xRot;
 
     @Shadow private float yRot;
@@ -25,7 +24,7 @@ public abstract class CameraMixin implements ICamera {
 
     @ModifyVariable(method = "setPosition(Lnet/minecraft/world/phys/Vec3;)V", at = @At("HEAD"), argsOnly = true)
     private Vec3 modifyPosition(Vec3 pos1) {
-        if (!CameraEntityManage.isEnable(Minecraft.getInstance().player)) return pos1;
+        if (!Stalker.hasInstanceOf(Minecraft.getInstance().player)) return pos1;
         Vec3 pos0 = this.position;
         double x = Tools.lerp(pos0.x, pos1.x);
         double y = Tools.lerp(pos0.y, pos1.y);
@@ -34,8 +33,8 @@ public abstract class CameraMixin implements ICamera {
     }
     @Inject(method = "setRotation", at = @At(value = "INVOKE", target = "Lorg/joml/Quaternionf;rotationYXZ(FFF)Lorg/joml/Quaternionf;"))
     private void modifyRotate(float p_90573_, float p_90574_, CallbackInfo ci) {
-        if (!CameraEntityManage.isEnable(Minecraft.getInstance().player)) return;
-        this.xRot = CameraEntityManage.xRot;
-        this.yRot = CameraEntityManage.yRot;
+        if (!Stalker.hasInstanceOf(Minecraft.getInstance().player)) return;
+        this.xRot = StalkerControl.xRot;
+        this.yRot = StalkerControl.yRot;
     }
 }

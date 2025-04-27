@@ -1,22 +1,11 @@
 package com.mafuyu404.diligentstalker.entity;
 
-import com.mafuyu404.diligentstalker.DiligentStalker;
-import com.mafuyu404.diligentstalker.event.CameraEntityManage;
-import com.mafuyu404.diligentstalker.init.NetworkHandler;
 import com.mafuyu404.diligentstalker.init.Stalker;
-import com.mafuyu404.diligentstalker.init.VirtualPlayerCreator;
-import com.mafuyu404.diligentstalker.network.CameraEntityStatePacket;
-import com.mafuyu404.diligentstalker.network.EntityDataPacket;
 import com.mafuyu404.diligentstalker.registry.ModItems;
-import com.mojang.authlib.GameProfile;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.*;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
@@ -31,17 +20,11 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraftforge.common.util.FakePlayer;
-import net.minecraftforge.common.world.ForgeChunkManager;
 
 import javax.annotation.Nullable;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
 
 public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen, ContainerEntity {
     private static final int CONTAINER_SIZE = 27;
@@ -52,46 +35,6 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
 
     public DroneStalkerEntity(EntityType<? extends Boat> p_219869_, Level level) {
         super(p_219869_, level);
-        this.getPersistentData().putUUID("MasterPlayer", this.uuid);
-    }
-
-    @Override
-    public void onAddedToWorld() {
-        if (this.underControlling()) {
-            super.onAddedToWorld();
-        }
-    }
-
-    public Player getMasterPlayer() {
-        return this.level().getPlayerByUUID(this.getPersistentData().getUUID("MasterPlayer"));
-    }
-
-    public void setMasterPlayer(Player player) {
-        this.getPersistentData().putUUID("MasterPlayer", player.getUUID());
-        if (player.isLocalPlayer()) {
-            NetworkHandler.CHANNEL.sendToServer(new EntityDataPacket(this.getId(), this.getPersistentData()));
-        }
-    }
-
-    public boolean underControlling() {
-        return getMasterPlayer() != null;
-    }
-
-    public void disconnect() {
-        Player player = this.getMasterPlayer();
-        if (this.level().isClientSide) {
-            if (this.underControlling()) {
-                NetworkHandler.CHANNEL.sendToServer(new CameraEntityStatePacket(this.getId(), false));
-            }
-        }
-        this.getPersistentData().putUUID("MasterPlayer", this.uuid);
-        if (this.level().isClientSide) {
-            if (player != null) {
-                SectionPos sectionpos = SectionPos.of(player);
-                ((ClientLevel) this.level()).getChunkSource().updateViewCenter(sectionpos.x(), sectionpos.z());
-            }
-            NetworkHandler.CHANNEL.sendToServer(new EntityDataPacket(this.getId(), this.getPersistentData()));
-        }
     }
 
     public DroneStalkerEntity(Level p_219872_, double p_219873_, double p_219874_, double p_219875_) {
@@ -111,8 +54,7 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
             return interactionresult;
         }
         else if (player.isLocalPlayer()) {
-            Stalker.create(player, this);
-            CameraEntityManage.launch(this, player);
+            Stalker.connect(player, this);
         }
         return InteractionResult.FAIL;
     }
@@ -122,74 +64,10 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
 
     }
 
-    private static final int LOAD_RADIUS = 5;
-    private final Set<Long> loadedChunks = new HashSet<>();
-    private ChunkPos lastCenter;
-
-    @Override
-    public void tick() {
-        super.tick();
-//        if (this.fakePlayer != null) System.out.print(this.fakePlayer.getUUID()+"\n");
-        if (!this.level().isClientSide) {
-            ServerLevel serverLevel = (ServerLevel) this.level();
-            ChunkPos currentCenter = new ChunkPos(blockPosition());
-//
-            // 每2秒（40 tick）检查位置变化
-            if (this.tickCount % 40 == 0 || !currentCenter.equals(lastCenter)) {
-                updateChunkLoading(serverLevel, currentCenter);
-                lastCenter = currentCenter;
-            }
-        }
-    }
-
-    private void updateChunkLoading(ServerLevel level, ChunkPos center) {
-        Set<Long> newChunks = new HashSet<>();
-
-        // 生成5x5区块区域
-        for (int x = -LOAD_RADIUS; x <= LOAD_RADIUS; x++) {
-            for (int z = -LOAD_RADIUS; z <= LOAD_RADIUS; z++) {
-                newChunks.add(new ChunkPos(center.x + x, center.z + z).toLong());
-                level.getChunkSource().updateChunkForced(new ChunkPos(center.x + x, center.z + z), true);
-            }
-        }
-
-        // 释放旧的区块
-        Set<Long> toRemove = new HashSet<>(loadedChunks);
-        toRemove.removeAll(newChunks);
-        toRemove.forEach(chunk ->
-                ForgeChunkManager.forceChunk(level, DiligentStalker.MODID, this.getUUID(),
-                        ChunkPos.getX(chunk), ChunkPos.getZ(chunk), false, false)
-        );
-
-        if (this.underControlling()) {
-            newChunks.add(this.getMasterPlayer().chunkPosition().toLong());
-        }
-
-        // 加载新的区块
-        newChunks.forEach(chunk ->
-                ForgeChunkManager.forceChunk(level, DiligentStalker.MODID, this.getUUID(),
-                        ChunkPos.getX(chunk), ChunkPos.getZ(chunk), true, true)
-        );
-
-        loadedChunks.clear();
-        loadedChunks.addAll(newChunks);
-        for (int x = -LOAD_RADIUS; x <= LOAD_RADIUS; x++) {
-            for (int z = -LOAD_RADIUS; z <= LOAD_RADIUS; z++) {
-                level.getChunkSource().updateChunkForced(new ChunkPos(center.x + x, center.z + z), true);
-            }
-        }
-    }
-
     @Override
     public void remove(RemovalReason reason) {
         if (!this.level().isClientSide && reason.shouldDestroy()) {
             Containers.dropContents(this.level(), this, this);
-        }
-        if (!this.level().isClientSide) {
-            loadedChunks.forEach(chunk ->
-                    ForgeChunkManager.forceChunk((ServerLevel) this.level(), DiligentStalker.MODID,
-                            this.getUUID(), ChunkPos.getX(chunk), ChunkPos.getZ(chunk), false, false)
-            );
         }
         super.remove(reason);
     }

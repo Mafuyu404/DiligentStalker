@@ -25,7 +25,7 @@ public abstract class ServerChunkCacheMixin {
     )
     private void onUpdateChunkForced(ChunkPos pos, boolean add, CallbackInfo ci) {
         // 处理玩家和无人机的区块加载
-//        if (ServerStalker.getCameraEntity(player) != null) {
+//        if (StalkerManage.getCameraEntity(player) != null) {
 //            this.setViewDistance(10);
 //        }
 //        for (Entity entity : this.level.getEntities().getAll()) {

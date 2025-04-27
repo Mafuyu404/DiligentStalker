@@ -11,7 +11,7 @@ public abstract class ChunkRenderDispatcherMixin {
 //            cancellable = true
 //    )
 //    private void onScheduleChunkUpdate(ChunkRenderDispatcher.RenderChunk.ChunkCompileTask p_112710_, CallbackInfo ci) {
-//        Minecraft client = Minecraft.getInstance();
+//        Minecraft client = Minecraft.getInstanceOf();
 //        if (client.level != null) {
 //            for (Entity entity : client.level.entitiesForRendering()) {
 //                if (entity instanceof DroneStalkerEntity) {

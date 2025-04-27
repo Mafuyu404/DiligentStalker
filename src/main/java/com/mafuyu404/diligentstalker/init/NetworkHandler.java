@@ -23,7 +23,6 @@ public class NetworkHandler {
         CHANNEL.registerMessage(packetId++, UnlockPacket.class, UnlockPacket::encode, UnlockPacket::decode, UnlockPacket::handle);
         CHANNEL.registerMessage(packetId++, RClickBlockPacket.class, RClickBlockPacket::encode, RClickBlockPacket::decode, RClickBlockPacket::handle);
         CHANNEL.registerMessage(packetId++, EntityDataPacket.class, EntityDataPacket::encode, EntityDataPacket::decode, EntityDataPacket::handle);
-        CHANNEL.registerMessage(packetId++, CameraEntityStatePacket.class, CameraEntityStatePacket::encode, CameraEntityStatePacket::decode, CameraEntityStatePacket::handle);
         CHANNEL.registerMessage(packetId++, StalkerSyncMsg.class, StalkerSyncMsg::encode, StalkerSyncMsg::decode, StalkerSyncMsg::handle);
 
     }

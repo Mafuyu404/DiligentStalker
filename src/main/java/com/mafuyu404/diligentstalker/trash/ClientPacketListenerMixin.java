@@ -14,7 +14,7 @@ public class ClientPacketListenerMixin {
 
     @Inject(method = "lambda$handleRemoveEntities$2", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientLevel;removeEntity(ILnet/minecraft/world/entity/Entity$RemovalReason;)V"))
     private void wwww(int p_205521_, CallbackInfo ci) {
-//        System.out.print(Minecraft.getInstance().level.getEntity(p_205521_)+"\n");
+//        System.out.print(Minecraft.getInstanceOf().level.getEntity(p_205521_)+"\n");
 //        p_182633_.getEntityIds().forEach(integer -> {
 //            Entity entity = this.level.getEntity(integer);
 //            if (entity instanceof DroneStalkerEntity) {

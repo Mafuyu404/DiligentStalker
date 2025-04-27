@@ -1,13 +1,14 @@
 package com.mafuyu404.diligentstalker.network;
 
 import com.mafuyu404.diligentstalker.init.Stalker;
+import net.minecraft.core.SectionPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.game.ClientboundSetChunkCacheCenterPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.network.NetworkEvent;
 
-import java.util.Objects;
 import java.util.function.Supplier;
 
 public class StalkerSyncMsg {
@@ -37,10 +38,16 @@ public class StalkerSyncMsg {
             if (entity == null) return;
             if (msg.state) {
                 // 创建跟踪狂实例
-                if (!Stalker.hasInstanceOf(entity)) Stalker.create(player, entity);
+                if (!Stalker.hasInstanceOf(player) && !Stalker.hasInstanceOf(entity)) {
+                    Stalker.connect(player, entity);
+                }
             } else {
                 // 删除跟踪狂实例
-                Objects.requireNonNull(Stalker.getInstance(entity)).disconnect();
+                if (Stalker.hasInstanceOf(player)) {
+                    Stalker.getInstanceOf(player).disconnect();
+                }
+                SectionPos sectionpos = SectionPos.of(player);
+                player.connection.send(new ClientboundSetChunkCacheCenterPacket(sectionpos.x(), sectionpos.z()));
             }
         });
         ctx.get().setPacketHandled(true);

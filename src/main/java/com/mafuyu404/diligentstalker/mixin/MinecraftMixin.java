@@ -1,6 +1,6 @@
 package com.mafuyu404.diligentstalker.mixin;
 
-import com.mafuyu404.diligentstalker.event.CameraEntityManage;
+import com.mafuyu404.diligentstalker.init.Stalker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -14,11 +14,8 @@ public class MinecraftMixin {
     @Inject(method = "getCameraEntity", at = @At("HEAD"), cancellable = true)
     private void modifyCameraEntity(CallbackInfoReturnable<Entity> cir) {
         Player player = Minecraft.getInstance().player;
-        if (player == null) return;
-        if (CameraEntityManage.isEnable(player)) {
-            if (CameraEntityManage.targetEntity != null) {
-                cir.setReturnValue(CameraEntityManage.targetEntity);
-            }
+        if (Stalker.hasInstanceOf(player)) {
+            cir.setReturnValue(Stalker.getInstanceOf(player).getStalker());
         }
     }
 }

@@ -1,11 +1,10 @@
 package com.mafuyu404.diligentstalker.network;
 
-import com.mafuyu404.diligentstalker.event.StalkerAction;
-import com.mafuyu404.diligentstalker.event.ServerStalker;
+import com.mafuyu404.diligentstalker.event.StalkerControl;
+import com.mafuyu404.diligentstalker.init.Stalker;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.NetworkEvent;
 
@@ -33,10 +32,11 @@ public class RClickBlockPacket {
         ctx.get().enqueueWork(() -> {
             ServerPlayer player = ctx.get().getSender();
             ServerLevel level = player.serverLevel();
-            Entity entity = ServerStalker.getCameraEntity(player);
-            if (entity == null) return;
+            if (!Stalker.hasInstanceOf(player)) return;
+//            Entity entity = Stalker.getInstanceOf(player).getStalker();
+//            if (entity == null) return;
 
-            StalkerAction.RightClickBlock(player, msg.position, msg.viewVec);
+            StalkerControl.RightClickBlock(player, msg.position, msg.viewVec);
 
 //            BlockState state = level.getBlockState(msg.blockPos);
 //            Vec3 hitVec = new Vec3(msg.blockPos.getX() + 0.5, msg.blockPos.getY() + 0.5, msg.blockPos.getZ() + 0.5);

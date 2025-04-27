@@ -1,5 +1,7 @@
 package com.mafuyu404.diligentstalker.init;
 
+import com.mafuyu404.diligentstalker.event.StalkerControl;
+import com.mafuyu404.diligentstalker.event.StalkerManage;
 import com.mafuyu404.diligentstalker.network.StalkerSyncMsg;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -13,7 +15,7 @@ public class Stalker {
     private final UUID playerUUID;
     private final int stalkerId;
     public final Level level;
-    private static final HashMap<UUID, Integer> InstanceMap = new HashMap<>();
+    public static final HashMap<UUID, Integer> InstanceMap = new HashMap<>();
 
     public Stalker(UUID playerUUID, int stalkerId, Level level) {
         this.playerUUID = playerUUID;
@@ -28,25 +30,33 @@ public class Stalker {
         return level.getEntity(stalkerId);
     }
     public void disconnect() {
+        Player player = getPlayer();
         if (level.isClientSide) {
+            player.getPersistentData().putBoolean("LoadingChunk", true);
+            StalkerControl.syncData();
+            player.getPersistentData().putBoolean("LoadingChunk", false);
             NetworkHandler.CHANNEL.sendToServer(new StalkerSyncMsg(this.stalkerId, false));
         }
+        else StalkerManage.clearLoadedChunkOf(getStalker());
         InstanceMap.remove(playerUUID);
     }
 
-    public static Stalker create(Player player, Entity stalker) {
+    public static Stalker connect(Player player, Entity stalker) {
+        if (hasInstanceOf(player) || hasInstanceOf(stalker)) return null;
         if (player.level().isClientSide) {
+            StalkerControl.connect(player);
             NetworkHandler.CHANNEL.sendToServer(new StalkerSyncMsg(stalker.getId(), true));
         }
         InstanceMap.put(player.getUUID(), stalker.getId());
         return new Stalker(player.getUUID(), stalker.getId(), player.level());
     }
     public static boolean hasInstanceOf(Entity entity) {
+        if (entity == null) return false;
         boolean isPlayer = InstanceMap.containsKey(entity.getUUID());
         boolean isStalker = InstanceMap.containsValue(entity.getId());
-        return isPlayer || isStalker;
+        return (isPlayer || isStalker);
     }
-    public static Stalker getInstance(Entity entity) {
+    public static Stalker getInstanceOf(Entity entity) {
         boolean isPlayer = InstanceMap.containsKey(entity.getUUID());
         boolean isStalker = InstanceMap.containsValue(entity.getId());
         if (isPlayer) {
