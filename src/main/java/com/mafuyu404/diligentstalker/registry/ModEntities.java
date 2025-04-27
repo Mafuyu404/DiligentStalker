@@ -1,5 +1,6 @@
 package com.mafuyu404.diligentstalker.registry;
 
+import com.mafuyu404.diligentstalker.entity.ArrowStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
@@ -21,5 +22,11 @@ public class ModEntities {
                     .clientTrackingRange(8)
                     .setUpdateInterval(3)
                     .build(new ResourceLocation(MODID, "drone_stalker").toString())
+    );
+    public static final RegistryObject<EntityType<ArrowStalkerEntity>> ARROW_STALKER = ENTITIES.register(
+            "arrow_stalker",
+            () -> EntityType.Builder.<ArrowStalkerEntity>of(ArrowStalkerEntity::new, MobCategory.MISC)
+                    .sized(0.5F, 0.5F)
+                    .build(new ResourceLocation(MODID, "arrow_stalker").toString())
     );
 }

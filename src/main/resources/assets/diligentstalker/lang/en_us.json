@@ -1,5 +1,7 @@
 {
   "item.diligentstalker.drone_stalker":"Drone Stalker",
   "entity.diligentstalker.drone_stalker":"Drone Stalker",
+  "item.diligentstalker.arrow_stalker":"Arrow Stalker",
+  "entity.diligentstalker.arrow_stalker":"Arrow Stalker",
   "itemGroup.tab.diligentstalker": "Diligent Stalker"
 }

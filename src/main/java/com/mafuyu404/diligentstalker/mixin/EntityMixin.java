@@ -49,7 +49,7 @@ public abstract class EntityMixin {
         }
     }
     @Inject(method = "setPosRaw", at = @At("HEAD"), cancellable = true)
-    private void wwaaaa(double p_20210_, double p_20211_, double p_20212_, CallbackInfo ci) {
+    private void avoidVoidFall(double p_20210_, double p_20211_, double p_20212_, CallbackInfo ci) {
         if (((Object) this) instanceof Player player) {
             if (!this.level.isClientSide) return;
             if (!Stalker.hasInstanceOf(player)) return;

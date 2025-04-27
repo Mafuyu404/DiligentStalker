@@ -22,15 +22,15 @@ public abstract class ChunkMapMixin {
 
     @Shadow protected abstract void playerLoadedChunk(ServerPlayer p_183761_, MutableObject<ClientboundLevelChunkWithLightPacket> p_183762_, LevelChunk p_183763_);
 
-    @Inject(method = "move", at = @At("RETURN"))
+    @Inject(method = "move", at = @At("HEAD"), cancellable = true)
     private void wwaaa(ServerPlayer player, CallbackInfo ci) {
         ChunkPos center = null;
         if (Stalker.hasInstanceOf(player)) {
             center = Stalker.getInstanceOf(player).getStalker().chunkPosition();
         }
-        if (player.getPersistentData().getBoolean("LoadingChunk")) {
+        if (player.getPersistentData().getBoolean("LoadingCacheChunk")) {
             center = player.chunkPosition();
-            player.getPersistentData().putBoolean("LoadingChunk", false);
+            player.getPersistentData().putBoolean("LoadingCacheChunk", false);
         }
         if (center == null) return;
         for (int x = -3; x <= 3; x++) {
@@ -44,5 +44,6 @@ public abstract class ChunkMapMixin {
                 }
             }
         }
+        ci.cancel();
     }
 }
