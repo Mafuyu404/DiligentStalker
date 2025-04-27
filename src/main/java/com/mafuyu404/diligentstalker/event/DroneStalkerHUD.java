@@ -1,5 +1,6 @@
 package com.mafuyu404.diligentstalker.event;
 
+import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
@@ -16,13 +17,12 @@ import net.minecraftforge.fml.common.Mod;
 import java.util.List;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
-public class Draw {
+public class DroneStalkerHUD {
     @SubscribeEvent
     public static void onRenderGameOverlay(RenderGuiOverlayEvent.Post event) {
         if (event.getOverlay().id().equals(VanillaGuiOverlay.CROSSHAIR.id())) {
             Player player = Minecraft.getInstance().player;
-            if (player == null) return;
-            if (CameraEntityManage.isEnable(player)) {
+            if (Stalker.hasInstanceOf(player)) {
                 drawHud(event.getGuiGraphics(), event.getPartialTick());
             }
         }
@@ -39,7 +39,6 @@ public class Draw {
         float radius = 80.0f;
         float thickness = 3.0f;
 
-        // 四段配置（角度单位：度）
         List<ArcSection> sections = List.of(
                 new ArcSection(67.5f+135f, 0.375f, 0.7f, 0.7f, 0.7f, 0.7f),  // 左上灰色
                 new ArcSection(67.5f+270f,  0.375f, 0.6f, 0.8f, 1.0f, 0.5f),  // 右上淡蓝
