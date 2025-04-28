@@ -1,10 +1,4 @@
-package com.mafuyu404.diligentstalker.init;
-
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.ChunkPos;
-
-import java.util.HashSet;
-import java.util.Set;
+package com.mafuyu404.diligentstalker.trash;
 
 public class TicketController {
 //    private static final int TICKET_DURATION = 600; // 30秒（600 ticks）

@@ -1,7 +1,21 @@
 {
-  "item.diligentstalker.drone_stalker":"勤劳善良跟踪狂",
-  "entity.diligentstalker.drone_stalker":"勤劳善良跟踪狂",
-  "item.diligentstalker.arrow_stalker":"头尖尖跟踪狂",
-  "entity.diligentstalker.arrow_stalker":"头尖尖跟踪狂",
-  "itemGroup.tab.diligentstalker": "勤劳跟踪狂"
+  "itemGroup.tab.diligentstalker": "勤劳跟踪狂",
+  "item.diligentstalker.drone_stalker": "善良跟踪狂",
+  "item.diligentstalker.arrow_stalker": "头尖尖跟踪狂",
+  "item.diligentstalker.void_stalker": "头圆圆跟踪狂",
+
+  "item.diligentstalker.stalker_master": "勤劳跟踪狂",
+  "item.diligentstalker.stalker_master.connect_success": "绑定成功",
+  "item.diligentstalker.stalker_master.connect_fail": "无法重复绑定",
+
+  "entity.diligentstalker.drone_stalker": "善良跟踪狂",
+  "entity.diligentstalker.arrow_stalker": "头尖尖跟踪狂",
+  "entity.diligentstalker.void_stalker": "头圆圆跟踪狂",
+
+  "key.categories.diligentstalker": "勤劳跟踪狂",
+  "key.diligentstalker.disconnect.desc": "断开连接",
+
+  "config.diligentstalker.render_radius": "渲染半径",
+  "config.diligentstalker.render_radius.normal": "适用于善良跟踪狂和头尖尖跟踪狂。",
+  "config.diligentstalker.render_radius.special": "适用于头圆圆跟踪狂。"
 }

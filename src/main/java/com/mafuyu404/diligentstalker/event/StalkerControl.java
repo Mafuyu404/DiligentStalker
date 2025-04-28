@@ -7,11 +7,11 @@ import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.init.Tools;
 import com.mafuyu404.diligentstalker.network.EntityDataPacket;
 import com.mafuyu404.diligentstalker.network.RClickBlockPacket;
+import com.mafuyu404.diligentstalker.registry.KeyBindings;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -24,12 +24,14 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 @Mod.EventBusSubscriber(modid = DiligentStalker.MODID, value = Dist.CLIENT)
 public class StalkerControl {
@@ -62,8 +64,7 @@ public class StalkerControl {
         if (!Stalker.hasInstanceOf(player)) return;
         ArrayList<Integer> controlKey = new ArrayList<>();
         if (event.getAction() == InputConstants.PRESS) {
-            if (event.getKey() == options.keyDrop.getKey().getValue()) {
-                options.keyDrop.setDown(false);
+            if (event.getKey() == KeyBindings.DISCONNECT.getKey().getValue()) {
                 if (Stalker.hasInstanceOf(player)) Stalker.getInstanceOf(player).disconnect();
             }
             controlKey.add(options.keyUp.getKey().getValue());
@@ -157,5 +158,22 @@ public class StalkerControl {
 
     public static Vec3 getCameraPosition() {
         return Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
+    }
+
+    @SubscribeEvent
+    public static void onClientEnter(EntityJoinLevelEvent event) {
+        if (!event.getLevel().isClientSide) return;
+        Player player = Minecraft.getInstance().player;
+        if (event.getEntity() instanceof DroneStalkerEntity stalker) {
+            UUID entityUUID = Tools.uuidOfUsingStalkerMaster(player);
+//            System.out.print(entityUUID+"/"+stalker.getUUID()+"/"+stalker.getUUID().equals(entityUUID)+"\n");
+            if (stalker.getUUID().equals(entityUUID)) {
+                Stalker.connect(player, stalker);
+                System.out.print("connected\n");
+//                if (player.getMainHandItem().getItem() instanceof StalkerMasterItem item) {
+//                    item.releaseUsing(player.getMainHandItem(), event.getLevel(), player, 0);
+//                }
+            }
+        }
     }
 }

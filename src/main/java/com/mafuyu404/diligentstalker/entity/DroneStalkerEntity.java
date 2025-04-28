@@ -1,10 +1,12 @@
 package com.mafuyu404.diligentstalker.entity;
 
 import com.mafuyu404.diligentstalker.init.Stalker;
-import com.mafuyu404.diligentstalker.registry.ModItems;
+import com.mafuyu404.diligentstalker.registry.StalkerItems;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.*;
 import net.minecraft.world.damagesource.DamageSource;
@@ -27,7 +29,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import javax.annotation.Nullable;
 
 public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen, ContainerEntity {
-    private static final int CONTAINER_SIZE = 27;
+    private static final int CONTAINER_SIZE = 36;
     private NonNullList<ItemStack> itemStacks = NonNullList.withSize(CONTAINER_SIZE, ItemStack.EMPTY);
     @Nullable
     private ResourceLocation lootTable;
@@ -35,6 +37,7 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
 
     public DroneStalkerEntity(EntityType<? extends Boat> p_219869_, Level level) {
         super(p_219869_, level);
+        this.setNoGravity(true);
     }
 
     public DroneStalkerEntity(Level p_219872_, double p_219873_, double p_219874_, double p_219875_) {
@@ -45,13 +48,26 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
         this.zo = p_219875_;
     }
 
-    public InteractionResult interact(Player player, InteractionHand p_219899_) {
+    public InteractionResult interact(Player player, InteractionHand hand) {
         if (player.isShiftKeyDown()) {
-            InteractionResult interactionresult = this.interactWithContainerVehicle(player);
-            if (interactionresult.consumesAction()) {
-                this.gameEvent(GameEvent.CONTAINER_OPEN, player);
+            ItemStack itemStack = player.getMainHandItem();
+            if (itemStack.is(StalkerItems.STALKER_MASTER_ITEM.get())) {
+                CompoundTag tag = itemStack.getOrCreateTag();
+                if (!tag.contains("StalkerId")) {
+                    tag.putUUID("StalkerId", this.uuid);
+                    BlockPos pos = this.blockPosition();
+                    tag.putIntArray("StalkerPosition", new int[]{pos.getX(), pos.getY(), pos.getZ()});
+                    player.displayClientMessage(Component.translatable("item.diligentstalker.stalker_master.connect_success").withStyle(ChatFormatting.GREEN), true);
+                    return InteractionResult.FAIL;
+                }
+                player.displayClientMessage(Component.translatable("item.diligentstalker.stalker_master.connect_fail").withStyle(ChatFormatting.RED), true);
+            } else {
+                InteractionResult interactionresult = this.interactWithContainerVehicle(player);
+                if (interactionresult.consumesAction()) {
+                    this.gameEvent(GameEvent.CONTAINER_OPEN, player);
+                }
+                return interactionresult;
             }
-            return interactionresult;
         }
         else if (player.isLocalPlayer()) {
             Stalker.connect(player, this);
@@ -108,7 +124,7 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
     }
 
     public Item getDropItem() {
-        return ModItems.DRONE_STALKER_ITEM.get();
+        return StalkerItems.DRONE_STALKER_ITEM.get();
     }
 
     public void clearContent() {

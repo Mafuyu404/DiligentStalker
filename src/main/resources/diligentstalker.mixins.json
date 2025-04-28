@@ -7,10 +7,11 @@
   "mixins": [
     "ChunkMapMixin",
     "EntityMixin",
-    "TrackedEntityMixin"
+    "ChunkMap$TrackedEntityMixin"
   ],
   "client": [
     "CameraMixin",
+    "ClientChunkCache$StorageMixin",
     "GameRendererMixin",
     "LevelRendererMixin",
     "MinecraftMixin",

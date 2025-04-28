@@ -10,8 +10,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 public class ArrowStalkerItem extends ArrowItem {
-    public ArrowStalkerItem(Properties properties) {
-        super(properties);
+    public ArrowStalkerItem() {
+        super(new Properties());
     }
 
     @Override

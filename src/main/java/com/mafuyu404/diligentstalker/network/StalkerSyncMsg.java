@@ -1,12 +1,9 @@
 package com.mafuyu404.diligentstalker.network;
 
 import com.mafuyu404.diligentstalker.entity.ArrowStalkerEntity;
-import com.mafuyu404.diligentstalker.event.StalkerManage;
 import com.mafuyu404.diligentstalker.init.Stalker;
-import com.mafuyu404.diligentstalker.registry.ModItems;
-import net.minecraft.core.SectionPos;
+import com.mafuyu404.diligentstalker.registry.StalkerItems;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.protocol.game.ClientboundSetChunkCacheCenterPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
@@ -50,13 +47,10 @@ public class StalkerSyncMsg {
                 if (Stalker.hasInstanceOf(player)) {
                     Stalker.getInstanceOf(player).disconnect();
                 }
-                StalkerManage.clearLoadedChunkOf(stalker);
                 player.getPersistentData().putBoolean("LoadingCacheChunk", true);
-                SectionPos sectionpos = SectionPos.of(player);
-                player.connection.send(new ClientboundSetChunkCacheCenterPacket(sectionpos.x(), sectionpos.z()));
                 if (stalker instanceof ArrowStalkerEntity arrowStalker) {
-                    arrowStalker.spawnAtLocation(new ItemStack(ModItems.ARROW_STALKER_ITEM.get()));
-                    arrowStalker.remove(Entity.RemovalReason.DISCARDED);
+                    arrowStalker.spawnAtLocation(new ItemStack(StalkerItems.ARROW_STALKER_ITEM.get()));
+                    arrowStalker.discard();
                 }
             }
         });

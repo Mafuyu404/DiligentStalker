@@ -1,6 +1,6 @@
 package com.mafuyu404.diligentstalker.trash;
 
-import com.mafuyu404.diligentstalker.registry.ModItems;
+import com.mafuyu404.diligentstalker.registry.StalkerItems;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.ItemTagsProvider;
@@ -19,7 +19,7 @@ public class ModItemTagsProvider extends ItemTagsProvider {
     @Override
     protected void addTags(HolderLookup.Provider provider) {
         // 将自定义箭矢添加到原版ARROWS标签
-        tag(ItemTags.ARROWS).add(ModItems.ARROW_STALKER_ITEM.get());
+        tag(ItemTags.ARROWS).add(StalkerItems.ARROW_STALKER_ITEM.get());
 
         // 可以在此添加其他自定义标签
         // tag(Tags.Items.ARROWS) // 如果需要Forge通用标签

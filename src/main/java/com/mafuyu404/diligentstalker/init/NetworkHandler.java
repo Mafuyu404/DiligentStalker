@@ -2,6 +2,7 @@ package com.mafuyu404.diligentstalker.init;
 
 import com.mafuyu404.diligentstalker.DiligentStalker;
 import com.mafuyu404.diligentstalker.network.*;
+import com.mafuyu404.diligentstalker.trash.UnlockPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkRegistry;

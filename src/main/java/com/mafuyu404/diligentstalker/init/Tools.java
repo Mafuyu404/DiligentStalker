@@ -1,11 +1,23 @@
 package com.mafuyu404.diligentstalker.init;
 
+import com.mafuyu404.diligentstalker.entity.VoidStalkerEntity;
+import com.mafuyu404.diligentstalker.event.StalkerManage;
+import com.mafuyu404.diligentstalker.item.StalkerMasterItem;
+import com.mafuyu404.diligentstalker.registry.Config;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.UUID;
 
 public class Tools {
     public static double lerp(double current, double target) {
@@ -102,5 +114,41 @@ public class Tools {
 
         // 执行射线追踪
         return world.clip(clipContext);
+    }
+
+    public static ArrayList<ChunkPos> getToLoadChunk(Entity stalker, int offset) {
+        ChunkPos center = stalker.chunkPosition();
+        ArrayList<ChunkPos> newChunks = new ArrayList<>();
+        int radius = Config.RENDER_RADIUS_NORMAL.get() + offset;
+        if (stalker instanceof VoidStalkerEntity) radius = Config.RENDER_RADIUS_SPECIAL.get();
+        for (int x = -radius; x <= radius; x++) {
+            for (int z = -radius; z <= radius; z++) {
+                newChunks.add(new ChunkPos(center.x + x, center.z + z));
+            }
+        }
+        return newChunks;
+    }
+
+    public static Map.Entry<String, BlockPos> entryOfUsingStalkerMaster(Player player) {
+        if (player != null && player.isUsingItem()) {
+            if (player.getMainHandItem().getItem() instanceof StalkerMasterItem) {
+                CompoundTag tag = player.getMainHandItem().getOrCreateTag();
+                if (tag.contains("StalkerId") && StalkerManage.DronePosition.containsKey(tag.getUUID("StalkerId"))) {
+                    return StalkerManage.DronePosition.get(tag.getUUID("StalkerId"));
+                }
+            }
+        }
+        return null;
+    }
+    public static UUID uuidOfUsingStalkerMaster(Player player) {
+        if (player != null && player.isUsingItem()) {
+            if (player.getMainHandItem().getItem() instanceof StalkerMasterItem) {
+                CompoundTag tag = player.getMainHandItem().getOrCreateTag();
+                if (tag.contains("StalkerId") && StalkerManage.DronePosition.containsKey(tag.getUUID("StalkerId"))) {
+                    return tag.getUUID("StalkerId");
+                }
+            }
+        }
+        return null;
     }
 }

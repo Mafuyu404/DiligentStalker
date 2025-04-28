@@ -1,4 +1,4 @@
-package com.mafuyu404.diligentstalker.init;
+package com.mafuyu404.diligentstalker.trash;
 
 import com.mojang.authlib.GameProfile;
 import net.minecraft.network.Connection;

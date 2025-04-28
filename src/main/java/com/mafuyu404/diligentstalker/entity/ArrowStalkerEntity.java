@@ -1,7 +1,7 @@
 package com.mafuyu404.diligentstalker.entity;
 
-import com.mafuyu404.diligentstalker.registry.ModEntities;
-import com.mafuyu404.diligentstalker.registry.ModItems;
+import com.mafuyu404.diligentstalker.registry.StalkerEntities;
+import com.mafuyu404.diligentstalker.registry.StalkerItems;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -18,12 +18,12 @@ public class ArrowStalkerEntity extends AbstractArrow {
     }
 
     public ArrowStalkerEntity(LivingEntity shooter, Level level) {
-        super(ModEntities.ARROW_STALKER.get(), shooter, level);
+        super(StalkerEntities.ARROW_STALKER.get(), shooter, level);
     }
 
     @Override
     protected ItemStack getPickupItem() {
-        return new ItemStack(ModItems.ARROW_STALKER_ITEM.get());
+        return new ItemStack(StalkerItems.ARROW_STALKER_ITEM.get());
     }
 
     @Override

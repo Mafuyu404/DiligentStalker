@@ -1,4 +1,4 @@
-package com.mafuyu404.diligentstalker.model;
+package com.mafuyu404.diligentstalker.render;
 
 import com.mafuyu404.diligentstalker.DiligentStalker;
 import net.minecraft.client.renderer.entity.ArrowRenderer;

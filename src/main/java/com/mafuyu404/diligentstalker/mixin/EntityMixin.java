@@ -1,7 +1,11 @@
 package com.mafuyu404.diligentstalker.mixin;
 
+import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import com.mafuyu404.diligentstalker.event.StalkerControl;
+import com.mafuyu404.diligentstalker.event.StalkerManage;
 import com.mafuyu404.diligentstalker.init.Stalker;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ChunkPos;
@@ -13,6 +17,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.Map;
+import java.util.UUID;
+
 @Mixin(value = Entity.class)
 public abstract class EntityMixin {
     @Shadow public abstract Level level();
@@ -20,6 +27,18 @@ public abstract class EntityMixin {
     @Shadow private Level level;
 
     @Shadow private ChunkPos chunkPosition;
+
+    @Shadow private int id;
+
+    @Shadow private BlockPos blockPosition;
+
+    @Shadow public abstract BlockPos blockPosition();
+
+    @Shadow public abstract UUID getUUID();
+
+    @Shadow protected UUID uuid;
+
+    @Shadow private CompoundTag persistentData;
 
     @Inject(method = "setXRot", at = @At("HEAD"), cancellable = true)
     private void redirectXRot(float xRot, CallbackInfo ci) {
@@ -56,6 +75,31 @@ public abstract class EntityMixin {
             if (!this.level.getChunkSource().hasChunk(this.chunkPosition.x, this.chunkPosition.z)) {
                 ci.cancel();
             }
+        }
+    }
+    @Inject(method = "setPosRaw", at = @At("RETURN"))
+    private void position(double p_20344_, double p_20345_, double p_20346_, CallbackInfo ci) {
+        if (((Object) this) instanceof DroneStalkerEntity) {
+            if (this.level.isClientSide) return;
+            if (!StalkerManage.DronePosition.containsKey(this.uuid)) return;
+            String levelKey = this.level.dimension().toString();
+            BlockPos blockPos = this.blockPosition();
+            StalkerManage.DronePosition.put(this.uuid, new Map.Entry<>() {
+                @Override
+                public String getKey() {
+                    return levelKey;
+                }
+
+                @Override
+                public BlockPos getValue() {
+                    return blockPos;
+                }
+
+                @Override
+                public BlockPos setValue(BlockPos value) {
+                    return null;
+                }
+            });
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.mafuyu404.diligentstalker.network;
+package com.mafuyu404.diligentstalker.trash;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.phys.Vec3;
