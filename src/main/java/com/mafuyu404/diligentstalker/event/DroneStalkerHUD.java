@@ -1,13 +1,18 @@
 package com.mafuyu404.diligentstalker.event;
 
 import com.mafuyu404.diligentstalker.init.Stalker;
+import com.mafuyu404.diligentstalker.init.Tools;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
@@ -18,16 +23,22 @@ import java.util.List;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class DroneStalkerHUD {
+
     @SubscribeEvent
     public static void onRenderGameOverlay(RenderGuiOverlayEvent.Post event) {
         if (event.getOverlay().id().equals(VanillaGuiOverlay.CROSSHAIR.id())) {
             Player player = Minecraft.getInstance().player;
             if (Stalker.hasInstanceOf(player)) {
-                drawHud(event.getGuiGraphics(), event.getPartialTick());
+                Entity stalker = Stalker.getInstanceOf(player).getStalker();
+                Vec3 direction = stalker.position().subtract(player.position());
+                float yRot = Tools.getYRotFromVec3(direction);
+                int distance = (int) direction.length();
+                drawHud(event.getGuiGraphics());
+                drawPlayerPosition(event.getGuiGraphics(), yRot - StalkerControl.yRot + 180, distance);
             }
         }
     }
-    private static void drawHud(GuiGraphics guiGraphics, float partialTicks) {
+    private static void drawHud(GuiGraphics guiGraphics) {
         PoseStack poseStack = guiGraphics.pose();
         Window window = Minecraft.getInstance().getWindow();
         int screenWidth = window.getGuiScaledWidth();
@@ -39,6 +50,7 @@ public class DroneStalkerHUD {
         float radius = 80.0f;
         float thickness = 3.0f;
 
+        // 条条框框
         List<ArcSection> sections = List.of(
                 new ArcSection(67.5f+135f, 0.375f, 0.7f, 0.7f, 0.7f, 0.7f),  // 左上灰色
                 new ArcSection(67.5f+270f,  0.375f, 0.6f, 0.8f, 1.0f, 0.5f),  // 右上淡蓝
@@ -49,7 +61,6 @@ public class DroneStalkerHUD {
         poseStack.pushPose();
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-//        RenderSystem.disableTexture();
         RenderSystem.setShader(GameRenderer::getPositionShader);
 
         Tesselator tessellator = Tesselator.getInstance();
@@ -91,13 +102,93 @@ public class DroneStalkerHUD {
 
             tessellator.end();
         }
-
-//        RenderSystem.enableTexture();
         RenderSystem.disableBlend();
         poseStack.popPose();
     }
 
-    // 辅助类定义
+    private static void drawPlayerPosition(GuiGraphics guiGraphics, float rotate, int distance) {
+        guiGraphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
+        Window window = Minecraft.getInstance().getWindow();
+        int screenWidth = window.getGuiScaledWidth();
+        int screenHeight = window.getGuiScaledHeight();
+
+        int centerX = screenWidth / 2;
+        int centerY = screenHeight / 2;
+        float radius = 90.0f; // 圆环半径
+
+        // 计算头像位置
+        double theta = Math.toRadians(90 - rotate);
+        double xPos = centerX + radius * Math.cos(theta);
+        double yPos = centerY - radius * Math.sin(theta);
+
+        // 设置头像尺寸并居中
+        int headSize = 12;
+        int x = (int) (xPos - (double) headSize / 2);
+        int y = (int) (yPos - (double) headSize / 2) - 2;
+
+        // 获取玩家皮肤
+        Minecraft minecraft = Minecraft.getInstance();
+        ResourceLocation skin = minecraft.player.getSkinTextureLocation();
+
+        // 渲染头部（前脸部分）
+        guiGraphics.blit(
+                skin,
+                x, y,
+                headSize, headSize,
+                8, 8,
+                8, 8,
+                64, 64
+        );
+
+        String text = distance + "m";
+        Font font = Minecraft.getInstance().font;
+        int textColor = 0xFFFFFFFF; // 白色
+        int outlineColor = 0xFF000000; // 黑色
+        int verticalSpacing = 2; // 头像与文字间距
+        int textWidth = font.width(text);
+        int textX = x + (headSize - textWidth) / 2; // 水平居中
+        int textY = y + headSize - 2;
+
+        // 渲染文字描边（四周偏移1像素）
+        guiGraphics.drawString(
+                font,
+                text,
+                textX - 1, textY,
+                outlineColor,
+                false // 不启用阴影
+        );
+        guiGraphics.drawString(
+                font,
+                text,
+                textX + 1, textY,
+                outlineColor,
+                false
+        );
+        guiGraphics.drawString(
+                font,
+                text,
+                textX, textY - 1,
+                outlineColor,
+                false
+        );
+        guiGraphics.drawString(
+                font,
+                text,
+                textX, textY + 1,
+                outlineColor,
+                false
+        );
+
+        // 渲染主体文字
+        guiGraphics.drawString(
+                font,
+                text,
+                textX, textY,
+                textColor,
+                false
+        );
+    }
+
     private static class ArcSection {
         final float centerAngle; // 中心角度（度）
         final float percentage;  // 占比

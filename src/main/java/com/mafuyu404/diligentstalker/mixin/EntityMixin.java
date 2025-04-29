@@ -4,12 +4,15 @@ import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import com.mafuyu404.diligentstalker.event.StalkerControl;
 import com.mafuyu404.diligentstalker.event.StalkerManage;
 import com.mafuyu404.diligentstalker.init.Stalker;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -20,6 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.Map;
 import java.util.UUID;
 
+@OnlyIn(Dist.CLIENT)
 @Mixin(value = Entity.class)
 public abstract class EntityMixin {
     @Shadow public abstract Level level();
@@ -45,7 +49,9 @@ public abstract class EntityMixin {
         if (((Object) this) instanceof Player player) {
             if (!player.isLocalPlayer()) return;
             if (!Stalker.hasInstanceOf(player)) return;
-            StalkerControl.xRot += xRot - StalkerControl.fixedXRot;
+            if (Minecraft.getInstance().screen == null) {
+                StalkerControl.xRot += xRot - StalkerControl.fixedXRot;
+            }
             ci.cancel();
         }
     }
@@ -54,7 +60,9 @@ public abstract class EntityMixin {
         if (((Object) this) instanceof Player player) {
             if (!player.isLocalPlayer()) return;
             if (!Stalker.hasInstanceOf(player)) return;
-            StalkerControl.yRot += yRot - StalkerControl.fixedYRot;
+            if (Minecraft.getInstance().screen == null) {
+                StalkerControl.yRot += yRot - StalkerControl.fixedYRot;
+            }
             ci.cancel();
         }
     }

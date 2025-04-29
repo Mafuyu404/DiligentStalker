@@ -11,6 +11,8 @@ import com.mafuyu404.diligentstalker.registry.KeyBindings;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -37,13 +39,21 @@ import java.util.UUID;
 public class StalkerControl {
     public static float fixedXRot, fixedYRot;
     public static float xRot, yRot;
-    private static boolean interactLock = true;
 
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
         if (Minecraft.getInstance().screen != null) return;
         if (event.phase == TickEvent.Phase.START) return;
-        Player player = Minecraft.getInstance().player;
+        LocalPlayer player = Minecraft.getInstance().player;
+        UUID entityUUID = Tools.uuidOfUsingStalkerMaster(player);
+        if (entityUUID != null) {
+            ClientLevel level = player.clientLevel;
+            level.entitiesForRendering().forEach(entity -> {
+                if (entity.getUUID().equals(entityUUID)) {
+                    Stalker.connect(player, entity);
+                }
+            });
+        }
         if (!Stalker.hasInstanceOf(player)) return;
         Stalker instance = Stalker.getInstanceOf(player);
         Entity stalker = instance.getStalker();
@@ -57,61 +67,78 @@ public class StalkerControl {
     }
 
     @SubscribeEvent
+    public static void onUse(PlayerInteractEvent.EntityInteract event) {
+        if (event.getSide().isClient()) {
+            Player player = event.getEntity();
+            if (player.isShiftKeyDown()) return;
+            if (event.getTarget() instanceof DroneStalkerEntity stalker) {
+                Stalker.connect(player, stalker);
+                event.setCanceled(true);
+            }
+        }
+    }
+
+    @SubscribeEvent
     public static void onControl(InputEvent.Key event) {
         if (Minecraft.getInstance().screen != null) return;
         Player player = Minecraft.getInstance().player;
         Options options = Minecraft.getInstance().options;
         if (!Stalker.hasInstanceOf(player)) return;
-        ArrayList<Integer> controlKey = new ArrayList<>();
         if (event.getAction() == InputConstants.PRESS) {
             if (event.getKey() == KeyBindings.DISCONNECT.getKey().getValue()) {
                 if (Stalker.hasInstanceOf(player)) Stalker.getInstanceOf(player).disconnect();
             }
-            controlKey.add(options.keyUp.getKey().getValue());
-            controlKey.add(options.keyDown.getKey().getValue());
-            controlKey.add(options.keyLeft.getKey().getValue());
-            controlKey.add(options.keyRight.getKey().getValue());
-            controlKey.add(options.keyJump.getKey().getValue());
-            controlKey.add(options.keyShift.getKey().getValue());
-            if (controlKey.contains(event.getKey())) {
-                syncData();
-            }
+        }
+        ArrayList<Integer> controlKey = new ArrayList<>();
+        controlKey.add(options.keyUp.getKey().getValue());
+        controlKey.add(options.keyDown.getKey().getValue());
+        controlKey.add(options.keyLeft.getKey().getValue());
+        controlKey.add(options.keyRight.getKey().getValue());
+        controlKey.add(options.keyJump.getKey().getValue());
+        controlKey.add(options.keyShift.getKey().getValue());
+        if (controlKey.contains(event.getKey())) {
+            syncData();
         }
     }
 
     @SubscribeEvent
     public static void onUse(PlayerInteractEvent.RightClickBlock event) {
-        if (event.getEntity().isLocalPlayer() && Stalker.hasInstanceOf(event.getEntity())) {
+        System.out.print(event.getSide()+"\n");
+        if (event.getSide().isClient() && Stalker.hasInstanceOf(event.getEntity())) {
             event.setCanceled(true);
         }
     }
     @SubscribeEvent
     public static void onUse(PlayerInteractEvent.LeftClickBlock event) {
-        if (event.getEntity().isLocalPlayer() && Stalker.hasInstanceOf(event.getEntity())) {
+        if (event.getSide().isClient() && Stalker.hasInstanceOf(event.getEntity())) {
             event.setCanceled(true);
         }
     }
 
     @SubscribeEvent
-    public static void onAction(InputEvent.MouseButton event) {
+    public static void onAction(InputEvent.MouseButton.Pre event) {
         if (Minecraft.getInstance().screen != null) return;
+        if (event.getAction() != InputConstants.PRESS) return;
+        if (event.getButton() != GLFW.GLFW_MOUSE_BUTTON_RIGHT) return;
         Player player = Minecraft.getInstance().player;
         if (!Stalker.hasInstanceOf(player)) return;
         Stalker instance = Stalker.getInstanceOf(player);
         if (instance.getStalker() instanceof DroneStalkerEntity) {
-            if (event.getAction() != InputConstants.PRESS) return;
-            if (interactLock) {
-                interactLock = false;
-                return;
-            } else interactLock = true;
             BlockHitResult traceResult = Tools.rayTraceBlocks(player.level(), getCameraPosition(), getViewVector(), 4);
-            if (traceResult.getType() == HitResult.Type.BLOCK ) {
-                if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
-                    NetworkHandler.CHANNEL.sendToServer(new RClickBlockPacket(getCameraPosition(), getViewVector()));
-                    RightClickBlock(player, getCameraPosition(), getViewVector());
-                }
+            if (traceResult.getType() == HitResult.Type.BLOCK) {
+                NetworkHandler.CHANNEL.sendToServer(new RClickBlockPacket(getCameraPosition(), getViewVector()));
+                RightClickBlock(player, getCameraPosition(), getViewVector());
             }
         }
+        event.setCanceled(true);
+    }
+
+    @SubscribeEvent
+    public static void onMouseScrolling(InputEvent.MouseScrollingEvent event) {
+        if (Minecraft.getInstance().screen != null) return;
+        Player player = Minecraft.getInstance().player;
+        if (!Stalker.hasInstanceOf(player)) return;
+        event.setCanceled(true);
     }
 
     public static CompoundTag handleInput() {
@@ -166,13 +193,8 @@ public class StalkerControl {
         Player player = Minecraft.getInstance().player;
         if (event.getEntity() instanceof DroneStalkerEntity stalker) {
             UUID entityUUID = Tools.uuidOfUsingStalkerMaster(player);
-//            System.out.print(entityUUID+"/"+stalker.getUUID()+"/"+stalker.getUUID().equals(entityUUID)+"\n");
             if (stalker.getUUID().equals(entityUUID)) {
                 Stalker.connect(player, stalker);
-                System.out.print("connected\n");
-//                if (player.getMainHandItem().getItem() instanceof StalkerMasterItem item) {
-//                    item.releaseUsing(player.getMainHandItem(), event.getLevel(), player, 0);
-//                }
             }
         }
     }

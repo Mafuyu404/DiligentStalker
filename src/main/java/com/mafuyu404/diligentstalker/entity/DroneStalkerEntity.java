@@ -29,7 +29,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import javax.annotation.Nullable;
 
 public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen, ContainerEntity {
-    private static final int CONTAINER_SIZE = 36;
+    private static final int CONTAINER_SIZE = 27;
     private NonNullList<ItemStack> itemStacks = NonNullList.withSize(CONTAINER_SIZE, ItemStack.EMPTY);
     @Nullable
     private ResourceLocation lootTable;
@@ -53,14 +53,13 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
             ItemStack itemStack = player.getMainHandItem();
             if (itemStack.is(StalkerItems.STALKER_MASTER_ITEM.get())) {
                 CompoundTag tag = itemStack.getOrCreateTag();
-                if (!tag.contains("StalkerId")) {
+                if (tag.getUUID("StalkerId") != this.uuid) {
                     tag.putUUID("StalkerId", this.uuid);
                     BlockPos pos = this.blockPosition();
                     tag.putIntArray("StalkerPosition", new int[]{pos.getX(), pos.getY(), pos.getZ()});
                     player.displayClientMessage(Component.translatable("item.diligentstalker.stalker_master.connect_success").withStyle(ChatFormatting.GREEN), true);
                     return InteractionResult.FAIL;
                 }
-                player.displayClientMessage(Component.translatable("item.diligentstalker.stalker_master.connect_fail").withStyle(ChatFormatting.RED), true);
             } else {
                 InteractionResult interactionresult = this.interactWithContainerVehicle(player);
                 if (interactionresult.consumesAction()) {
@@ -68,9 +67,6 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
                 }
                 return interactionresult;
             }
-        }
-        else if (player.isLocalPlayer()) {
-            Stalker.connect(player, this);
         }
         return InteractionResult.FAIL;
     }
@@ -163,12 +159,12 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
     }
 
     @Nullable
-    public AbstractContainerMenu createMenu(int p_219910_, Inventory p_219911_, Player p_219912_) {
-        if (this.lootTable != null && p_219912_.isSpectator()) {
+    public AbstractContainerMenu createMenu(int p_219910_, Inventory inventory, Player player) {
+        if (this.lootTable != null && player.isSpectator()) {
             return null;
         } else {
-            this.unpackLootTable(p_219911_.player);
-            return ChestMenu.threeRows(p_219910_, p_219911_, this);
+            this.unpackLootTable(inventory.player);
+            return ChestMenu.threeRows(p_219910_, inventory, this);
         }
     }
 

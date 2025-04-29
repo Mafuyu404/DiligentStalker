@@ -12,25 +12,25 @@ import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-public class StalkerSyncMsg {
+public class StalkerSyncPacket {
     private final int entityId;
     private final boolean state;
 
-    public StalkerSyncMsg(int entityId, boolean state) {
+    public StalkerSyncPacket(int entityId, boolean state) {
         this.entityId = entityId;
         this.state = state;
     }
 
-    public static void encode(StalkerSyncMsg msg, FriendlyByteBuf buffer) {
+    public static void encode(StalkerSyncPacket msg, FriendlyByteBuf buffer) {
         buffer.writeInt(msg.entityId);
         buffer.writeBoolean(msg.state);
     }
 
-    public static StalkerSyncMsg decode(FriendlyByteBuf buffer) {
-        return new StalkerSyncMsg(buffer.readInt(), buffer.readBoolean());
+    public static StalkerSyncPacket decode(FriendlyByteBuf buffer) {
+        return new StalkerSyncPacket(buffer.readInt(), buffer.readBoolean());
     }
 
-    public static void handle(StalkerSyncMsg msg, Supplier<NetworkEvent.Context> ctx) {
+    public static void handle(StalkerSyncPacket msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
             ServerPlayer player = ctx.get().getSender();
             if (player == null) return;
@@ -47,6 +47,7 @@ public class StalkerSyncMsg {
                 if (Stalker.hasInstanceOf(player)) {
                     Stalker.getInstanceOf(player).disconnect();
                 }
+                player.inventoryMenu.sendAllDataToRemote();
                 player.getPersistentData().putBoolean("LoadingCacheChunk", true);
                 if (stalker instanceof ArrowStalkerEntity arrowStalker) {
                     arrowStalker.spawnAtLocation(new ItemStack(StalkerItems.ARROW_STALKER_ITEM.get()));

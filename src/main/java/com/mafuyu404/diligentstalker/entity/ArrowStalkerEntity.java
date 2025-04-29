@@ -1,16 +1,19 @@
 package com.mafuyu404.diligentstalker.entity;
 
+import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.registry.StalkerEntities;
 import com.mafuyu404.diligentstalker.registry.StalkerItems;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 public class ArrowStalkerEntity extends AbstractArrow {
     public ArrowStalkerEntity(EntityType<? extends AbstractArrow> type, Level level) {
@@ -33,10 +36,14 @@ public class ArrowStalkerEntity extends AbstractArrow {
 
     @Override
     protected void onHitEntity(EntityHitResult raytraceResultIn) {
-
-        super.onHitEntity(raytraceResultIn);
-
+        this.setDeltaMovement(this.getDeltaMovement().scale(0.3));
         Entity entity = raytraceResultIn.getEntity();
+        if (entity.level().isClientSide) {
+            if (Stalker.hasInstanceOf(this) && !Stalker.hasInstanceOf(entity) && this.getOwner() instanceof Player player) {
+                Stalker.getInstanceOf(this).disconnect();
+                Stalker.connect(player, entity);
+            }
+        }
     }
 
     @Override

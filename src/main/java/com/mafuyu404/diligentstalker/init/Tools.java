@@ -33,6 +33,12 @@ public class Tools {
         float f5 = Mth.sin(f);
         return new Vec3(f3 * f4, -f5, f2 * f4);
     }
+    public static float getXRotFromVec3(Vec3 vec) {
+        return (float) Math.toDegrees(Math.asin(-vec.y));
+    }
+    public static float getYRotFromVec3(Vec3 vec) {
+        return (float) Math.toDegrees(Math.atan2(-vec.x, vec.z));
+    }
 
     public static Vec3 move(CompoundTag input) {
         float xRot = input.getFloat("xRot");
@@ -40,7 +46,7 @@ public class Tools {
         float x = 0;
         float y = 0;
         float z = 0;
-        float speed = 0.5f;
+        float speed = 0.4f;
         if (input.getBoolean("Up") || input.getBoolean("Down")) {
             Vec3 lookAngle = calculateViewVector(xRot, yRot);
             double xz = Math.sqrt(lookAngle.x * lookAngle.x + lookAngle.z * lookAngle.z);

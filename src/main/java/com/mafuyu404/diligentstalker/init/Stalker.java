@@ -1,8 +1,7 @@
 package com.mafuyu404.diligentstalker.init;
 
 import com.mafuyu404.diligentstalker.event.StalkerControl;
-import com.mafuyu404.diligentstalker.event.StalkerManage;
-import com.mafuyu404.diligentstalker.network.StalkerSyncMsg;
+import com.mafuyu404.diligentstalker.network.StalkerSyncPacket;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -31,7 +30,7 @@ public class Stalker {
     }
     public void disconnect() {
         if (level.isClientSide) {
-            NetworkHandler.CHANNEL.sendToServer(new StalkerSyncMsg(this.stalkerId, false));
+            NetworkHandler.CHANNEL.sendToServer(new StalkerSyncPacket(this.stalkerId, false));
         }
         InstanceMap.remove(playerUUID);
     }
@@ -40,7 +39,7 @@ public class Stalker {
         if (hasInstanceOf(player) || hasInstanceOf(stalker)) return null;
         if (player.level().isClientSide) {
             StalkerControl.connect(player);
-            NetworkHandler.CHANNEL.sendToServer(new StalkerSyncMsg(stalker.getId(), true));
+            NetworkHandler.CHANNEL.sendToServer(new StalkerSyncPacket(stalker.getId(), true));
         }
         InstanceMap.put(player.getUUID(), stalker.getId());
         return new Stalker(player.getUUID(), stalker.getId(), player.level());

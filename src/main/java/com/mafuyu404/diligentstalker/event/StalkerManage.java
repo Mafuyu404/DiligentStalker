@@ -65,7 +65,7 @@ public class StalkerManage {
                 boolean isVoidStalker = entity instanceof VoidStalkerEntity;
                 if (isDroneStalker || isArrowStalker || isVoidStalker) {
                     Tools.getToLoadChunk(entity, 0).forEach(chunkPos -> {
-                        ChunkLoader.add(level, chunkPos);
+//                        ChunkLoader.add(level, chunkPos);
                     });
                 }
             }
@@ -81,16 +81,15 @@ public class StalkerManage {
     @SubscribeEvent
     public static void onEnter(EntityJoinLevelEvent event) {
         Stalker instance = Stalker.getInstanceOf(event.getEntity());
+        if (event.getLevel().isClientSide) return;
         if (event.getEntity() instanceof ArrowStalkerEntity stalker) {
             if (stalker.getOwner() instanceof Player player) {
-                if (!player.isLocalPlayer()) return;
                 if (Stalker.hasInstanceOf(player)) return;
                 Stalker.connect(player, stalker);
             }
         }
         if (event.getEntity() instanceof VoidStalkerEntity stalker) {
             if (stalker.getOwner() instanceof Player player) {
-                if (!player.isLocalPlayer()) return;
                 if (Stalker.hasInstanceOf(player)) return;
                 Stalker.connect(player, stalker);
             }
