@@ -165,6 +165,15 @@ repositories {
             includeGroup("com.eliotlash.mclib")
         }
     }
+    maven {
+        // location of the maven that hosts JEI files since January 2023
+        // Patchouli
+        name = "Jared's maven"
+        url = "https://maven.blamejared.com/"
+        content {
+            includeGroup "mezz.jei"
+        }
+    }
 }
 
 dependencies {
@@ -193,11 +202,14 @@ dependencies {
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 
     implementation fg.deobf("curse.maven:jade-324717:6271651")
-    implementation fg.deobf("curse.maven:codechicken-lib-1-8-242818:5753868")
-    implementation fg.deobf("curse.maven:chicken-chunks-1-8-243883:5292574")
+//    implementation fg.deobf("curse.maven:codechicken-lib-1-8-242818:5753868")
+//    implementation fg.deobf("curse.maven:chicken-chunks-1-8-243883:5292574")
 
 //    implementation fg.deobf("software.bernie.geckolib:geckolib-forge-${minecraft_version}:4.7.1.2")
 //    implementation("com.eliotlash.mclib:mclib:20")
+
+    compileOnly fg.deobf("mezz.jei:jei-1.20.1-forge-api:15.20.0.104")
+    implementation fg.deobf("mezz.jei:jei-1.20.1-forge:15.20.0.104")
 
 }
 

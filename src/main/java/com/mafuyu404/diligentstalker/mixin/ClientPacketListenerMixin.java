@@ -20,6 +20,5 @@ public class ClientPacketListenerMixin {
         if (!Stalker.hasInstanceOf(player)) {
             instance.initializeContents(i, list, itemStack);
         }
-        System.out.print("sync\n");
     }
 }

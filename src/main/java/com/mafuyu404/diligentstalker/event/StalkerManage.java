@@ -13,10 +13,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -30,7 +28,7 @@ public class StalkerManage {
 
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event) {
-        if (event.phase == TickEvent.Phase.START) return;
+        if (event.phase == TickEvent.Phase.END) return;
         if (event.getServer().getTickCount() %10 == 0) {
             event.getServer().getAllLevels().forEach(StalkerManage::onLevelTick);
         }
@@ -43,13 +41,14 @@ public class StalkerManage {
         int timer = 10;
         if (stalker instanceof DroneStalkerEntity) {
             CompoundTag input = (CompoundTag) player.getPersistentData().get("DroneStalkerInput");
-            if (input == null) return;
-            float xRot = input.getFloat("xRot");
-            float yRot = input.getFloat("yRot");
-            stalker.setXRot(xRot);
-            stalker.setYRot(yRot);
-            stalker.setDeltaMovement(Tools.move(input));
-            timer = 30;
+            if (input != null) {
+                float xRot = input.getFloat("xRot");
+                float yRot = input.getFloat("yRot");
+                stalker.setXRot(xRot);
+                stalker.setYRot(yRot);
+                stalker.setDeltaMovement(Tools.move(input, stalker.getDeltaMovement()));
+                timer = 30;
+            }
         }
         if (player.tickCount % timer == 0) {
             player.serverLevel().getChunkSource().move(player);
@@ -65,7 +64,7 @@ public class StalkerManage {
                 boolean isVoidStalker = entity instanceof VoidStalkerEntity;
                 if (isDroneStalker || isArrowStalker || isVoidStalker) {
                     Tools.getToLoadChunk(entity, 0).forEach(chunkPos -> {
-//                        ChunkLoader.add(level, chunkPos);
+                        ChunkLoader.add(level, chunkPos);
                     });
                 }
             }
@@ -78,23 +77,6 @@ public class StalkerManage {
         });
     }
 
-    @SubscribeEvent
-    public static void onEnter(EntityJoinLevelEvent event) {
-        Stalker instance = Stalker.getInstanceOf(event.getEntity());
-        if (event.getLevel().isClientSide) return;
-        if (event.getEntity() instanceof ArrowStalkerEntity stalker) {
-            if (stalker.getOwner() instanceof Player player) {
-                if (Stalker.hasInstanceOf(player)) return;
-                Stalker.connect(player, stalker);
-            }
-        }
-        if (event.getEntity() instanceof VoidStalkerEntity stalker) {
-            if (stalker.getOwner() instanceof Player player) {
-                if (Stalker.hasInstanceOf(player)) return;
-                Stalker.connect(player, stalker);
-            }
-        }
-    }
     @SubscribeEvent
     public static void onUnload(EntityLeaveLevelEvent event) {
         if (Stalker.hasInstanceOf(event.getEntity())) {

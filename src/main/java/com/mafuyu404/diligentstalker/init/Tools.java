@@ -40,14 +40,17 @@ public class Tools {
         return (float) Math.toDegrees(Math.atan2(-vec.x, vec.z));
     }
 
-    public static Vec3 move(CompoundTag input) {
+    public static Vec3 move(CompoundTag input, Vec3 motion) {
         float xRot = input.getFloat("xRot");
         float yRot = input.getFloat("yRot");
-        float x = 0;
-        float y = 0;
-        float z = 0;
-        float speed = 0.4f;
+        float speed = 0.5f;
+        Vec3 forward = Vec3.ZERO;
+        Vec3 right = Vec3.ZERO;
+        Vec3 top = Vec3.ZERO;
+        Vec3 result = Vec3.ZERO;
         if (input.getBoolean("Up") || input.getBoolean("Down")) {
+            float x = 0;
+            float z = 0;
             Vec3 lookAngle = calculateViewVector(xRot, yRot);
             double xz = Math.sqrt(lookAngle.x * lookAngle.x + lookAngle.z * lookAngle.z);
             float forwardX = (float) (lookAngle.x / xz);
@@ -60,8 +63,11 @@ public class Tools {
                 x -= forwardX * speed;
                 z -= forwardZ * speed;
             }
+            forward = limitSpeed(new Vec3(x, 0, z), speed);
         }
         if (input.getBoolean("Left") || input.getBoolean("Right")) {
+            float x = 0;
+            float z = 0;
             Vec3 subAngle = Tools.calculateViewVector(xRot, yRot - 90);
             double xz = Math.sqrt(subAngle.x * subAngle.x + subAngle.z * subAngle.z);
             float forwardX = (float) (subAngle.x / xz);
@@ -74,20 +80,40 @@ public class Tools {
                 x -= forwardX * speed;
                 z -= forwardZ * speed;
             }
+            right = limitSpeed(new Vec3(x, 0, z), speed);
         }
-        if (input.getBoolean("Jump")) {
-            y = speed * 1.3f;
+        if (input.getBoolean("Jump") || input.getBoolean("Shift")) {
+            float y = 0;
+            if (input.getBoolean("Jump")) {
+                y = speed;
+            }
+            if (input.getBoolean("Shift")) {
+                y = -speed;
+            }
+            top = limitSpeed(new Vec3(0, y * 1.3, 0), speed * 1.3f);
         }
-        if (input.getBoolean("Shift")) {
-            y = -speed * 1.3f;
-        }
-        float length = (float) new Vec3(x, 0, z).length();
+
+        result = result.add(forward).add(right).add(top);
+
+        result = new Vec3(
+                Mth.lerp(0.3f, motion.x, motion.x + result.x),
+                Mth.lerp(0.3f, motion.y, motion.y + result.y),
+                Mth.lerp(0.3f, motion.z, motion.z + result.z)
+        );
+
+        result = limitSpeed(new Vec3(result.x, 0, result.z), speed).add(limitSpeed(new Vec3(0, result.y, 0), speed * 1.3f));
+
+        result = result.scale(0.8);
+
+        return result;
+    }
+    public static Vec3 limitSpeed(Vec3 motion, float speed) {
+        float length = (float) motion.length();
         if (Math.round(length * 100) / 100f > speed) {
-            float scale = length / speed;
-            x /= scale;
-            z /= scale;
+            float scale = speed / length;
+            motion = motion.scale(scale);
         }
-        return new Vec3(x, y, z);
+        return motion;
     }
 
     public static double calculateViewAlignment(Vec3 target, Vec3 pos0, Vec3 pos1) {
@@ -123,6 +149,7 @@ public class Tools {
     }
 
     public static ArrayList<ChunkPos> getToLoadChunk(Entity stalker, int offset) {
+        if (stalker == null) return new ArrayList<>();
         ChunkPos center = stalker.chunkPosition();
         ArrayList<ChunkPos> newChunks = new ArrayList<>();
         int radius = Config.RENDER_RADIUS_NORMAL.get() + offset;

@@ -54,8 +54,10 @@ public class Stalker {
         boolean isPlayer = InstanceMap.containsKey(entity.getUUID());
         boolean isStalker = InstanceMap.containsValue(entity.getId());
         if (isPlayer) {
-            int stalkerId = InstanceMap.get(entity.getUUID());
-            return new Stalker(entity.getUUID(), stalkerId, entity.level());
+            if (InstanceMap.get(entity.getUUID()) != null) {
+                int stalkerId = InstanceMap.get(entity.getUUID());
+                return new Stalker(entity.getUUID(), stalkerId, entity.level());
+            }
         }
         if (isStalker) {
             AtomicReference<UUID> playerUUID = new AtomicReference<>();

@@ -11,12 +11,12 @@ public class Config {
     public static final ForgeConfigSpec.ConfigValue<Integer> RENDER_RADIUS_SPECIAL;
 
     static {
-        BUILDER.push(Component.translatable("config.diligentstalker.render_radius").toString());
+        BUILDER.push("Render Radius");
         RENDER_RADIUS_NORMAL = BUILDER
-                .comment(Component.translatable("config.diligentstalker.render_radius.normal").toString())
+                .comment("For DroneStalker and ArrowStalker.")
                 .define("Normal", 3);
         RENDER_RADIUS_SPECIAL = BUILDER
-                .comment(Component.translatable("config.diligentstalker.render_radius.special").toString())
+                .comment("For VoidStalker.")
                 .define("Special", 5);
         BUILDER.pop();
         SPEC = BUILDER.build();

@@ -32,7 +32,7 @@ public class VoidStalkerEntity extends ThrowableItemProjectile {
     }
 
     protected Item getDefaultItem() {
-        return StalkerItems.VOID_STALKER_ITEM.get();
+        return StalkerItems.VOID_STALKER.get();
     }
 
     public void handleEntityEvent(byte p_37402_) {

@@ -4,15 +4,11 @@ import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import com.mafuyu404.diligentstalker.event.StalkerControl;
 import com.mafuyu404.diligentstalker.event.StalkerManage;
 import com.mafuyu404.diligentstalker.init.Stalker;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -23,7 +19,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.Map;
 import java.util.UUID;
 
-@OnlyIn(Dist.CLIENT)
 @Mixin(value = Entity.class)
 public abstract class EntityMixin {
     @Shadow public abstract Level level();
@@ -32,24 +27,16 @@ public abstract class EntityMixin {
 
     @Shadow private ChunkPos chunkPosition;
 
-    @Shadow private int id;
-
-    @Shadow private BlockPos blockPosition;
-
     @Shadow public abstract BlockPos blockPosition();
 
-    @Shadow public abstract UUID getUUID();
-
     @Shadow protected UUID uuid;
-
-    @Shadow private CompoundTag persistentData;
 
     @Inject(method = "setXRot", at = @At("HEAD"), cancellable = true)
     private void redirectXRot(float xRot, CallbackInfo ci) {
         if (((Object) this) instanceof Player player) {
             if (!player.isLocalPlayer()) return;
             if (!Stalker.hasInstanceOf(player)) return;
-            if (Minecraft.getInstance().screen == null) {
+            if (!StalkerControl.screen) {
                 StalkerControl.xRot += xRot - StalkerControl.fixedXRot;
             }
             ci.cancel();
@@ -60,7 +47,7 @@ public abstract class EntityMixin {
         if (((Object) this) instanceof Player player) {
             if (!player.isLocalPlayer()) return;
             if (!Stalker.hasInstanceOf(player)) return;
-            if (Minecraft.getInstance().screen == null) {
+            if (!StalkerControl.screen) {
                 StalkerControl.yRot += yRot - StalkerControl.fixedYRot;
             }
             ci.cancel();

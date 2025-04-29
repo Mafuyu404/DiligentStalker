@@ -23,7 +23,6 @@ public abstract class PlayerMixin {
         Player player = this.inventory.player;
         if (Stalker.hasInstanceOf(player) && !this.isLocalPlayer()) {
             if (Stalker.getInstanceOf(player).getStalker() instanceof DroneStalkerEntity stalker) {
-                int size = this.inventory.getContainerSize();
                 VirtualInventory virtualInventory = new VirtualInventory(this.inventory.getContainerSize(), player);
                 for (int i = 0; i < stalker.getContainerSize(); i++) {
                     virtualInventory.setItem(i + 9, stalker.getItem(i));

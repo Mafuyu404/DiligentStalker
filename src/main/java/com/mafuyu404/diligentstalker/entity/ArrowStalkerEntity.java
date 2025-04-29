@@ -13,7 +13,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
 
 public class ArrowStalkerEntity extends AbstractArrow {
     public ArrowStalkerEntity(EntityType<? extends AbstractArrow> type, Level level) {
@@ -26,7 +25,7 @@ public class ArrowStalkerEntity extends AbstractArrow {
 
     @Override
     protected ItemStack getPickupItem() {
-        return new ItemStack(StalkerItems.ARROW_STALKER_ITEM.get());
+        return new ItemStack(StalkerItems.ARROW_STALKER.get());
     }
 
     @Override

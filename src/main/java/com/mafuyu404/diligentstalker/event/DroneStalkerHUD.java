@@ -1,17 +1,21 @@
 package com.mafuyu404.diligentstalker.event;
 
+import com.mafuyu404.diligentstalker.DiligentStalker;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.init.Tools;
+import com.mafuyu404.diligentstalker.item.StalkerMasterItem;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
@@ -24,17 +28,33 @@ import java.util.List;
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class DroneStalkerHUD {
 
+
     @SubscribeEvent
     public static void onRenderGameOverlay(RenderGuiOverlayEvent.Post event) {
         if (event.getOverlay().id().equals(VanillaGuiOverlay.CROSSHAIR.id())) {
-            Player player = Minecraft.getInstance().player;
+            LocalPlayer player = Minecraft.getInstance().player;
+            if (player == null) return;
+            ResourceLocation icon = player.getSkinTextureLocation();
+            ResourceLocation item = new ResourceLocation(DiligentStalker.MODID, "textures/entity/drone_stalker_forward.png");
             if (Stalker.hasInstanceOf(player)) {
                 Entity stalker = Stalker.getInstanceOf(player).getStalker();
                 Vec3 direction = stalker.position().subtract(player.position());
                 float yRot = Tools.getYRotFromVec3(direction);
                 int distance = (int) direction.length();
                 drawHud(event.getGuiGraphics());
-                drawPlayerPosition(event.getGuiGraphics(), yRot - StalkerControl.yRot + 180, distance);
+                drawPlayerPosition(event.getGuiGraphics(), yRot - StalkerControl.yRot + 180, distance, icon);
+            } else {
+                ItemStack itemStack = player.getMainHandItem();
+                if (itemStack.getItem() instanceof StalkerMasterItem) {
+                    CompoundTag tag = itemStack.getOrCreateTag();
+                    if (tag.contains("StalkerPosition")) {
+                        int[] pos = tag.getIntArray("StalkerPosition");
+                        Vec3 direction = new Vec3(pos[0], pos[1], pos[2]).subtract(player.position());
+                        float yRot = Tools.getYRotFromVec3(direction);
+                        int distance = (int) direction.length();
+                        drawPlayerPosition(event.getGuiGraphics(), yRot - player.getYRot(), distance, item);
+                    }
+                }
             }
         }
     }
@@ -106,7 +126,7 @@ public class DroneStalkerHUD {
         poseStack.popPose();
     }
 
-    private static void drawPlayerPosition(GuiGraphics guiGraphics, float rotate, int distance) {
+    private static void drawPlayerPosition(GuiGraphics guiGraphics, float rotate, int distance, ResourceLocation icon) {
         guiGraphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
         Window window = Minecraft.getInstance().getWindow();
         int screenWidth = window.getGuiScaledWidth();
@@ -126,13 +146,9 @@ public class DroneStalkerHUD {
         int x = (int) (xPos - (double) headSize / 2);
         int y = (int) (yPos - (double) headSize / 2) - 2;
 
-        // 获取玩家皮肤
-        Minecraft minecraft = Minecraft.getInstance();
-        ResourceLocation skin = minecraft.player.getSkinTextureLocation();
-
-        // 渲染头部（前脸部分）
+        // 渲染图标
         guiGraphics.blit(
-                skin,
+                icon,
                 x, y,
                 headSize, headSize,
                 8, 8,

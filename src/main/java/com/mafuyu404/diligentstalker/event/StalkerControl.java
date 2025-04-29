@@ -1,10 +1,13 @@
 package com.mafuyu404.diligentstalker.event;
 
 import com.mafuyu404.diligentstalker.DiligentStalker;
+import com.mafuyu404.diligentstalker.entity.ArrowStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
+import com.mafuyu404.diligentstalker.entity.VoidStalkerEntity;
 import com.mafuyu404.diligentstalker.init.NetworkHandler;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.init.Tools;
+import com.mafuyu404.diligentstalker.item.StalkerCoreItem;
 import com.mafuyu404.diligentstalker.network.EntityDataPacket;
 import com.mafuyu404.diligentstalker.network.RClickBlockPacket;
 import com.mafuyu404.diligentstalker.registry.KeyBindings;
@@ -39,10 +42,12 @@ import java.util.UUID;
 public class StalkerControl {
     public static float fixedXRot, fixedYRot;
     public static float xRot, yRot;
+    public static boolean screen = false;
 
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
-        if (Minecraft.getInstance().screen != null) return;
+        screen = Minecraft.getInstance().screen != null;
+        if (screen) return;
         if (event.phase == TickEvent.Phase.START) return;
         LocalPlayer player = Minecraft.getInstance().player;
         UUID entityUUID = Tools.uuidOfUsingStalkerMaster(player);
@@ -60,18 +65,19 @@ public class StalkerControl {
         if (stalker instanceof DroneStalkerEntity) {
             stalker.setXRot(xRot);
             stalker.setYRot(yRot);
-            CompoundTag input = StalkerControl.handleInput();
-            player.getPersistentData().put("DroneStalkerInput", input);
-            StalkerControl.syncData();
+            StalkerControl.syncControl();
         }
     }
 
     @SubscribeEvent
-    public static void onUse(PlayerInteractEvent.EntityInteract event) {
+    public static void onInteract(PlayerInteractEvent.EntityInteract event) {
         if (event.getSide().isClient()) {
             Player player = event.getEntity();
             if (player.isShiftKeyDown()) return;
-            if (event.getTarget() instanceof DroneStalkerEntity stalker) {
+            if (event.getItemStack().getItem() instanceof StalkerCoreItem) {
+                Stalker.connect(player, event.getTarget());
+                event.setCanceled(true);
+            } else if (event.getTarget() instanceof DroneStalkerEntity stalker) {
                 Stalker.connect(player, stalker);
                 event.setCanceled(true);
             }
@@ -97,13 +103,12 @@ public class StalkerControl {
         controlKey.add(options.keyJump.getKey().getValue());
         controlKey.add(options.keyShift.getKey().getValue());
         if (controlKey.contains(event.getKey())) {
-            syncData();
+            syncControl();
         }
     }
 
     @SubscribeEvent
     public static void onUse(PlayerInteractEvent.RightClickBlock event) {
-        System.out.print(event.getSide()+"\n");
         if (event.getSide().isClient() && Stalker.hasInstanceOf(event.getEntity())) {
             event.setCanceled(true);
         }
@@ -118,10 +123,13 @@ public class StalkerControl {
     @SubscribeEvent
     public static void onAction(InputEvent.MouseButton.Pre event) {
         if (Minecraft.getInstance().screen != null) return;
-        if (event.getAction() != InputConstants.PRESS) return;
-        if (event.getButton() != GLFW.GLFW_MOUSE_BUTTON_RIGHT) return;
         Player player = Minecraft.getInstance().player;
         if (!Stalker.hasInstanceOf(player)) return;
+        if (event.getAction() != InputConstants.PRESS) return;
+        if (event.getButton() != GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
+            event.setCanceled(true);
+            return;
+        }
         Stalker instance = Stalker.getInstanceOf(player);
         if (instance.getStalker() instanceof DroneStalkerEntity) {
             BlockHitResult traceResult = Tools.rayTraceBlocks(player.level(), getCameraPosition(), getViewVector(), 4);
@@ -155,9 +163,11 @@ public class StalkerControl {
         return input;
     }
 
-    public static void syncData() {
+    public static void syncControl() {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
+        CompoundTag input = StalkerControl.handleInput();
+        player.getPersistentData().put("DroneStalkerInput", input);
         NetworkHandler.CHANNEL.sendToServer(new EntityDataPacket(player.getId(), player.getPersistentData()));
     }
 
@@ -191,9 +201,22 @@ public class StalkerControl {
     public static void onClientEnter(EntityJoinLevelEvent event) {
         if (!event.getLevel().isClientSide) return;
         Player player = Minecraft.getInstance().player;
+        if (player == null) return;
         if (event.getEntity() instanceof DroneStalkerEntity stalker) {
             UUID entityUUID = Tools.uuidOfUsingStalkerMaster(player);
             if (stalker.getUUID().equals(entityUUID)) {
+                Stalker.connect(player, stalker);
+            }
+        }
+        if (event.getEntity() instanceof ArrowStalkerEntity stalker) {
+            if (stalker.getOwner() != null && stalker.getOwner().getUUID().equals(player.getUUID())) {
+                if (Stalker.hasInstanceOf(player)) return;
+                Stalker.connect(player, stalker);
+            }
+        }
+        if (event.getEntity() instanceof VoidStalkerEntity stalker) {
+            if (stalker.getOwner() != null && stalker.getOwner().getUUID().equals(player.getUUID())) {
+                if (Stalker.hasInstanceOf(player)) return;
                 Stalker.connect(player, stalker);
             }
         }

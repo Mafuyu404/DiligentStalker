@@ -50,7 +50,7 @@ public class StalkerSyncPacket {
                 player.inventoryMenu.sendAllDataToRemote();
                 player.getPersistentData().putBoolean("LoadingCacheChunk", true);
                 if (stalker instanceof ArrowStalkerEntity arrowStalker) {
-                    arrowStalker.spawnAtLocation(new ItemStack(StalkerItems.ARROW_STALKER_ITEM.get()));
+                    arrowStalker.spawnAtLocation(new ItemStack(StalkerItems.ARROW_STALKER.get()));
                     arrowStalker.discard();
                 }
             }

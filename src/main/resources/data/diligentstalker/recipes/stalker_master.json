@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " B ",
+    "EAE",
+    " C "
+  ],
+  "key": {
+    "A": {
+      "item": "diligentstalker:stalker_core"
+    },
+    "B": {
+      "item": "minecraft:amethyst_shard"
+    },
+    "C": {
+      "item": "minecraft:comparator"
+    },
+    "E": {
+      "item": "minecraft:sugar"
+    }
+  },
+  "result": {
+    "item": "diligentstalker:stalker_master",
+    "count": 1
+  }
+}

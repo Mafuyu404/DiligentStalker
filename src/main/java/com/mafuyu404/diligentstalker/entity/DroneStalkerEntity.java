@@ -1,6 +1,6 @@
 package com.mafuyu404.diligentstalker.entity;
 
-import com.mafuyu404.diligentstalker.init.Stalker;
+import com.mafuyu404.diligentstalker.init.Tools;
 import com.mafuyu404.diligentstalker.registry.StalkerItems;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -12,6 +12,7 @@ import net.minecraft.world.*;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.HasCustomInventoryScreen;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.monster.piglin.PiglinAi;
 import net.minecraft.world.entity.player.Inventory;
@@ -37,7 +38,6 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
 
     public DroneStalkerEntity(EntityType<? extends Boat> p_219869_, Level level) {
         super(p_219869_, level);
-        this.setNoGravity(true);
     }
 
     public DroneStalkerEntity(Level p_219872_, double p_219873_, double p_219874_, double p_219875_) {
@@ -51,13 +51,13 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
     public InteractionResult interact(Player player, InteractionHand hand) {
         if (player.isShiftKeyDown()) {
             ItemStack itemStack = player.getMainHandItem();
-            if (itemStack.is(StalkerItems.STALKER_MASTER_ITEM.get())) {
+            if (itemStack.is(StalkerItems.STALKER_MASTER.get())) {
                 CompoundTag tag = itemStack.getOrCreateTag();
-                if (tag.getUUID("StalkerId") != this.uuid) {
+                if (!tag.contains("StalkerId") || tag.getUUID("StalkerId") != this.uuid) {
                     tag.putUUID("StalkerId", this.uuid);
                     BlockPos pos = this.blockPosition();
                     tag.putIntArray("StalkerPosition", new int[]{pos.getX(), pos.getY(), pos.getZ()});
-                    player.displayClientMessage(Component.translatable("item.diligentstalker.stalker_master.connect_success").withStyle(ChatFormatting.GREEN), true);
+                    player.displayClientMessage(Component.translatable("item.diligentstalker.stalker_master.record_success").withStyle(ChatFormatting.GREEN), true);
                     return InteractionResult.FAIL;
                 }
             } else {
@@ -69,6 +69,11 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
             }
         }
         return InteractionResult.FAIL;
+    }
+
+    @Override
+    public void tick() {
+        this.move(MoverType.SELF, this.getDeltaMovement());
     }
 
     @Override
@@ -120,7 +125,7 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
     }
 
     public Item getDropItem() {
-        return StalkerItems.DRONE_STALKER_ITEM.get();
+        return StalkerItems.DRONE_STALKER.get();
     }
 
     public void clearContent() {

@@ -62,7 +62,9 @@ public class StalkerMasterItem extends Item {
     public void appendHoverText(ItemStack itemStack, @Nullable Level level, List<Component> result, TooltipFlag p_41214_) {
         CompoundTag tag = itemStack.getOrCreateTag();
         if (tag.contains("StalkerPosition")) {
-            result.add(Component.literal("> "+ Arrays.toString(tag.getIntArray("StalkerPosition")) +" <").withStyle(ChatFormatting.GREEN));
+            result.add(Component.literal("> " + Arrays.toString(tag.getIntArray("StalkerPosition")) + " <").withStyle(ChatFormatting.GREEN));
         }
+        result.add(Component.translatable("item.diligentstalker.stalker_master.intro1").withStyle(ChatFormatting.GOLD));
+        result.add(Component.translatable("item.diligentstalker.stalker_master.intro2").withStyle(ChatFormatting.GOLD));
     }
 }
