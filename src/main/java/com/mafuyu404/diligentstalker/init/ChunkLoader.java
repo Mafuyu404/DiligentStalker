@@ -12,7 +12,7 @@ import java.util.*;
 import static com.mafuyu404.diligentstalker.DiligentStalker.MODID;
 
 public class ChunkLoader {
-    private static final TicketType<ChunkPos> StalkerTicket = TicketType.create(new ResourceLocation(MODID, "stalker").toString(), Comparator.comparingLong(ChunkPos::toLong));
+//    private static final TicketType<ChunkPos> StalkerTicket = TicketType.create(new ResourceLocation(MODID, "stalker").toString(), Comparator.comparingLong(ChunkPos::toLong));
     private static final HashMap<String, ArrayList<ChunkPos>> loaders = new HashMap<>();
 
     public static void add(ServerLevel level, ChunkPos center) {

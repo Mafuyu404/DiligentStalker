@@ -14,6 +14,8 @@
   "item.diligentstalker.stalker_master.intro2": "Hold RClick to connect",
 
   "entity.diligentstalker.drone_stalker": "Drone Stalker",
+  "entity.diligentstalker.drone_stalker.fuel_added": "Added fuel.",
+  "entity.diligentstalker.drone_stalker.fuel_full": "Fuel full.",
   "entity.diligentstalker.arrow_stalker": "Arrow Stalker",
   "entity.diligentstalker.void_stalker": "Void Arrow Stalker",
 

@@ -16,10 +16,31 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 public class Tools {
+    public static HashMap<String, Integer> ControlMap = new HashMap<>();
+
+    private static void initControlMap() {
+        ControlMap.put("Up", 0);
+        ControlMap.put("Down", 0);
+        ControlMap.put("Left", 0);
+        ControlMap.put("Right", 0);
+        ControlMap.put("Jump", 0);
+        ControlMap.put("Shift", 0);
+    }
+
+    public static CompoundTag getEmptyInput() {
+        if (ControlMap.isEmpty()) initControlMap();
+        CompoundTag input = new CompoundTag();
+        ControlMap.forEach((s, integer) -> {
+            input.putBoolean(s, false);
+        });
+        return input;
+    }
+
     public static double lerp(double current, double target) {
         return current + (target - current) * 0.3;
     }
@@ -43,7 +64,7 @@ public class Tools {
     public static Vec3 move(CompoundTag input, Vec3 motion) {
         float xRot = input.getFloat("xRot");
         float yRot = input.getFloat("yRot");
-        float speed = 0.5f;
+        float speed = 0.4f;
         Vec3 forward = Vec3.ZERO;
         Vec3 right = Vec3.ZERO;
         Vec3 top = Vec3.ZERO;
@@ -90,7 +111,7 @@ public class Tools {
             if (input.getBoolean("Shift")) {
                 y = -speed;
             }
-            top = limitSpeed(new Vec3(0, y * 1.3, 0), speed * 1.3f);
+            top = limitSpeed(new Vec3(0, y, 0), speed);
         }
 
         result = result.add(forward).add(right).add(top);
@@ -101,7 +122,7 @@ public class Tools {
                 Mth.lerp(0.3f, motion.z, motion.z + result.z)
         );
 
-        result = limitSpeed(new Vec3(result.x, 0, result.z), speed).add(limitSpeed(new Vec3(0, result.y, 0), speed * 1.3f));
+        result = limitSpeed(new Vec3(result.x, 0, result.z), speed).add(limitSpeed(new Vec3(0, result.y, 0), speed));
 
         result = result.scale(0.8);
 
@@ -177,7 +198,7 @@ public class Tools {
         if (player != null && player.isUsingItem()) {
             if (player.getMainHandItem().getItem() instanceof StalkerMasterItem) {
                 CompoundTag tag = player.getMainHandItem().getOrCreateTag();
-                if (tag.contains("StalkerId") && StalkerManage.DronePosition.containsKey(tag.getUUID("StalkerId"))) {
+                if (tag.contains("StalkerId")) {
                     return tag.getUUID("StalkerId");
                 }
             }

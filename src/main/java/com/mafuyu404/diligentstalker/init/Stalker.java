@@ -38,7 +38,7 @@ public class Stalker {
     public static Stalker connect(Player player, Entity stalker) {
         if (hasInstanceOf(player) || hasInstanceOf(stalker)) return null;
         if (player.level().isClientSide) {
-            StalkerControl.connect(player);
+            StalkerControl.connect(player, stalker);
             NetworkHandler.CHANNEL.sendToServer(new StalkerSyncPacket(stalker.getId(), true));
         }
         InstanceMap.put(player.getUUID(), stalker.getId());

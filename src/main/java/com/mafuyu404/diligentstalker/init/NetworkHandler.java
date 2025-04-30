@@ -25,6 +25,7 @@ public class NetworkHandler {
         CHANNEL.registerMessage(packetId++, RClickBlockPacket.class, RClickBlockPacket::encode, RClickBlockPacket::decode, RClickBlockPacket::handle);
         CHANNEL.registerMessage(packetId++, EntityDataPacket.class, EntityDataPacket::encode, EntityDataPacket::decode, EntityDataPacket::handle);
         CHANNEL.registerMessage(packetId++, StalkerSyncPacket.class, StalkerSyncPacket::encode, StalkerSyncPacket::decode, StalkerSyncPacket::handle);
+        CHANNEL.registerMessage(packetId++, ClientFuelPacket.class, ClientFuelPacket::encode, ClientFuelPacket::decode, ClientFuelPacket::handle);
 
     }
 

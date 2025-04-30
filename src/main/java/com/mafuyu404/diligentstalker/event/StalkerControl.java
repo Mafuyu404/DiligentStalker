@@ -35,7 +35,6 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.ArrayList;
 import java.util.UUID;
 
 @Mod.EventBusSubscriber(modid = DiligentStalker.MODID, value = Dist.CLIENT)
@@ -62,7 +61,7 @@ public class StalkerControl {
         if (!Stalker.hasInstanceOf(player)) return;
         Stalker instance = Stalker.getInstanceOf(player);
         Entity stalker = instance.getStalker();
-        if (stalker instanceof DroneStalkerEntity) {
+        if (stalker instanceof DroneStalkerEntity droneStalker) {
             stalker.setXRot(xRot);
             stalker.setYRot(yRot);
             StalkerControl.syncControl();
@@ -90,19 +89,13 @@ public class StalkerControl {
         Player player = Minecraft.getInstance().player;
         Options options = Minecraft.getInstance().options;
         if (!Stalker.hasInstanceOf(player)) return;
+        updateControlMap();
         if (event.getAction() == InputConstants.PRESS) {
             if (event.getKey() == KeyBindings.DISCONNECT.getKey().getValue()) {
                 if (Stalker.hasInstanceOf(player)) Stalker.getInstanceOf(player).disconnect();
             }
         }
-        ArrayList<Integer> controlKey = new ArrayList<>();
-        controlKey.add(options.keyUp.getKey().getValue());
-        controlKey.add(options.keyDown.getKey().getValue());
-        controlKey.add(options.keyLeft.getKey().getValue());
-        controlKey.add(options.keyRight.getKey().getValue());
-        controlKey.add(options.keyJump.getKey().getValue());
-        controlKey.add(options.keyShift.getKey().getValue());
-        if (controlKey.contains(event.getKey())) {
+        if (Tools.ControlMap.containsValue(event.getKey())) {
             syncControl();
         }
     }
@@ -125,6 +118,9 @@ public class StalkerControl {
         if (Minecraft.getInstance().screen != null) return;
         Player player = Minecraft.getInstance().player;
         if (!Stalker.hasInstanceOf(player)) return;
+        if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
+            DroneStalkerHUD.RPress = event.getAction() == InputConstants.PRESS;
+        }
         if (event.getAction() != InputConstants.PRESS) return;
         if (event.getButton() != GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
             event.setCanceled(true);
@@ -152,12 +148,9 @@ public class StalkerControl {
     public static CompoundTag handleInput() {
         Options options = Minecraft.getInstance().options;
         CompoundTag input = new CompoundTag();
-        input.putBoolean("Up", options.keyUp.isDown());
-        input.putBoolean("Down", options.keyDown.isDown());
-        input.putBoolean("Left", options.keyLeft.isDown());
-        input.putBoolean("Right", options.keyRight.isDown());
-        input.putBoolean("Jump", options.keyJump.isDown());
-        input.putBoolean("Shift", options.keyShift.isDown());
+        Tools.ControlMap.forEach((s, key) -> {
+            input.putBoolean(s, isKeyPressed(key));
+        });
         input.putFloat("xRot", xRot);
         input.putFloat("yRot", yRot);
         return input;
@@ -166,6 +159,7 @@ public class StalkerControl {
     public static void syncControl() {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
+        updateControlMap();
         CompoundTag input = StalkerControl.handleInput();
         player.getPersistentData().put("DroneStalkerInput", input);
         NetworkHandler.CHANNEL.sendToServer(new EntityDataPacket(player.getId(), player.getPersistentData()));
@@ -181,12 +175,12 @@ public class StalkerControl {
         }
     }
 
-    public static void connect(Player player) {
+    public static void connect(Player player, Entity stalker) {
         if (!player.isLocalPlayer()) return;
         fixedXRot = player.getXRot();
         fixedYRot = player.getYRot();
-        xRot = fixedXRot;
-        yRot = fixedYRot;
+        xRot = stalker.getXRot();
+        yRot = stalker.getYRot();
     }
 
     public static Vec3 getViewVector() {
@@ -220,5 +214,21 @@ public class StalkerControl {
                 Stalker.connect(player, stalker);
             }
         }
+    }
+
+    private static void updateControlMap() {
+        Options options = Minecraft.getInstance().options;
+        Tools.ControlMap.put("Up", options.keyUp.getKey().getValue());
+        Tools.ControlMap.put("Down", options.keyDown.getKey().getValue());
+        Tools.ControlMap.put("Left", options.keyLeft.getKey().getValue());
+        Tools.ControlMap.put("Right", options.keyRight.getKey().getValue());
+        Tools.ControlMap.put("Jump", options.keyJump.getKey().getValue());
+        Tools.ControlMap.put("Shift", options.keyShift.getKey().getValue());
+    }
+
+    public static boolean isKeyPressed(int glfwKeyCode) {
+        Minecraft minecraft = Minecraft.getInstance();
+        long windowHandle = minecraft.getWindow().getWindow();
+        return GLFW.glfwGetKey(windowHandle, glfwKeyCode) == GLFW.GLFW_PRESS;
     }
 }

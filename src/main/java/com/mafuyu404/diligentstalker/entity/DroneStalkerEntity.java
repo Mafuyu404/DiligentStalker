@@ -1,6 +1,6 @@
 package com.mafuyu404.diligentstalker.entity;
 
-import com.mafuyu404.diligentstalker.init.Tools;
+import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.registry.StalkerItems;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -8,12 +8,14 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.*;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.HasCustomInventoryScreen;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.SlotAccess;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.piglin.PiglinAi;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -23,11 +25,17 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.items.ItemHandlerHelper;
+import net.minecraftforge.items.wrapper.InvWrapper;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen, ContainerEntity {
     private static final int CONTAINER_SIZE = 27;
@@ -35,6 +43,13 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
     @Nullable
     private ResourceLocation lootTable;
     private long lootTableSeed;
+    private int fuel = 0;
+    private static final int MAX_FUEL = 100;
+    private static final String FUEL_TAG = "DroneFuel";
+    private static final int MAX_FUEL_TICK = 720;
+    private int fuel_tick = MAX_FUEL_TICK;
+    private static final int ITEM_PICKUP_RANGE = 2;
+    private int interact_cooldown = 0;
 
     public DroneStalkerEntity(EntityType<? extends Boat> p_219869_, Level level) {
         super(p_219869_, level);
@@ -49,23 +64,40 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
     }
 
     public InteractionResult interact(Player player, InteractionHand hand) {
+        if (interact_cooldown > 0) return InteractionResult.FAIL;
+        interact_cooldown = 20;
         if (player.isShiftKeyDown()) {
             ItemStack itemStack = player.getMainHandItem();
-            if (itemStack.is(StalkerItems.STALKER_MASTER.get())) {
+            if (itemStack.is(Items.SUGAR)) {
+                if (!level().isClientSide) {
+                    int needed = MAX_FUEL - this.fuel;
+                    if (needed > 0) {
+                        int toAdd = Math.min(itemStack.getCount(), needed);
+                        setFuel(this.fuel + toAdd);
+                        itemStack.shrink(toAdd);
+                        player.displayClientMessage(Component.translatable("entity.diligentstalker.drone_stalker.fuel_added", toAdd).withStyle(ChatFormatting.GREEN), true);
+                    } else {
+                        player.displayClientMessage(Component.translatable("entity.diligentstalker.drone_stalker.fuel_full").withStyle(ChatFormatting.RED), true);
+                    }
+                }
+                return InteractionResult.FAIL;
+            }
+            else if (itemStack.is(StalkerItems.STALKER_MASTER.get())) {
                 CompoundTag tag = itemStack.getOrCreateTag();
                 if (!tag.contains("StalkerId") || tag.getUUID("StalkerId") != this.uuid) {
                     tag.putUUID("StalkerId", this.uuid);
                     BlockPos pos = this.blockPosition();
                     tag.putIntArray("StalkerPosition", new int[]{pos.getX(), pos.getY(), pos.getZ()});
                     player.displayClientMessage(Component.translatable("item.diligentstalker.stalker_master.record_success").withStyle(ChatFormatting.GREEN), true);
-                    return InteractionResult.FAIL;
                 }
             } else {
-                InteractionResult interactionresult = this.interactWithContainerVehicle(player);
-                if (interactionresult.consumesAction()) {
-                    this.gameEvent(GameEvent.CONTAINER_OPEN, player);
+                if (!level().isClientSide) {
+                    InteractionResult interactionresult = this.interactWithContainerVehicle(player);
+                    if (interactionresult.consumesAction()) {
+                        this.gameEvent(GameEvent.CONTAINER_OPEN, player);
+                    }
+                    return interactionresult;
                 }
-                return interactionresult;
             }
         }
         return InteractionResult.FAIL;
@@ -73,7 +105,46 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
 
     @Override
     public void tick() {
+        if (interact_cooldown > 0) interact_cooldown--;
+
         this.move(MoverType.SELF, this.getDeltaMovement());
+        if (!Stalker.hasInstanceOf(this)) {
+            this.setDeltaMovement(this.getDeltaMovement().scale(0.8));
+        } else {
+            if (!this.level().isClientSide && this.getDeltaMovement().length() > 0.1) {
+                if (fuel_tick <= 0) {
+                    consumeFuel(1);
+                    fuel_tick = MAX_FUEL_TICK;
+                }
+                else fuel_tick -= 1;
+            }
+        }
+
+        if (!this.level().isClientSide && tickCount % 10 == 0) {
+            AABB area = this.getBoundingBox().inflate(ITEM_PICKUP_RANGE);
+            List<ItemEntity> items = this.level().getEntitiesOfClass(
+                    ItemEntity.class,
+                    area,
+                    e -> e.isAlive() && !e.getItem().isEmpty()
+            );
+            if (!items.isEmpty()) {
+                for (ItemEntity item : items) {
+                    ItemStack remaining = ItemHandlerHelper.insertItem(
+                            new InvWrapper(this),
+                            item.getItem(),
+                            false
+                    );
+
+                    if (remaining.isEmpty()) {
+                        item.discard();
+                        this.gameEvent(GameEvent.ENTITY_INTERACT, this);
+                    } else if (remaining.getCount() < item.getItem().getCount()) {
+                        item.setItem(remaining);
+                        this.gameEvent(GameEvent.ENTITY_INTERACT, this);
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -85,8 +156,30 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
     public void remove(RemovalReason reason) {
         if (!this.level().isClientSide && reason.shouldDestroy()) {
             Containers.dropContents(this.level(), this, this);
+            if (fuel > 0) {
+                ItemEntity itementity = new ItemEntity(level(), getX(), getY(), getZ(), new ItemStack(Items.SUGAR, fuel));
+                level().addFreshEntity(itementity);
+            }
         }
         super.remove(reason);
+    }
+
+    public int getFuel() {
+        return this.fuel;
+    }
+
+    public void setFuel(int amount) {
+        this.fuel = Mth.clamp(amount, 0, MAX_FUEL);
+    }
+
+    public boolean consumeFuel(int amount) {
+        if (this.fuel >= amount) {
+            if (Stalker.hasInstanceOf(this)) {
+                setFuel(this.fuel - amount);
+                return true;
+            }
+        }
+        return false;
     }
 
 
@@ -102,11 +195,15 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
 
     protected void addAdditionalSaveData(CompoundTag p_219908_) {
         super.addAdditionalSaveData(p_219908_);
+        p_219908_.putInt(FUEL_TAG, this.fuel);
+        p_219908_.putInt("FuelTick", this.fuel_tick);
         this.addChestVehicleSaveData(p_219908_);
     }
 
     protected void readAdditionalSaveData(CompoundTag p_219901_) {
         super.readAdditionalSaveData(p_219901_);
+        this.fuel = p_219901_.getInt(FUEL_TAG);
+        this.fuel_tick = p_219901_.getInt("FuelTick");
         this.readChestVehicleSaveData(p_219901_);
     }
 

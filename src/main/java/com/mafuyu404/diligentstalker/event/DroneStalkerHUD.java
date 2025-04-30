@@ -1,13 +1,16 @@
 package com.mafuyu404.diligentstalker.event;
 
 import com.mafuyu404.diligentstalker.DiligentStalker;
+import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.init.Tools;
 import com.mafuyu404.diligentstalker.item.StalkerMasterItem;
+import com.mafuyu404.diligentstalker.registry.Config;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.MouseHandler;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
@@ -27,7 +30,8 @@ import java.util.List;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class DroneStalkerHUD {
-
+    private static int SIGNAL_RADIUS = 0;
+    public static boolean RPress = false;
 
     @SubscribeEvent
     public static void onRenderGameOverlay(RenderGuiOverlayEvent.Post event) {
@@ -41,7 +45,25 @@ public class DroneStalkerHUD {
                 Vec3 direction = stalker.position().subtract(player.position());
                 float yRot = Tools.getYRotFromVec3(direction);
                 int distance = (int) direction.length();
-                drawHud(event.getGuiGraphics());
+                if (stalker instanceof DroneStalkerEntity droneStalker) {
+                    if (SIGNAL_RADIUS == 0) SIGNAL_RADIUS = Config.SIGNAL_RADIUS.get();
+
+                    float signal_percent = 1 - (1f * distance / SIGNAL_RADIUS);
+                    float fuel_percent = droneStalker.getFuel() / 100f;
+                    List<ArcSection> sections = List.of(
+                            new ArcSection(-157.5f, 0.375f, 0.7f, 0.7f, 0.7f, 0.4f),  // 左上灰色
+                            new ArcSection(-157.5f - 0.375f * 180 * (1 - signal_percent), signal_percent * 0.375f, 0.8f, 0.8f, 0.8f, 1f),  // 左上灰色
+
+                            new ArcSection(-22.5f,  0.375f, 0.6f, 0.8f, 1.0f, 0.4f),  // 右上淡蓝
+                            new ArcSection(-22.5f + 0.375f * 180 * (1 - fuel_percent),  fuel_percent * 0.375f, 0.6f, 0.8f, 1.0f, 1f),  // 右上淡蓝
+
+                            new ArcSection(112.5f, 0.125f, 1.0f, 0.6f, 0.6f, 0.4f), // 左下淡红
+
+                            new ArcSection(67.5f, 0.125f, 0.6f, 1.0f, 0.6f, 0.4f),  // 右下淡绿
+                            new ArcSection(67.5f, RPress ? 0.125f : 0, 0.6f, 1.0f, 0.6f, 1f)  // 右下淡绿
+                    );
+                    drawHud(event.getGuiGraphics(), sections);
+                }
                 drawPlayerPosition(event.getGuiGraphics(), yRot - StalkerControl.yRot + 180, distance, icon);
             } else {
                 ItemStack itemStack = player.getMainHandItem();
@@ -52,13 +74,19 @@ public class DroneStalkerHUD {
                         Vec3 direction = new Vec3(pos[0], pos[1], pos[2]).subtract(player.position());
                         float yRot = Tools.getYRotFromVec3(direction);
                         int distance = (int) direction.length();
+                        float signal_percent = 1 - (1f * distance / SIGNAL_RADIUS);
+                        List<ArcSection> sections = List.of(
+                                new ArcSection(-157.5f, 0.375f, 0.7f, 0.7f, 0.7f, 0.4f),
+                                new ArcSection(-157.5f - 0.375f * 180 * (1 - signal_percent), signal_percent * 0.375f, 0.8f, 0.8f, 0.8f, 1f)
+                        );
+                        drawHud(event.getGuiGraphics(), sections);
                         drawPlayerPosition(event.getGuiGraphics(), yRot - player.getYRot(), distance, item);
                     }
                 }
             }
         }
     }
-    private static void drawHud(GuiGraphics guiGraphics) {
+    private static void drawHud(GuiGraphics guiGraphics, List<ArcSection> sections) {
         PoseStack poseStack = guiGraphics.pose();
         Window window = Minecraft.getInstance().getWindow();
         int screenWidth = window.getGuiScaledWidth();
@@ -69,14 +97,6 @@ public class DroneStalkerHUD {
         int centerY = screenHeight / 2;
         float radius = 80.0f;
         float thickness = 3.0f;
-
-        // 条条框框
-        List<ArcSection> sections = List.of(
-                new ArcSection(67.5f+135f, 0.375f, 0.7f, 0.7f, 0.7f, 0.7f),  // 左上灰色
-                new ArcSection(67.5f+270f,  0.375f, 0.6f, 0.8f, 1.0f, 0.5f),  // 右上淡蓝
-                new ArcSection(112.5f, 0.125f, 1.0f, 0.6f, 0.6f, 0.5f), // 左下淡红
-                new ArcSection(67.5f, 0.125f, 0.6f, 1.0f, 0.6f, 0.5f)  // 右下淡绿
-        );
 
         poseStack.pushPose();
         RenderSystem.enableBlend();
@@ -160,7 +180,6 @@ public class DroneStalkerHUD {
         Font font = Minecraft.getInstance().font;
         int textColor = 0xFFFFFFFF; // 白色
         int outlineColor = 0xFF000000; // 黑色
-        int verticalSpacing = 2; // 头像与文字间距
         int textWidth = font.width(text);
         int textX = x + (headSize - textWidth) / 2; // 水平居中
         int textY = y + headSize - 2;

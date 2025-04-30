@@ -5,15 +5,19 @@ import com.mafuyu404.diligentstalker.entity.ArrowStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.VoidStalkerEntity;
 import com.mafuyu404.diligentstalker.init.ChunkLoader;
+import com.mafuyu404.diligentstalker.init.NetworkHandler;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.init.Tools;
 import com.mafuyu404.diligentstalker.item.StalkerMasterItem;
+import com.mafuyu404.diligentstalker.network.ClientFuelPacket;
+import com.mafuyu404.diligentstalker.registry.Config;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -23,8 +27,8 @@ import java.util.*;
 
 @Mod.EventBusSubscriber(modid = DiligentStalker.MODID)
 public class StalkerManage {
-    public static int LOAD_RADIUS = 3;
     public static final HashMap<UUID, Map.Entry<String, BlockPos>> DronePosition = new HashMap<>();
+    private static int SIGNAL_RADIUS = 0;
 
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event) {
@@ -35,19 +39,29 @@ public class StalkerManage {
         event.getServer().getPlayerList().getPlayers().forEach(StalkerManage::onPlayerTick);
     }
     private static void onPlayerTick(ServerPlayer player) {
-        if (player.tickCount %20 == 0) syncMasterTag(player);
+        if (player.tickCount % 20 == 0) syncMasterTag(player);
         if (!Stalker.hasInstanceOf(player)) return;
         Entity stalker = Stalker.getInstanceOf(player).getStalker();
         int timer = 10;
-        if (stalker instanceof DroneStalkerEntity) {
+        if (stalker instanceof DroneStalkerEntity droneStalker) {
             CompoundTag input = (CompoundTag) player.getPersistentData().get("DroneStalkerInput");
+            Vec3 direction = droneStalker.position().subtract(player.position());
+            int distance = (int) direction.length();
+            if (SIGNAL_RADIUS == 0) SIGNAL_RADIUS = Config.SIGNAL_RADIUS.get();
             if (input != null) {
                 float xRot = input.getFloat("xRot");
                 float yRot = input.getFloat("yRot");
                 stalker.setXRot(xRot);
                 stalker.setYRot(yRot);
-                stalker.setDeltaMovement(Tools.move(input, stalker.getDeltaMovement()));
+                if ((droneStalker.getFuel() > 0 && distance < SIGNAL_RADIUS) || player.isCreative()) {
+                    stalker.setDeltaMovement(Tools.move(input, stalker.getDeltaMovement()));
+                } else {
+                    stalker.setDeltaMovement(Tools.move(Tools.getEmptyInput(), stalker.getDeltaMovement()));
+                }
                 timer = 30;
+            }
+            if (player.tickCount % timer == 0) {
+                NetworkHandler.sendToClient(player, new ClientFuelPacket(stalker.getId(), droneStalker.getFuel()));
             }
         }
         if (player.tickCount % timer == 0) {

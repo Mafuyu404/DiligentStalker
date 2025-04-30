@@ -2,8 +2,8 @@ package com.mafuyu404.diligentstalker.network;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
@@ -28,9 +28,9 @@ public class EntityDataPacket {
 
     public static void handle(EntityDataPacket msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-            ServerPlayer player = ctx.get().getSender();
-            if (player == null) return;
-            Entity entity = player.level().getEntity(msg.entityId);
+            Level level = ctx.get().getSender().level();
+            if (level == null) return;
+            Entity entity = level.getEntity(msg.entityId);
             if (entity == null) return;
             entity.getPersistentData().merge(msg.nbt);
         });
