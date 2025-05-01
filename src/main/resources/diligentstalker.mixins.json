@@ -2,6 +2,7 @@
   "required": true,
   "minVersion": "0.8",
   "package": "com.mafuyu404.diligentstalker.mixin",
+  "plugin": "com.mafuyu404.diligentstalker.init.MixinPlugin",
   "compatibilityLevel": "JAVA_8",
   "refmap": "diligentstalker.refmap.json",
   "mixins": [

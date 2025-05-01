@@ -42,7 +42,7 @@ public abstract class CameraMixin{
         }
         return pos1;
     }
-    @Inject(method = "setRotation", at = @At(value = "INVOKE", target = "Lorg/joml/Quaternionf;rotationYXZ(FFF)Lorg/joml/Quaternionf;"))
+    @Inject(method = "setRotation", at = @At("RETURN"))
     private void modifyRotate(float p_90573_, float p_90574_, CallbackInfo ci) {
         if (!Stalker.hasInstanceOf(Minecraft.getInstance().player)) return;
         this.xRot = StalkerControl.xRot;

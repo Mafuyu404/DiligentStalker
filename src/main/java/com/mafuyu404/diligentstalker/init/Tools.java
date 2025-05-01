@@ -64,7 +64,7 @@ public class Tools {
     public static Vec3 move(CompoundTag input, Vec3 motion) {
         float xRot = input.getFloat("xRot");
         float yRot = input.getFloat("yRot");
-        float speed = 0.4f;
+        float speed = 0.45f;
         Vec3 forward = Vec3.ZERO;
         Vec3 right = Vec3.ZERO;
         Vec3 top = Vec3.ZERO;

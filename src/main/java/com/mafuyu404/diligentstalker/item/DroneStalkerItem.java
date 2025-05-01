@@ -29,6 +29,7 @@ public class DroneStalkerItem extends Item {
             DroneStalkerEntity drone = new DroneStalkerEntity(StalkerEntities.DRONE_STALKER.get(), level);
             drone.setPos(context.getClickLocation());
             level.addFreshEntity(drone);
+            context.getItemInHand().shrink(1);
             return InteractionResult.SUCCESS;
         }
         return super.useOn(context);

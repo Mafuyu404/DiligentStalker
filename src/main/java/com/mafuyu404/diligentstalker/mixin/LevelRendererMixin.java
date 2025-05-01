@@ -2,9 +2,10 @@ package com.mafuyu404.diligentstalker.mixin;
 
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.init.Tools;
-import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.*;
 
@@ -12,8 +13,9 @@ import java.util.Map;
 
 @Mixin(LevelRenderer.class)
 public class LevelRendererMixin {
-    @Redirect(method = "setupRender",at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getX()D"))
-    private double modifyX(LocalPlayer player) {
+    @ModifyVariable(method = "setupRender",at = @At("STORE"), ordinal = 0)
+    private double modifyX(double x) {
+        Player player = Minecraft.getInstance().player;
         if (Stalker.hasInstanceOf(player)) {
             return Stalker.getInstanceOf(player).getStalker().getX();
         } else {
@@ -22,10 +24,11 @@ public class LevelRendererMixin {
                 return entry.getValue().getX();
             }
         }
-        return player.getX();
+        return x;
     }
-    @Redirect(method = "setupRender",at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getY()D"))
-    private double modifyY(LocalPlayer player) {
+    @ModifyVariable(method = "setupRender",at = @At("STORE"), ordinal = 1)
+    private double modifyY(double y) {
+        Player player = Minecraft.getInstance().player;
         if (Stalker.hasInstanceOf(player)) {
             return Stalker.getInstanceOf(player).getStalker().getY();
         } else {
@@ -34,10 +37,11 @@ public class LevelRendererMixin {
                 return entry.getValue().getY();
             }
         }
-        return player.getY();
+        return y;
     }
-    @Redirect(method = "setupRender",at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;getZ()D"))
-    private double modifyZ(LocalPlayer player) {
+    @ModifyVariable(method = "setupRender",at = @At("STORE"), ordinal = 2)
+    private double modifyZ(double z) {
+        Player player = Minecraft.getInstance().player;
         if (Stalker.hasInstanceOf(player)) {
             return Stalker.getInstanceOf(player).getStalker().getZ();
         } else {
@@ -46,6 +50,6 @@ public class LevelRendererMixin {
                 return entry.getValue().getZ();
             }
         }
-        return player.getZ();
+        return z;
     }
 }

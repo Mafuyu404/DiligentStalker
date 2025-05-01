@@ -179,8 +179,12 @@ public class StalkerControl {
         if (!player.isLocalPlayer()) return;
         fixedXRot = player.getXRot();
         fixedYRot = player.getYRot();
-        xRot = stalker.getXRot();
-        yRot = stalker.getYRot();
+        xRot = fixedXRot;
+        yRot = fixedYRot;
+        if (stalker instanceof DroneStalkerEntity) {
+            xRot = stalker.getXRot();
+            yRot = stalker.getYRot();
+        }
     }
 
     public static Vec3 getViewVector() {
