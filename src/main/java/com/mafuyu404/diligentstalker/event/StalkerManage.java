@@ -29,6 +29,7 @@ import java.util.*;
 public class StalkerManage {
     public static final HashMap<UUID, Map.Entry<String, BlockPos>> DronePosition = new HashMap<>();
     private static int SIGNAL_RADIUS = 0;
+    private static HashMap<UUID, ArrayList<ArrayList<ChunkPos>>> LoadingChunks = new HashMap<>();
 
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event) {
@@ -58,14 +59,13 @@ public class StalkerManage {
                 } else {
                     stalker.setDeltaMovement(Tools.move(Tools.getEmptyInput(), stalker.getDeltaMovement()));
                 }
-                timer = 30;
             }
             if (player.tickCount % timer == 0) {
                 NetworkHandler.sendToClient(player, new ClientFuelPacket(stalker.getId(), droneStalker.getFuel()));
             }
         }
         if (player.tickCount % timer == 0) {
-            player.serverLevel().getChunkSource().move(player);
+//            player.serverLevel().getChunkSource().move(player);
             player.teleportRelative(0, 0, 0);
         }
     }
@@ -77,7 +77,7 @@ public class StalkerManage {
                 boolean isArrowStalker = entity instanceof ArrowStalkerEntity;
                 boolean isVoidStalker = entity instanceof VoidStalkerEntity;
                 if (isDroneStalker || isArrowStalker || isVoidStalker) {
-                    Tools.getToLoadChunk(entity, 0).forEach(chunkPos -> {
+                    Tools.getToLoadChunks(entity, 0).forEach(chunkPos -> {
                         ChunkLoader.add(level, chunkPos);
                     });
                 }

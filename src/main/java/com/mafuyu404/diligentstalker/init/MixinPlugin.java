@@ -13,7 +13,6 @@ public class MixinPlugin implements IMixinConfigPlugin {
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
         // 检查是否是目标Mixin且Embeddium已加载
-        System.out.print(mixinClassName+"\n\n\n");
         if (mixinClassName.equals("com.mafuyu404.diligentstalker.mixin.LevelRendererMixin")) {
             return !isClassLoaded("me.jellysquid.mods.sodium.client.SodiumClientMod"); // Sodium/Embeddium核心类
         }

@@ -6,6 +6,7 @@ import com.mafuyu404.diligentstalker.item.StalkerMasterItem;
 import com.mafuyu404.diligentstalker.registry.Config;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -19,6 +20,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class Tools {
     public static HashMap<String, Integer> ControlMap = new HashMap<>();
@@ -137,9 +141,9 @@ public class Tools {
         return motion;
     }
 
-    public static double calculateViewAlignment(Vec3 target, Vec3 pos0, Vec3 pos1) {
+    public static double calculateViewAlignment(Vec3 target, Vec3 start, Vec3 end) {
         // 计算方向向量
-        Vec3 direction = pos1.subtract(pos0);
+        Vec3 direction = end.subtract(start);
         if (direction.length() < 1e-6) {
             return 0.0; // 避免零向量
         }
@@ -169,7 +173,7 @@ public class Tools {
         return world.clip(clipContext);
     }
 
-    public static ArrayList<ChunkPos> getToLoadChunk(Entity stalker, int offset) {
+    public static ArrayList<ChunkPos> getToLoadChunks(Entity stalker, int offset) {
         if (stalker == null) return new ArrayList<>();
         ChunkPos center = stalker.chunkPosition();
         ArrayList<ChunkPos> newChunks = new ArrayList<>();

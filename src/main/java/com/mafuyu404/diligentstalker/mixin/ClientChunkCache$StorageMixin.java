@@ -21,7 +21,7 @@ public class ClientChunkCache$StorageMixin {
         Player player = Minecraft.getInstance().player;
         Stalker instance = Stalker.getInstanceOf(player);
         if (instance != null) {
-            ArrayList<ChunkPos> chunkPos = Tools.getToLoadChunk(instance.getStalker(), 1);
+            ArrayList<ChunkPos> chunkPos = Tools.getToLoadChunks(instance.getStalker(), 1);
             if (chunkPos.contains(new ChunkPos(x, z))) {
                 cir.setReturnValue(true);
             }

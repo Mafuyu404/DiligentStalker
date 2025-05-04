@@ -76,7 +76,7 @@ public abstract class EntityMixin {
     private void position(double p_20344_, double p_20345_, double p_20346_, CallbackInfo ci) {
         if (((Object) this) instanceof DroneStalkerEntity) {
             if (this.level.isClientSide) return;
-            if (!StalkerManage.DronePosition.containsKey(this.uuid)) return;
+//            if (!StalkerManage.DronePosition.containsKey(this.uuid)) return;
             String levelKey = this.level.dimension().toString();
             BlockPos blockPos = this.blockPosition();
             StalkerManage.DronePosition.put(this.uuid, new Map.Entry<>() {
