@@ -15,10 +15,10 @@ public class Config {
 
         RENDER_RADIUS_NORMAL = BUILDER
                 .comment("For DroneStalker and ArrowStalker.")
-                .define("Normal", 3);
+                .define("Normal", 5);
         RENDER_RADIUS_SPECIAL = BUILDER
                 .comment("For VoidStalker.")
-                .define("Special", 5);
+                .define("Special", 7);
         BUILDER.pop();
 
         BUILDER.push("Drone Setting");

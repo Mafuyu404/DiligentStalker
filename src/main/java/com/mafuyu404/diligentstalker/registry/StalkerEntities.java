@@ -1,6 +1,7 @@
 package com.mafuyu404.diligentstalker.registry;
 
 import com.mafuyu404.diligentstalker.entity.ArrowStalkerEntity;
+import com.mafuyu404.diligentstalker.entity.CameraStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.VoidStalkerEntity;
 import net.minecraft.resources.ResourceLocation;
@@ -35,5 +36,11 @@ public class StalkerEntities {
             () -> EntityType.Builder.<VoidStalkerEntity>of(VoidStalkerEntity::new, MobCategory.MISC)
                     .sized(0.5F, 0.5F)
                     .build(new ResourceLocation(MODID, "void_stalker").toString())
+    );
+    public static final RegistryObject<EntityType<CameraStalkerEntity>> CAMERA_STALKER = ENTITIES.register(
+            "camera_stalker",
+            () -> EntityType.Builder.of(CameraStalkerEntity::new, MobCategory.MISC)
+                    .sized(0.1F, 0.1F)
+                    .build(new ResourceLocation(MODID, "camera_stalker").toString())
     );
 }

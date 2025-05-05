@@ -6,7 +6,6 @@ import com.mafuyu404.diligentstalker.item.StalkerMasterItem;
 import com.mafuyu404.diligentstalker.registry.Config;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -20,9 +19,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
 
 public class Tools {
     public static HashMap<String, Integer> ControlMap = new HashMap<>();
@@ -181,6 +177,7 @@ public class Tools {
         if (stalker instanceof VoidStalkerEntity) radius = Config.RENDER_RADIUS_SPECIAL.get();
         for (int x = -radius; x <= radius; x++) {
             for (int z = -radius; z <= radius; z++) {
+                if (Math.sqrt(x*x+z*z) > radius && radius >= 5) continue;
                 newChunks.add(new ChunkPos(center.x + x, center.z + z));
             }
         }

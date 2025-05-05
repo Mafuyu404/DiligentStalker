@@ -7,6 +7,7 @@ import com.mafuyu404.diligentstalker.registry.StalkerEntities;
 import com.mafuyu404.diligentstalker.render.DroneStalkerRenderer;
 import com.mafuyu404.diligentstalker.render.DroneStalkerModel;
 import net.minecraft.client.renderer.entity.EntityRenderers;
+import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
@@ -23,7 +24,6 @@ public class ClientSetup {
     }
     @SubscribeEvent
     public static void registerLayerDefinition(EntityRenderersEvent.RegisterLayerDefinitions event) {
-        // 自定义模型层
         event.registerLayerDefinition(
                 DroneStalkerRenderer.LAYER,
                 DroneStalkerModel::createBodyLayer
@@ -34,6 +34,7 @@ public class ClientSetup {
         event.registerEntityRenderer(StalkerEntities.DRONE_STALKER.get(), DroneStalkerRenderer::new);
         event.registerEntityRenderer(StalkerEntities.ARROW_STALKER.get(), ArrowStalkerRender::new);
         event.registerEntityRenderer(StalkerEntities.VOID_STALKER.get(), ThrownItemRenderer::new);
+        event.registerEntityRenderer(StalkerEntities.CAMERA_STALKER.get(), NoopRenderer::new);
     }
     @SubscribeEvent
     public static void registerKeyMapping(RegisterKeyMappingsEvent event) {

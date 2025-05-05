@@ -55,23 +55,22 @@ public class ChunkLoadTask {
     }
 
     public static ArrayList<ClientboundLevelChunkWithLightPacket> createChunksLoadTask(Entity stalker, ArrayList<ClientboundLevelChunkWithLightPacket> toLoadChunks) {
-        LocalPlayer player = Minecraft.getInstance().player;
-        Vec3 direction = player.getLookAngle();
+        Vec3 direction = Tools.calculateViewVector(StalkerControl.xRot, StalkerControl.yRot);
         ArrayList<ClientboundLevelChunkWithLightPacket> result = new ArrayList<>();
 
         // 先对拟合度排序
-        sortChunks(toLoadChunks, packet -> -1 * Tools.calculateViewAlignment(direction, stalker.chunkPosition().getWorldPosition().getCenter(), new ChunkPos(packet.getX(), packet.getZ()).getWorldPosition().getCenter()));
+        sortChunks(toLoadChunks, packet -> {
+            Vec3 start = stalker.chunkPosition().getWorldPosition().getCenter();
+            Vec3 end = new ChunkPos(packet.getX(), packet.getZ()).getWorldPosition().getCenter();
+            double n = Tools.calculateViewAlignment(direction, start, end);
+            return n * -1;
+        });
         for (int i = 0; i < toLoadChunks.size() * 0.6; i++) {
             result.add(toLoadChunks.get(i));
         }
 
         // 后对距离排序
         sortChunks(result, packet -> new ChunkPos(packet.getX(), packet.getZ()).getWorldPosition().getCenter().subtract(stalker.chunkPosition().getWorldPosition().getCenter()).length());
-
-//        // 剔除部分区块
-//        for (int i = 0; i < toLoadChunks.size() * 0.5; i++) {
-//            result.add(toLoadChunks.get(i));
-//        }
 
         return new ArrayList<>(result);
     }
