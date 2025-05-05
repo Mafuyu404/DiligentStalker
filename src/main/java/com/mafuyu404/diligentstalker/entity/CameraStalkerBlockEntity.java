@@ -14,6 +14,8 @@ public class CameraStalkerBlockEntity extends BlockEntity {
         super(StalkerBlockEntities.CAMERA_STALKER.get(), p_155229_, p_155230_);
     }
 
+
+
     public UUID getCameraStalkerUUID() {
         return CameraStalkerUUID;
     }

@@ -15,7 +15,8 @@ import static com.mafuyu404.diligentstalker.DiligentStalker.MODID;
 @Mod.EventBusSubscriber(modid = DiligentStalker.MODID)
 public class StalkerItems {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
-//    public static final RegistryObject<Item> EXAMPLE_BLOCK_ITEM = ITEMS.register("example_block", () -> new BlockItem(StalkerBlocks.EXAMPLE_BLOCK.get(), new Item.Properties()));
+
+    public static final RegistryObject<Item> CAMERA_STALKER = ITEMS.register("camera_stalker", () -> new BlockItem(StalkerBlocks.CAMERA_STALKER.get(), new Item.Properties()));
 
     public static final RegistryObject<Item> DRONE_STALKER = ITEMS.register("drone_stalker",
             DroneStalkerItem::new);
@@ -35,5 +36,6 @@ public class StalkerItems {
         output.accept(VOID_STALKER.get());
         output.accept(STALKER_MASTER.get());
         output.accept(STALKER_CORE.get());
+        output.accept(CAMERA_STALKER.get());
     }).build());
 }

@@ -36,6 +36,7 @@ public class Stalker {
     }
 
     public static Stalker connect(Player player, Entity stalker) {
+        if (player == null || stalker == null) return null;
         if (hasInstanceOf(player) || hasInstanceOf(stalker)) return null;
         if (player.level().isClientSide) {
             StalkerControl.connect(player, stalker);

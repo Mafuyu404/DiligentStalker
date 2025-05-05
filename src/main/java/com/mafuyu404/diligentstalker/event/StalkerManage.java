@@ -2,6 +2,7 @@ package com.mafuyu404.diligentstalker.event;
 
 import com.mafuyu404.diligentstalker.DiligentStalker;
 import com.mafuyu404.diligentstalker.entity.ArrowStalkerEntity;
+import com.mafuyu404.diligentstalker.entity.CameraStalkerBlockEntity;
 import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.VoidStalkerEntity;
 import com.mafuyu404.diligentstalker.init.ChunkLoader;
@@ -10,16 +11,27 @@ import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.init.Tools;
 import com.mafuyu404.diligentstalker.item.StalkerMasterItem;
 import com.mafuyu404.diligentstalker.network.ClientFuelPacket;
+import com.mafuyu404.diligentstalker.network.ClientStalkerPacket;
 import com.mafuyu404.diligentstalker.registry.Config;
+import com.mafuyu404.diligentstalker.registry.StalkerBlocks;
+import com.mafuyu404.diligentstalker.registry.StalkerItems;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -127,5 +139,31 @@ public class StalkerManage {
                 }
             }
         });
+    }
+
+    @SubscribeEvent
+    public static void useBlock(PlayerInteractEvent.RightClickBlock event) {
+        Player player = event.getEntity();
+        Level level = event.getLevel();
+        BlockPos pos = event.getHitVec().getBlockPos();
+        if (!level.isClientSide && level.getBlockEntity(pos) instanceof CameraStalkerBlockEntity be) {
+            UUID entityUUID = be.getCameraStalkerUUID();
+            if (entityUUID != null && event.getHand() == InteractionHand.MAIN_HAND) {
+                Entity entity = ((ServerLevel) level).getEntity(entityUUID);
+                ItemStack itemStack = player.getMainHandItem();
+                if (player.isShiftKeyDown() && itemStack.is(StalkerItems.STALKER_MASTER.get())) {
+                    CompoundTag tag = itemStack.getOrCreateTag();
+                    if (!tag.contains("StalkerId") || tag.getUUID("StalkerId") != entityUUID) {
+                        tag.putUUID("StalkerId", entityUUID);
+                        tag.putIntArray("StalkerPosition", new int[]{pos.getX(), pos.getY(), pos.getZ()});
+                        player.displayClientMessage(Component.translatable("item.diligentstalker.stalker_master.record_success").withStyle(ChatFormatting.GREEN), true);
+                    }
+                }
+                else {
+                    NetworkHandler.sendToClient((ServerPlayer) player, new ClientStalkerPacket(entity.getId()));
+                }
+            }
+            event.setCanceled(true);
+        }
     }
 }

@@ -27,12 +27,4 @@ public class ClientPacketListenerMixin {
             instance.initializeContents(i, list, itemStack);
         }
     }
-//    @Inject(method = "handleLevelChunkWithLight", at = @At("HEAD"), cancellable = true)
-//    private void aaq(ClientboundLevelChunkWithLightPacket packet, CallbackInfo ci) {
-//        Player player = Minecraft.getInstance().player;
-//        if (Stalker.hasInstanceOf(player)) {
-//            ChunkLoadTask.TaskList.add(packet);
-//            ci.cancel();
-//        }
-//    }
 }

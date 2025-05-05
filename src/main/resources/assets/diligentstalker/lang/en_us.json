@@ -6,18 +6,21 @@
   "item.diligentstalker.drone_stalker.intro1": "SHIFT RClick for Container",
   "item.diligentstalker.drone_stalker.intro2": "Press RClick to connect",
   "item.diligentstalker.arrow_stalker": "Arrow Stalker",
-  "item.diligentstalker.void_stalker": "Void Arrow Stalker",
+  "item.diligentstalker.void_stalker": "Void Stalker",
   "item.diligentstalker.stalker_master": "Stalker Master",
   "item.diligentstalker.stalker_master.record_success": "Recorded",
   "item.diligentstalker.stalker_master.record_fail": "Repeat Connection",
   "item.diligentstalker.stalker_master.intro1": "SHIFT RClick to record",
   "item.diligentstalker.stalker_master.intro2": "Hold RClick to connect",
+  "item.diligentstalker.camera_stalker": "Camera Stalker",
 
   "entity.diligentstalker.drone_stalker": "Drone Stalker",
   "entity.diligentstalker.drone_stalker.fuel_added": "Added fuel.",
   "entity.diligentstalker.drone_stalker.fuel_full": "Fuel full.",
   "entity.diligentstalker.arrow_stalker": "Arrow Stalker",
-  "entity.diligentstalker.void_stalker": "Void Arrow Stalker",
+  "entity.diligentstalker.void_stalker": "Void Stalker",
+
+  "block.diligentstalker.camera_stalker": "Camera Stalker",
 
   "key.categories.diligentstalker": "Diligent Stalker",
   "key.diligentstalker.disconnect.desc": "Drone Disconnect",

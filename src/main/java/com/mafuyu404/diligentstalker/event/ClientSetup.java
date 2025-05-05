@@ -2,8 +2,10 @@ package com.mafuyu404.diligentstalker.event;
 
 import com.mafuyu404.diligentstalker.DiligentStalker;
 import com.mafuyu404.diligentstalker.registry.KeyBindings;
+import com.mafuyu404.diligentstalker.registry.StalkerBlockEntities;
 import com.mafuyu404.diligentstalker.render.ArrowStalkerRender;
 import com.mafuyu404.diligentstalker.registry.StalkerEntities;
+import com.mafuyu404.diligentstalker.render.CameraStalkerRenderer;
 import com.mafuyu404.diligentstalker.render.DroneStalkerRenderer;
 import com.mafuyu404.diligentstalker.render.DroneStalkerModel;
 import net.minecraft.client.renderer.entity.EntityRenderers;
@@ -35,6 +37,8 @@ public class ClientSetup {
         event.registerEntityRenderer(StalkerEntities.ARROW_STALKER.get(), ArrowStalkerRender::new);
         event.registerEntityRenderer(StalkerEntities.VOID_STALKER.get(), ThrownItemRenderer::new);
         event.registerEntityRenderer(StalkerEntities.CAMERA_STALKER.get(), NoopRenderer::new);
+
+        event.registerBlockEntityRenderer(StalkerBlockEntities.CAMERA_STALKER.get(), CameraStalkerRenderer::new);
     }
     @SubscribeEvent
     public static void registerKeyMapping(RegisterKeyMappingsEvent event) {

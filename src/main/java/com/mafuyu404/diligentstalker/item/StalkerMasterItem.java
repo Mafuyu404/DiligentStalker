@@ -32,7 +32,7 @@ public class StalkerMasterItem extends Item {
             if (!tag.contains("StalkerId")) return InteractionResultHolder.fail(itemStack);
             player.startUsingItem(hand);
         }
-        return InteractionResultHolder.consume(itemStack);
+        return InteractionResultHolder.fail(itemStack);
     }
 
     @Override

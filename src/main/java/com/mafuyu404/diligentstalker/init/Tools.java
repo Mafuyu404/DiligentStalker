@@ -156,7 +156,6 @@ public class Tools {
         // 计算终点位置
         Vec3 endPos = startPos.add(direction.scale(maxDistance));
 
-        // 创建ClipContext（视线追踪参数）
         ClipContext clipContext = new ClipContext(
                 startPos,
                 endPos,

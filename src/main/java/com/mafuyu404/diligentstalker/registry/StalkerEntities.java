@@ -21,8 +21,6 @@ public class StalkerEntities {
             "drone_stalker",
             () -> EntityType.Builder.<DroneStalkerEntity>of(DroneStalkerEntity::new, MobCategory.MISC)
                     .sized(0.8f, 0.4f)
-                    .clientTrackingRange(8)
-                    .setUpdateInterval(3)
                     .build(new ResourceLocation(MODID, "drone_stalker").toString())
     );
     public static final RegistryObject<EntityType<ArrowStalkerEntity>> ARROW_STALKER = ENTITIES.register(

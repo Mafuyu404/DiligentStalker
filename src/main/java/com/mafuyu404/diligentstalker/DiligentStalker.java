@@ -1,9 +1,6 @@
 package com.mafuyu404.diligentstalker;
 
-import com.mafuyu404.diligentstalker.registry.Config;
-import com.mafuyu404.diligentstalker.registry.StalkerBlocks;
-import com.mafuyu404.diligentstalker.registry.StalkerEntities;
-import com.mafuyu404.diligentstalker.registry.StalkerItems;
+import com.mafuyu404.diligentstalker.registry.*;
 import com.mafuyu404.diligentstalker.init.NetworkHandler;
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -26,6 +23,7 @@ public class DiligentStalker {
         StalkerEntities.ENTITIES.register(modEventBus);
         StalkerItems.ITEMS.register(modEventBus);
         StalkerBlocks.BLOCKS.register(modEventBus);
+        StalkerBlockEntities.BLOCK_ENTITIES.register(modEventBus);
         StalkerItems.CREATIVE_MODE_TABS.register(modEventBus);
 
         ModLoadingContext.get().registerConfig(

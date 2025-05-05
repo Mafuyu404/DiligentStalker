@@ -2,17 +2,30 @@ package com.mafuyu404.diligentstalker.block;
 
 import com.mafuyu404.diligentstalker.entity.CameraStalkerBlockEntity;
 import com.mafuyu404.diligentstalker.entity.CameraStalkerEntity;
+import com.mafuyu404.diligentstalker.init.NetworkHandler;
+import com.mafuyu404.diligentstalker.network.ClientStalkerPacket;
 import com.mafuyu404.diligentstalker.registry.StalkerEntities;
+import com.mafuyu404.diligentstalker.registry.StalkerItems;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
@@ -20,14 +33,22 @@ import java.util.UUID;
 public class CameraStalkerBlock extends BaseEntityBlock {
 
     public CameraStalkerBlock(Properties p_49795_) {
-        super(p_49795_);
+        super(p_49795_.strength(1f));
+    }
+
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult p_49727_) {
+        return InteractionResult.FAIL;
+    }
+
+    @Override
+    public RenderShape getRenderShape(BlockState state) {
+        return RenderShape.ENTITYBLOCK_ANIMATED;
     }
 
     @Override
     public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean isMoving) {
         super.onPlace(state, level, pos, oldState, isMoving);
         if (!level.isClientSide) {
-            // 生成实体并绑定
             CameraStalkerEntity entity = new CameraStalkerEntity(StalkerEntities.CAMERA_STALKER.get(), level);
             entity.setPos(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
             level.addFreshEntity(entity);

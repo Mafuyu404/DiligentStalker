@@ -12,12 +12,15 @@
   "item.diligentstalker.stalker_master.record_fail": "无法重复绑定",
   "item.diligentstalker.stalker_master.intro1": "SHIFT右键绑定对象",
   "item.diligentstalker.stalker_master.intro2": "长按右键连接对象",
+  "item.diligentstalker.camera_stalker": "害羞跟踪狂",
 
   "entity.diligentstalker.drone_stalker": "善良跟踪狂",
   "entity.diligentstalker.drone_stalker.fuel_added": "已补充能量",
   "entity.diligentstalker.drone_stalker.fuel_full": "能量已满",
   "entity.diligentstalker.arrow_stalker": "头尖尖跟踪狂",
   "entity.diligentstalker.void_stalker": "头圆圆跟踪狂",
+
+  "block.diligentstalker.camera_stalker": "害羞跟踪狂",
 
   "key.categories.diligentstalker": "勤劳跟踪狂",
   "key.diligentstalker.disconnect.desc": "断开连接",
