@@ -1,6 +1,6 @@
 package com.mafuyu404.diligentstalker.event;
 
-import com.mafuyu404.diligentstalker.DiligentStalker;
+import com.mafuyu404.diligentstalker.api.PersistentDataHolder;
 import com.mafuyu404.diligentstalker.entity.ArrowStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.VoidStalkerEntity;
@@ -26,29 +26,101 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.EntityJoinLevelEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.fabricmc.fabric.api.event.player.UseEntityCallback;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.UUID;
 
-@Mod.EventBusSubscriber(modid = DiligentStalker.MODID, value = Dist.CLIENT)
+@Environment(EnvType.CLIENT)
 public class StalkerControl {
     public static float fixedXRot, fixedYRot;
     public static float xRot, yRot;
     public static boolean screen = false;
 
-    @SubscribeEvent
-    public static void onClientTick(TickEvent.ClientTickEvent event) {
+    public static void init() {
+        // 注册客户端Tick事件
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            onClientTick();
+        });
+
+        // 注册实体交互事件
+        UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
+            if (world.isClientSide()) {
+                if (player.isShiftKeyDown()) return InteractionResult.PASS;
+                if (player.getItemInHand(hand).getItem() instanceof StalkerCoreItem) {
+                    Stalker.connect(player, entity);
+                    return InteractionResult.SUCCESS;
+                } else if (entity instanceof DroneStalkerEntity stalker) {
+                    Stalker.connect(player, stalker);
+                    return InteractionResult.SUCCESS;
+                }
+            }
+            return InteractionResult.PASS;
+        });
+
+        // 注册方块交互事件
+        UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
+            if (world.isClientSide() && Stalker.hasInstanceOf(player)) {
+                return InteractionResult.FAIL;
+            }
+            return InteractionResult.PASS;
+        });
+
+        // 注册实体加入世界事件
+        ClientEntityEvents.ENTITY_LOAD.register((entity, world) -> {
+            if (!world.isClientSide()) return;
+            Player player = Minecraft.getInstance().player;
+            if (player == null) return;
+            
+            if (entity instanceof DroneStalkerEntity stalker) {
+                UUID entityUUID = Tools.uuidOfUsingStalkerMaster(player);
+                if (stalker.getUUID().equals(entityUUID)) {
+                    Stalker.connect(player, stalker);
+                }
+            }
+            if (entity instanceof ArrowStalkerEntity stalker) {
+                if (stalker.getOwner() != null && stalker.getOwner().getUUID().equals(player.getUUID())) {
+                    if (Stalker.hasInstanceOf(player)) return;
+                    Stalker.connect(player, stalker);
+                }
+            }
+            if (entity instanceof VoidStalkerEntity stalker) {
+                if (stalker.getOwner() != null && stalker.getOwner().getUUID().equals(player.getUUID())) {
+                    if (Stalker.hasInstanceOf(player)) return;
+                    Stalker.connect(player, stalker);
+                }
+            }
+        });
+
+        // 注册鼠标按钮事件 - 使用Fabric API的事件系统
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            // 在每个tick检查鼠标按钮状态
+            if (GLFW.glfwGetMouseButton(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_MOUSE_BUTTON_RIGHT) == GLFW.GLFW_PRESS) {
+                handleMouseInput(GLFW.GLFW_MOUSE_BUTTON_RIGHT, InputConstants.PRESS);
+            } else if (GLFW.glfwGetMouseButton(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_MOUSE_BUTTON_RIGHT) == GLFW.GLFW_RELEASE) {
+                handleMouseInput(GLFW.GLFW_MOUSE_BUTTON_RIGHT, InputConstants.RELEASE);
+            }
+        });
+
+        // 注册鼠标滚轮事件 - 使用Fabric API的MouseScrollCallback
+        MouseScrollCallback.EVENT.register((client, scrollDelta) -> {
+            handleMouseScroll(scrollDelta);
+            return true; // 返回true表示事件已处理
+        });
+    }
+
+    private static void onClientTick() {
         screen = Minecraft.getInstance().screen != null;
         if (screen) return;
-        if (event.phase == TickEvent.Phase.START) return;
+        
         LocalPlayer player = Minecraft.getInstance().player;
+        if (player == null) return;
+        
         UUID entityUUID = Tools.uuidOfUsingStalkerMaster(player);
         if (entityUUID != null) {
             ClientLevel level = player.clientLevel;
@@ -58,6 +130,7 @@ public class StalkerControl {
                 }
             });
         }
+        
         if (!Stalker.hasInstanceOf(player)) return;
         Stalker instance = Stalker.getInstanceOf(player);
         Entity stalker = instance.getStalker();
@@ -66,83 +139,67 @@ public class StalkerControl {
             stalker.setYRot(yRot);
             StalkerControl.syncControl();
         }
+        
+        // 处理键盘输入
+        handleKeyInput();
     }
 
-    @SubscribeEvent
-    public static void onInteract(PlayerInteractEvent.EntityInteract event) {
-        if (event.getSide().isClient()) {
-            Player player = event.getEntity();
-            if (player.isShiftKeyDown()) return;
-            if (event.getItemStack().getItem() instanceof StalkerCoreItem) {
-                Stalker.connect(player, event.getTarget());
-                event.setCanceled(true);
-            } else if (event.getTarget() instanceof DroneStalkerEntity stalker) {
-                Stalker.connect(player, stalker);
-                event.setCanceled(true);
-            }
-        }
-    }
-
-    @SubscribeEvent
-    public static void onControl(InputEvent.Key event) {
-        if (Minecraft.getInstance().screen != null) return;
+    private static void handleKeyInput() {
         Player player = Minecraft.getInstance().player;
-        Options options = Minecraft.getInstance().options;
-        if (!Stalker.hasInstanceOf(player)) return;
+        if (player == null || !Stalker.hasInstanceOf(player)) return;
+        
         updateControlMap();
-        if (event.getAction() == InputConstants.PRESS) {
-            if (event.getKey() == KeyBindings.DISCONNECT.getKey().getValue()) {
-                if (Stalker.hasInstanceOf(player)) Stalker.getInstanceOf(player).disconnect();
+        
+        // 检查断开连接键
+        if (KeyBindings.DISCONNECT.isDown()) {
+            if (Stalker.hasInstanceOf(player)) Stalker.getInstanceOf(player).disconnect();
+        }
+        
+        // 检查移动键
+        boolean shouldSync = false;
+        for (int key : Tools.ControlMap.values()) {
+            if (isKeyPressed(key)) {
+                shouldSync = true;
+                break;
             }
         }
-        if (Tools.ControlMap.containsValue(event.getKey())) {
+        
+        if (shouldSync) {
             syncControl();
         }
     }
 
-    @SubscribeEvent
-    public static void onUse(PlayerInteractEvent.RightClickBlock event) {
-        if (event.getSide().isClient() && Stalker.hasInstanceOf(event.getEntity())) {
-            event.setCanceled(true);
-        }
-    }
-    @SubscribeEvent
-    public static void onUse(PlayerInteractEvent.LeftClickBlock event) {
-        if (event.getSide().isClient() && Stalker.hasInstanceOf(event.getEntity())) {
-            event.setCanceled(true);
-        }
-    }
-
-    @SubscribeEvent
-    public static void onAction(InputEvent.MouseButton.Pre event) {
+    // 处理鼠标输入
+    public static void handleMouseInput(int button, int action) {
         if (Minecraft.getInstance().screen != null) return;
         Player player = Minecraft.getInstance().player;
-        if (!Stalker.hasInstanceOf(player)) return;
-        if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
-            DroneStalkerHUD.RPress = event.getAction() == InputConstants.PRESS;
+        if (player == null || !Stalker.hasInstanceOf(player)) return;
+        
+        if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
+            DroneStalkerHUD.RPress = action == InputConstants.PRESS;
         }
-        if (event.getAction() != InputConstants.PRESS) return;
-        if (event.getButton() != GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
-            event.setCanceled(true);
+        
+        if (action != InputConstants.PRESS) return;
+        if (button != GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
             return;
         }
+        
         Stalker instance = Stalker.getInstanceOf(player);
         if (instance.getStalker() instanceof DroneStalkerEntity) {
             BlockHitResult traceResult = Tools.rayTraceBlocks(player.level(), getCameraPosition(), getViewVector(), 4);
             if (traceResult.getType() == HitResult.Type.BLOCK) {
-                NetworkHandler.CHANNEL.sendToServer(new RClickBlockPacket(getCameraPosition(), getViewVector()));
+                NetworkHandler.sendToServer(new RClickBlockPacket(getCameraPosition(), getViewVector()));
                 RightClickBlock(player, getCameraPosition(), getViewVector());
             }
         }
-        event.setCanceled(true);
     }
 
-    @SubscribeEvent
-    public static void onMouseScrolling(InputEvent.MouseScrollingEvent event) {
+    // 处理鼠标滚轮
+    public static void handleMouseScroll(double scrollDelta) {
         if (Minecraft.getInstance().screen != null) return;
         Player player = Minecraft.getInstance().player;
-        if (!Stalker.hasInstanceOf(player)) return;
-        event.setCanceled(true);
+        if (player == null || !Stalker.hasInstanceOf(player)) return;
+        // 取消滚轮事件
     }
 
     public static CompoundTag handleInput() {
@@ -161,8 +218,10 @@ public class StalkerControl {
         if (player == null) return;
         updateControlMap();
         CompoundTag input = StalkerControl.handleInput();
-        player.getPersistentData().put("DroneStalkerInput", input);
-        NetworkHandler.CHANNEL.sendToServer(new EntityDataPacket(player.getId(), player.getPersistentData()));
+
+        PersistentDataHolder holder = (PersistentDataHolder) player;
+        holder.getPersistentData().put("DroneStalkerInput", input);
+        NetworkHandler.sendToServer(new EntityDataPacket(player.getId(), holder.getPersistentData()));
     }
 
     public static void RightClickBlock(Player player, Vec3 position, Vec3 viewVec) {
@@ -195,39 +254,14 @@ public class StalkerControl {
         return Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
     }
 
-    @SubscribeEvent
-    public static void onClientEnter(EntityJoinLevelEvent event) {
-        if (!event.getLevel().isClientSide) return;
-        Player player = Minecraft.getInstance().player;
-        if (player == null) return;
-        if (event.getEntity() instanceof DroneStalkerEntity stalker) {
-            UUID entityUUID = Tools.uuidOfUsingStalkerMaster(player);
-            if (stalker.getUUID().equals(entityUUID)) {
-                Stalker.connect(player, stalker);
-            }
-        }
-        if (event.getEntity() instanceof ArrowStalkerEntity stalker) {
-            if (stalker.getOwner() != null && stalker.getOwner().getUUID().equals(player.getUUID())) {
-                if (Stalker.hasInstanceOf(player)) return;
-                Stalker.connect(player, stalker);
-            }
-        }
-        if (event.getEntity() instanceof VoidStalkerEntity stalker) {
-            if (stalker.getOwner() != null && stalker.getOwner().getUUID().equals(player.getUUID())) {
-                if (Stalker.hasInstanceOf(player)) return;
-                Stalker.connect(player, stalker);
-            }
-        }
-    }
-
     private static void updateControlMap() {
         Options options = Minecraft.getInstance().options;
-        Tools.ControlMap.put("Up", options.keyUp.getKey().getValue());
-        Tools.ControlMap.put("Down", options.keyDown.getKey().getValue());
-        Tools.ControlMap.put("Left", options.keyLeft.getKey().getValue());
-        Tools.ControlMap.put("Right", options.keyRight.getKey().getValue());
-        Tools.ControlMap.put("Jump", options.keyJump.getKey().getValue());
-        Tools.ControlMap.put("Shift", options.keyShift.getKey().getValue());
+        Tools.ControlMap.put("Up", options.keyUp.key.getValue());
+        Tools.ControlMap.put("Down", options.keyDown.key.getValue());
+        Tools.ControlMap.put("Left", options.keyLeft.key.getValue());
+        Tools.ControlMap.put("Right", options.keyRight.key.getValue());
+        Tools.ControlMap.put("Jump", options.keyJump.key.getValue());
+        Tools.ControlMap.put("Shift", options.keyShift.key.getValue());
     }
 
     public static boolean isKeyPressed(int glfwKeyCode) {

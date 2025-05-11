@@ -1,16 +1,19 @@
 package com.mafuyu404.diligentstalker.mixin;
 
+import com.mafuyu404.diligentstalker.api.PersistentDataHolder;
 import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import com.mafuyu404.diligentstalker.event.StalkerControl;
 import com.mafuyu404.diligentstalker.event.StalkerManage;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -20,7 +23,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Mixin(value = Entity.class)
-public abstract class EntityMixin {
+public abstract class EntityMixin implements PersistentDataHolder {
     @Shadow public abstract Level level();
 
     @Shadow private Level level;
@@ -96,5 +99,17 @@ public abstract class EntityMixin {
                 }
             });
         }
+    }
+
+    @Unique
+    private CompoundTag persistentData;
+
+    @Unique
+    @Override
+    public CompoundTag getPersistentData() {
+        if (persistentData == null) {
+            persistentData = new CompoundTag();
+        }
+        return persistentData;
     }
 }

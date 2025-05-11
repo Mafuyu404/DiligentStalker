@@ -1,13 +1,12 @@
 package com.mafuyu404.diligentstalker.network;
 
 import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
-import net.minecraftforge.network.NetworkEvent;
-
-import java.util.function.Supplier;
 
 public class ClientFuelPacket {
     private final int entityId;
@@ -27,14 +26,16 @@ public class ClientFuelPacket {
         return new ClientFuelPacket(buffer.readInt(), buffer.readInt());
     }
 
-    public static void handle(ClientFuelPacket msg, Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            ClientLevel level = Minecraft.getInstance().level;
+    public static void handle(Minecraft client, ClientPacketListener handler, FriendlyByteBuf buf, PacketSender responseSender) {
+        ClientFuelPacket msg = decode(buf);
+        client.execute(() -> {
+            ClientLevel level = client.level;
+            if (level == null) return;
+            
             Entity entity = level.getEntity(msg.entityId);
             if (entity instanceof DroneStalkerEntity droneStalker) {
                 droneStalker.setFuel(msg.fuel);
             }
         });
-        ctx.get().setPacketHandled(true);
     }
 }

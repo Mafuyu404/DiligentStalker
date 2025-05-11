@@ -3,7 +3,7 @@ package com.mafuyu404.diligentstalker.init;
 import com.mafuyu404.diligentstalker.entity.VoidStalkerEntity;
 import com.mafuyu404.diligentstalker.event.StalkerManage;
 import com.mafuyu404.diligentstalker.item.StalkerMasterItem;
-import com.mafuyu404.diligentstalker.registry.Config;
+import com.mafuyu404.diligentstalker.registry.ModConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
@@ -172,8 +172,8 @@ public class Tools {
         if (stalker == null) return new ArrayList<>();
         ChunkPos center = stalker.chunkPosition();
         ArrayList<ChunkPos> newChunks = new ArrayList<>();
-        int radius = Config.RENDER_RADIUS_NORMAL.get() + offset;
-        if (stalker instanceof VoidStalkerEntity) radius = Config.RENDER_RADIUS_SPECIAL.get();
+        int radius = ModConfig.get().renderRadius.normal + offset;
+        if (stalker instanceof VoidStalkerEntity) radius = ModConfig.get().renderRadius.special;
         for (int x = -radius; x <= radius; x++) {
             for (int z = -radius; z <= radius; z++) {
                 if (Math.sqrt(x*x+z*z) > radius && radius >= 5) continue;

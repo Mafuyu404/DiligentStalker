@@ -13,12 +13,12 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 
 public class VoidStalkerEntity extends ThrowableItemProjectile {
-    public VoidStalkerEntity(EntityType<? extends VoidStalkerEntity> p_37391_, Level p_37392_) {
-        super(p_37391_, p_37392_);
+    public VoidStalkerEntity(EntityType<? extends VoidStalkerEntity> type, Level level) {
+        super(type, level);
     }
 
     public VoidStalkerEntity(LivingEntity owner, Level level) {
-        super(StalkerEntities.VOID_STALKER.get(), owner, level);
+        super(StalkerEntities.VOID_STALKER, owner, level);
         this.setNoGravity(true);
         owner.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 40, 1, false, false));
     }
@@ -32,7 +32,7 @@ public class VoidStalkerEntity extends ThrowableItemProjectile {
     }
 
     protected Item getDefaultItem() {
-        return StalkerItems.VOID_STALKER.get();
+        return StalkerItems.VOID_STALKER;
     }
 
     public void handleEntityEvent(byte p_37402_) {
