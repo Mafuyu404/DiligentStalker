@@ -20,15 +20,15 @@ public abstract class PlayerMixin {
 
     @Inject(method = "getInventory", at = @At("HEAD"), cancellable = true)
     private void wwa(CallbackInfoReturnable<Inventory> cir) {
-//        Player player = this.inventory.player;
-//        if (Stalker.hasInstanceOf(player) && !this.isLocalPlayer()) {
-//            if (Stalker.getInstanceOf(player).getStalker() instanceof DroneStalkerEntity stalker) {
-//                VirtualInventory virtualInventory = new VirtualInventory(this.inventory.getContainerSize(), player);
-//                for (int i = 0; i < stalker.getContainerSize(); i++) {
-//                    virtualInventory.setItem(i + 9, stalker.getItem(i));
-//                }
-//                cir.setReturnValue(virtualInventory);
-//            }
-//        }
+        Player player = this.inventory.player;
+        if (Stalker.hasInstanceOf(player) && !this.isLocalPlayer()) {
+            if (Stalker.getInstanceOf(player).getStalker() instanceof DroneStalkerEntity stalker) {
+                VirtualInventory virtualInventory = new VirtualInventory(this.inventory.getContainerSize(), player);
+                for (int i = 0; i < stalker.getContainerSize(); i++) {
+                    virtualInventory.setItem(i + 9, stalker.getItem(i));
+                }
+                cir.setReturnValue(virtualInventory);
+            }
+        }
     }
 }

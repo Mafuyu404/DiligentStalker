@@ -1,10 +1,7 @@
 {
   "variants": {
-    "face=ceiling": { "model": "diligentstalker:block/camera_stalker", "x": 180 },
-    "face=floor": { "model": "diligentstalker:block/camera_stalker" },
-    "face=wall,facing=north": { "model": "diligentstalker:block/camera_stalker", "x": 90, "y": 180 },
-    "face=wall,facing=south": { "model": "diligentstalker:block/camera_stalker", "x": 90 },
-    "face=wall,facing=east": { "model": "diligentstalker:block/camera_stalker", "x": 90, "y": 270 },
-    "face=wall,facing=west": { "model": "diligentstalker:block/camera_stalker", "x": 90, "y": 90 }
+    "": {
+      "model": "diligentstalker:block/camera_stalker"
+    }
   }
 }

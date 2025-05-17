@@ -17,10 +17,8 @@
     "CameraMixin",
     "ClientChunkCache$StorageMixin",
     "ClientPacketListenerMixin",
-    "EntityRendererMixin",
     "GameRendererMixin",
     "LevelRendererMixin",
-    "LocalPlayerMixin",
     "MinecraftMixin",
     "PlayerRendererMixin"
   ],

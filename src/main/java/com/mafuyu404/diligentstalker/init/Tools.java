@@ -1,7 +1,5 @@
 package com.mafuyu404.diligentstalker.init;
 
-import com.mafuyu404.diligentstalker.compat.MaidCompat;
-import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.VoidStalkerEntity;
 import com.mafuyu404.diligentstalker.event.StalkerManage;
 import com.mafuyu404.diligentstalker.item.StalkerMasterItem;
@@ -206,11 +204,5 @@ public class Tools {
             }
         }
         return null;
-    }
-
-    public static boolean isControllable(Entity entity) {
-        boolean isDroneStalker = entity instanceof DroneStalkerEntity;
-        boolean isMaid = false;
-        return isDroneStalker || isMaid;
     }
 }

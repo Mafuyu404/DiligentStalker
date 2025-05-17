@@ -54,14 +54,14 @@ public abstract class EntityMixin {
         }
     }
 
-//    @Inject(method = "distanceToSqr(DDD)D", at = @At("HEAD"), cancellable = true)
-//    private void modifyDistance(double p_20276_, double p_20277_, double p_20278_, CallbackInfoReturnable<Double> cir) {
-//        if (((Object) this) instanceof Player player) {
-//            if (Stalker.hasInstanceOf(player)) {
-//                cir.setReturnValue(1d);
-//            }
-//        }
-//    }
+    @Inject(method = "distanceToSqr(DDD)D", at = @At("HEAD"), cancellable = true)
+    private void modifyDistance(double p_20276_, double p_20277_, double p_20278_, CallbackInfoReturnable<Double> cir) {
+        if (((Object) this) instanceof Player player) {
+            if (Stalker.hasInstanceOf(player)) {
+                cir.setReturnValue(1d);
+            }
+        }
+    }
     @Inject(method = "setPosRaw", at = @At("HEAD"), cancellable = true)
     private void avoidVoidFall(double p_20210_, double p_20211_, double p_20212_, CallbackInfo ci) {
         if (((Object) this) instanceof Player player) {
