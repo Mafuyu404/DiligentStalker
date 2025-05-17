@@ -10,6 +10,7 @@ public class CameraStalkerEntity extends Entity {
         super(p_19870_, p_19871_);
         this.noPhysics = true;
         this.setInvisible(true);
+        this.setNoGravity(true);
     }
 
     @Override

@@ -20,11 +20,11 @@ import java.util.List;
 
 @Mixin(value = ClientPacketListener.class)
 public class ClientPacketListenerMixin {
-    @Redirect(method = "handleContainerContent", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/inventory/InventoryMenu;initializeContents(ILjava/util/List;Lnet/minecraft/world/item/ItemStack;)V"))
-    private void avoidInventoryUpdate(InventoryMenu instance, int i, List<ItemStack> list, ItemStack itemStack) {
-        Player player = Minecraft.getInstance().player;
-        if (!Stalker.hasInstanceOf(player)) {
-            instance.initializeContents(i, list, itemStack);
-        }
-    }
+//    @Redirect(method = "handleContainerContent", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/inventory/InventoryMenu;initializeContents(ILjava/util/List;Lnet/minecraft/world/item/ItemStack;)V"))
+//    private void avoidInventoryUpdate(InventoryMenu instance, int i, List<ItemStack> list, ItemStack itemStack) {
+//        Player player = Minecraft.getInstance().player;
+//        if (!Stalker.hasInstanceOf(player)) {
+//            instance.initializeContents(i, list, itemStack);
+//        }
+//    }
 }

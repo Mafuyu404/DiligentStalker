@@ -1,6 +1,7 @@
 package com.mafuyu404.diligentstalker.event;
 
 import com.mafuyu404.diligentstalker.DiligentStalker;
+import com.mafuyu404.diligentstalker.compat.MaidCompat;
 import com.mafuyu404.diligentstalker.entity.ArrowStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.VoidStalkerEntity;
@@ -8,6 +9,7 @@ import com.mafuyu404.diligentstalker.init.NetworkHandler;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.init.Tools;
 import com.mafuyu404.diligentstalker.item.StalkerCoreItem;
+import com.mafuyu404.diligentstalker.item.StalkerMasterItem;
 import com.mafuyu404.diligentstalker.network.EntityDataPacket;
 import com.mafuyu404.diligentstalker.network.RClickBlockPacket;
 import com.mafuyu404.diligentstalker.registry.KeyBindings;
@@ -72,13 +74,14 @@ public class StalkerControl {
     public static void onInteract(PlayerInteractEvent.EntityInteract event) {
         if (event.getSide().isClient()) {
             Player player = event.getEntity();
-            if (player.isShiftKeyDown()) return;
-            if (event.getItemStack().getItem() instanceof StalkerCoreItem) {
-                Stalker.connect(player, event.getTarget());
-                event.setCanceled(true);
-            } else if (event.getTarget() instanceof DroneStalkerEntity stalker) {
-                Stalker.connect(player, stalker);
-                event.setCanceled(true);
+            Entity entity = event.getTarget();
+            boolean usingStalkerCore = event.getItemStack().getItem() instanceof StalkerCoreItem;
+            boolean isDroneStalker = entity instanceof DroneStalkerEntity;
+            if (!player.isShiftKeyDown()) {
+                if (isDroneStalker || usingStalkerCore) {
+                    Stalker.connect(player, entity);
+                    event.setCanceled(true);
+                }
             }
         }
     }

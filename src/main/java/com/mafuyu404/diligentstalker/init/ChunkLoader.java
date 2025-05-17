@@ -20,7 +20,6 @@ public class ChunkLoader {
         if (!loaders.containsKey(key)) loaders.put(key, new ArrayList<>());
         if (!loaders.get(key).contains(center)) {
             loaders.get(key).add(center);
-//            level.getChunkSource().addRegionTicket(StalkerTicket, center, 33, center);
             ForgeChunkManager.forceChunk(level, DiligentStalker.MODID, center.getMiddleBlockPosition(0),
                     center.x, center.z, true, true);
         }
@@ -33,9 +32,21 @@ public class ChunkLoader {
         while (iterator.hasNext()) {
             ChunkPos center = iterator.next();
             iterator.remove();
-//            level.getChunkSource().addRegionTicket(StalkerTicket, chunkPos, 33, chunkPos);
             ForgeChunkManager.forceChunk(level, DiligentStalker.MODID, center.getMiddleBlockPosition(0),
                     center.x, center.z, false, false);
+        }
+    }
+    public static void remove(ServerLevel level, ChunkPos center) {
+        String key = level.dimension().toString();
+        if (!loaders.containsKey(key)) return;
+        if (loaders.get(key).isEmpty()) return;
+        Iterator<ChunkPos> iterator = loaders.get(key).iterator();
+        while (iterator.hasNext()) {
+            if (center == iterator.next()) {
+                iterator.remove();
+                ForgeChunkManager.forceChunk(level, DiligentStalker.MODID, center.getMiddleBlockPosition(0),
+                        center.x, center.z, false, false);
+            }
         }
     }
 }

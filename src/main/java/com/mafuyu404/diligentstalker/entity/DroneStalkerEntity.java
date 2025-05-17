@@ -49,7 +49,6 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
     private static final int MAX_FUEL_TICK = 720;
     private int fuel_tick = MAX_FUEL_TICK;
     private static final int ITEM_PICKUP_RANGE = 2;
-    private int interact_cooldown = 0;
 
     public DroneStalkerEntity(EntityType<? extends Boat> p_219869_, Level level) {
         super(p_219869_, level);
@@ -64,8 +63,6 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
     }
 
     public InteractionResult interact(Player player, InteractionHand hand) {
-        if (interact_cooldown > 0) return InteractionResult.FAIL;
-        interact_cooldown = 20;
         if (player.isShiftKeyDown()) {
             ItemStack itemStack = player.getMainHandItem();
             if (itemStack.is(Items.SUGAR)) {
@@ -82,31 +79,12 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
                 }
                 return InteractionResult.FAIL;
             }
-            else if (itemStack.is(StalkerItems.STALKER_MASTER.get())) {
-                CompoundTag tag = itemStack.getOrCreateTag();
-                if (!tag.contains("StalkerId") || tag.getUUID("StalkerId") != this.uuid) {
-                    tag.putUUID("StalkerId", this.uuid);
-                    BlockPos pos = this.blockPosition();
-                    tag.putIntArray("StalkerPosition", new int[]{pos.getX(), pos.getY(), pos.getZ()});
-                    player.displayClientMessage(Component.translatable("item.diligentstalker.stalker_master.record_success").withStyle(ChatFormatting.GREEN), true);
-                }
-            } else {
-                if (!level().isClientSide) {
-                    InteractionResult interactionresult = this.interactWithContainerVehicle(player);
-                    if (interactionresult.consumesAction()) {
-                        this.gameEvent(GameEvent.CONTAINER_OPEN, player);
-                    }
-                    return interactionresult;
-                }
-            }
         }
         return InteractionResult.FAIL;
     }
 
     @Override
     public void tick() {
-        if (interact_cooldown > 0) interact_cooldown--;
-
         this.move(MoverType.SELF, this.getDeltaMovement());
         if (!Stalker.hasInstanceOf(this)) {
             this.setDeltaMovement(this.getDeltaMovement().scale(0.8));
