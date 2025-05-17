@@ -1,12 +1,14 @@
 package com.mafuyu404.diligentstalker.network;
 
+import com.mafuyu404.diligentstalker.api.PersistentDataHolder;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.network.NetworkEvent;
-
-import java.util.function.Supplier;
 
 public class EntityDataPacket {
     private final int entityId;
@@ -26,14 +28,16 @@ public class EntityDataPacket {
         return new EntityDataPacket(buffer.readInt(), buffer.readNbt());
     }
 
-    public static void handle(EntityDataPacket msg, Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            Level level = ctx.get().getSender().level();
+    public static void handle(MinecraftServer server, ServerPlayer player, ServerGamePacketListenerImpl handler, FriendlyByteBuf buf, PacketSender responseSender) {
+        EntityDataPacket msg = decode(buf);
+        server.execute(() -> {
+            Level level = player.level();
             if (level == null) return;
+            
             Entity entity = level.getEntity(msg.entityId);
             if (entity == null) return;
-            entity.getPersistentData().merge(msg.nbt);
+            PersistentDataHolder holder = (PersistentDataHolder) entity;
+            holder.getPersistentData().merge(msg.nbt);
         });
-        ctx.get().setPacketHandled(true);
     }
 }

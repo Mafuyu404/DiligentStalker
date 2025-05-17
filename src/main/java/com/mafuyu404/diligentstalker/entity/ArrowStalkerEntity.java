@@ -20,12 +20,12 @@ public class ArrowStalkerEntity extends AbstractArrow {
     }
 
     public ArrowStalkerEntity(LivingEntity shooter, Level level) {
-        super(StalkerEntities.ARROW_STALKER.get(), shooter, level);
+        super(StalkerEntities.ARROW_STALKER, shooter, level);
     }
 
     @Override
     protected ItemStack getPickupItem() {
-        return new ItemStack(StalkerItems.ARROW_STALKER.get());
+        return new ItemStack(StalkerItems.ARROW_STALKER);
     }
 
     @Override

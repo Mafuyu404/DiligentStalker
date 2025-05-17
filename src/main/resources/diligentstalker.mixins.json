@@ -10,6 +10,7 @@
     "ChunkMapMixin",
     "ClientboundLevelChunkWithLightPacketMixin",
     "EntityMixin",
+    "ExperienceBarMixin",
     "InventoryAccessor",
     "PlayerMixin"
   ],
@@ -20,6 +21,7 @@
     "GameRendererMixin",
     "LevelRendererMixin",
     "MinecraftMixin",
+    "MouseMixin",
     "PlayerRendererMixin"
   ],
   "injectors": {

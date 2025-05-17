@@ -1,6 +1,6 @@
 package com.mafuyu404.diligentstalker.event;
 
-import com.mafuyu404.diligentstalker.DiligentStalker;
+import com.mafuyu404.diligentstalker.api.PersistentDataHolder;
 import com.mafuyu404.diligentstalker.entity.ArrowStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.CameraStalkerBlockEntity;
 import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
@@ -12,8 +12,7 @@ import com.mafuyu404.diligentstalker.init.Tools;
 import com.mafuyu404.diligentstalker.item.StalkerMasterItem;
 import com.mafuyu404.diligentstalker.network.ClientFuelPacket;
 import com.mafuyu404.diligentstalker.network.ClientStalkerPacket;
-import com.mafuyu404.diligentstalker.registry.Config;
-import com.mafuyu404.diligentstalker.registry.StalkerBlocks;
+import com.mafuyu404.diligentstalker.registry.ModConfig;
 import com.mafuyu404.diligentstalker.registry.StalkerItems;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -23,44 +22,73 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
+import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 
 import java.util.*;
 
-@Mod.EventBusSubscriber(modid = DiligentStalker.MODID)
 public class StalkerManage {
     public static final HashMap<UUID, Map.Entry<String, BlockPos>> DronePosition = new HashMap<>();
     private static int SIGNAL_RADIUS = 0;
     private static HashMap<UUID, ArrayList<ArrayList<ChunkPos>>> LoadingChunks = new HashMap<>();
 
-    @SubscribeEvent
-    public static void onServerTick(TickEvent.ServerTickEvent event) {
-        if (event.phase == TickEvent.Phase.END) return;
-        if (event.getServer().getTickCount() %10 == 0) {
-            event.getServer().getAllLevels().forEach(StalkerManage::onLevelTick);
-        }
-        event.getServer().getPlayerList().getPlayers().forEach(StalkerManage::onPlayerTick);
+    public static void init() {
+        // 注册服务器Tick事件
+        ServerTickEvents.START_SERVER_TICK.register(server -> {
+            if (server.getTickCount() % 10 == 0) {
+                server.getAllLevels().forEach(StalkerManage::onLevelTick);
+            }
+            server.getPlayerList().getPlayers().forEach(StalkerManage::onPlayerTick);
+        });
+
+        // 注册实体离开世界事件
+        ServerEntityEvents.ENTITY_UNLOAD.register((entity, world) -> {
+            if (Stalker.hasInstanceOf(entity)) {
+                Stalker.getInstanceOf(entity).disconnect();
+            }
+        });
+
+        // 注册方块交互事件
+        UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
+            BlockPos pos = hitResult.getBlockPos();
+            if (!world.isClientSide() && world.getBlockEntity(pos) instanceof CameraStalkerBlockEntity be) {
+                UUID entityUUID = be.getCameraStalkerUUID();
+                if (entityUUID != null && hand == InteractionHand.MAIN_HAND) {
+                    Entity entity = ((ServerLevel) world).getEntity(entityUUID);
+                    ItemStack itemStack = player.getMainHandItem();
+                    if (player.isShiftKeyDown() && itemStack.is(StalkerItems.STALKER_MASTER)) {
+                        CompoundTag tag = itemStack.getOrCreateTag();
+                        if (!tag.contains("StalkerId") || tag.getUUID("StalkerId") != entityUUID) {
+                            tag.putUUID("StalkerId", entityUUID);
+                            tag.putIntArray("StalkerPosition", new int[]{pos.getX(), pos.getY(), pos.getZ()});
+                            player.displayClientMessage(Component.translatable("item.diligentstalker.stalker_master.record_success").withStyle(ChatFormatting.GREEN), true);
+                        }
+                    }
+                    else {
+                        NetworkHandler.sendToClient((ServerPlayer) player, new ClientStalkerPacket(entity.getId()));
+                    }
+                }
+                return net.minecraft.world.InteractionResult.SUCCESS;
+            }
+            return net.minecraft.world.InteractionResult.PASS;
+        });
     }
+
     private static void onPlayerTick(ServerPlayer player) {
         if (player.tickCount % 20 == 0) syncMasterTag(player);
         if (!Stalker.hasInstanceOf(player)) return;
         Entity stalker = Stalker.getInstanceOf(player).getStalker();
         int timer = 10;
         if (stalker instanceof DroneStalkerEntity droneStalker) {
-            CompoundTag input = (CompoundTag) player.getPersistentData().get("DroneStalkerInput");
+            PersistentDataHolder holder = (PersistentDataHolder) player;
+            CompoundTag input = (CompoundTag) holder.getPersistentData().get("DroneStalkerInput");
             Vec3 direction = droneStalker.position().subtract(player.position());
             int distance = (int) direction.length();
-            if (SIGNAL_RADIUS == 0) SIGNAL_RADIUS = Config.SIGNAL_RADIUS.get();
+            if (SIGNAL_RADIUS == 0) SIGNAL_RADIUS = ModConfig.get().droneSetting.signalRadius;
             if (input != null) {
                 float xRot = input.getFloat("xRot");
                 float yRot = input.getFloat("yRot");
@@ -81,6 +109,7 @@ public class StalkerManage {
             player.teleportRelative(0, 0, 0);
         }
     }
+
     private static void onLevelTick(ServerLevel level) {
         ChunkLoader.removeAll(level);
         level.getEntities().getAll().forEach(entity -> {
@@ -101,13 +130,6 @@ public class StalkerManage {
                 ChunkLoader.add(level, new ChunkPos(entry.getValue()));
             }
         });
-    }
-
-    @SubscribeEvent
-    public static void onUnload(EntityLeaveLevelEvent event) {
-        if (Stalker.hasInstanceOf(event.getEntity())) {
-            Stalker.getInstanceOf(event.getEntity()).disconnect();
-        }
     }
 
     private static void syncMasterTag(ServerPlayer player) {
@@ -139,31 +161,5 @@ public class StalkerManage {
                 }
             }
         });
-    }
-
-    @SubscribeEvent
-    public static void useBlock(PlayerInteractEvent.RightClickBlock event) {
-        Player player = event.getEntity();
-        Level level = event.getLevel();
-        BlockPos pos = event.getHitVec().getBlockPos();
-        if (!level.isClientSide && level.getBlockEntity(pos) instanceof CameraStalkerBlockEntity be) {
-            UUID entityUUID = be.getCameraStalkerUUID();
-            if (entityUUID != null && event.getHand() == InteractionHand.MAIN_HAND) {
-                Entity entity = ((ServerLevel) level).getEntity(entityUUID);
-                ItemStack itemStack = player.getMainHandItem();
-                if (player.isShiftKeyDown() && itemStack.is(StalkerItems.STALKER_MASTER.get())) {
-                    CompoundTag tag = itemStack.getOrCreateTag();
-                    if (!tag.contains("StalkerId") || tag.getUUID("StalkerId") != entityUUID) {
-                        tag.putUUID("StalkerId", entityUUID);
-                        tag.putIntArray("StalkerPosition", new int[]{pos.getX(), pos.getY(), pos.getZ()});
-                        player.displayClientMessage(Component.translatable("item.diligentstalker.stalker_master.record_success").withStyle(ChatFormatting.GREEN), true);
-                    }
-                }
-                else {
-                    NetworkHandler.sendToClient((ServerPlayer) player, new ClientStalkerPacket(entity.getId()));
-                }
-            }
-            event.setCanceled(true);
-        }
     }
 }

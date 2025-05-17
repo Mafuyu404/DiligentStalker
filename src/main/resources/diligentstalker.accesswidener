@@ -1,0 +1,7 @@
+accessWidener v2 named
+
+accessible field net/minecraft/client/KeyMapping key Lcom/mojang/blaze3d/platform/InputConstants$Key;
+accessible method net/minecraft/server/level/ServerLevel getEntities ()Lnet/minecraft/world/level/entity/LevelEntityGetter;
+
+mutable field net/minecraft/client/Options renderDistance Lnet/minecraft/client/OptionInstance;
+accessible field net/minecraft/client/Options renderDistance Lnet/minecraft/client/OptionInstance;

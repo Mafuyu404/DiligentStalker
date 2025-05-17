@@ -1,13 +1,11 @@
 package com.mafuyu404.diligentstalker.mixin;
 
 import com.mafuyu404.diligentstalker.api.IChunkMap;
-import com.mafuyu404.diligentstalker.event.StalkerManage;
+import com.mafuyu404.diligentstalker.api.PersistentDataHolder;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.init.Tools;
-import com.mafuyu404.diligentstalker.item.StalkerMasterItem;
-import com.mafuyu404.diligentstalker.registry.Config;
+import com.mafuyu404.diligentstalker.registry.ModConfig;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
 import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.ChunkMap;
@@ -40,12 +38,13 @@ public abstract class ChunkMapMixin implements IChunkMap {
         if (Stalker.hasInstanceOf(player)) {
             center = Stalker.getInstanceOf(player).getStalker().chunkPosition();
         }
-        if (player.getPersistentData().getBoolean("LoadingCacheChunk")) {
+        PersistentDataHolder holder = (PersistentDataHolder) player;
+        if (holder.getPersistentData().getBoolean("LoadingCacheChunk")) {
             center = player.chunkPosition();
-            player.getPersistentData().putBoolean("LoadingCacheChunk", false);
+            holder.getPersistentData().putBoolean("LoadingCacheChunk", false);
         }
         if (center == null) return;
-        int radius = Config.RENDER_RADIUS_NORMAL.get();
+        int radius = ModConfig.get().renderRadius.normal;
         for (int x = -radius; x <= radius; x++) {
             for (int z = -radius; z <= radius; z++) {
                 loadLevelChunk(player, new ChunkPos(center.x + x, center.z + z));

@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "diligentstalker",
+  "version": "${version}",
+  "name": "Diligent Stalker",
+  "description": "",
+  "authors": [
+  "Mafuyu404",
+    "Flechazo"
+],
+  "contact": {},
+  "license": "MIT",
+  "icon": "",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "com.mafuyu404.diligentstalker.event.ClientSetup"
+    ],
+    "main": [
+      "com.mafuyu404.diligentstalker.DiligentStalker"
+    ]
+  },
+  "mixins": [
+    "diligentstalker.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  },
+  "accessWidener" : "diligentstalker.accesswidener"
+}

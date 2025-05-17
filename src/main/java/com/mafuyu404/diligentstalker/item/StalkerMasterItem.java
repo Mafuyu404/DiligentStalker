@@ -1,7 +1,6 @@
 package com.mafuyu404.diligentstalker.item;
 
 import com.mafuyu404.diligentstalker.init.Stalker;
-import com.mafuyu404.diligentstalker.init.Tools;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -45,12 +44,6 @@ public class StalkerMasterItem extends Item {
         return UseAnim.BOW;
     }
 
-    @Override
-    public void onStopUsing(ItemStack stack, LivingEntity entity, int timeLeft) {
-        if (entity instanceof Player player) {
-
-        }
-    }
 
     @Override
     public void releaseUsing(ItemStack stack, Level level, LivingEntity entity, int timeLeft) {
@@ -59,7 +52,7 @@ public class StalkerMasterItem extends Item {
         }
     }
 
-    public void appendHoverText(ItemStack itemStack, @Nullable Level level, List<Component> result, TooltipFlag p_41214_) {
+    public void appendHoverText(ItemStack itemStack, @Nullable Level level, List<Component> result, TooltipFlag tooltipFlag) {
         CompoundTag tag = itemStack.getOrCreateTag();
         if (tag.contains("StalkerPosition")) {
             result.add(Component.literal("> " + Arrays.toString(tag.getIntArray("StalkerPosition")) + " <").withStyle(ChatFormatting.GREEN));
