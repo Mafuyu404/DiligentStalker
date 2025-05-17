@@ -25,4 +25,5 @@ public class GameRendererMixin {
             cir.setReturnValue(1f);
         }
     }
+
 }

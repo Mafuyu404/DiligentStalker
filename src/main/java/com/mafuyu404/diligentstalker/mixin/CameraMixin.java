@@ -30,9 +30,14 @@ public abstract class CameraMixin{
         Player player = Minecraft.getInstance().player;
         if (Stalker.hasInstanceOf(player)) {
             Vec3 pos0 = this.position;
-            double x = Tools.lerp(pos0.x, pos1.x);
-            double y = Tools.lerp(pos0.y, pos1.y);
-            double z = Tools.lerp(pos0.z, pos1.z);
+            // 使用更平滑的插值系数，基于帧时间
+            float deltaTime = Minecraft.getInstance().getDeltaFrameTime() * 0.05f; // 调整系数
+            float smoothFactor = Math.min(0.8f, deltaTime); // 限制最大平滑系数
+            
+            double x = pos0.x + (pos1.x - pos0.x) * smoothFactor;
+            double y = pos0.y + (pos1.y - pos0.y) * smoothFactor;
+            double z = pos0.z + (pos1.z - pos0.z) * smoothFactor;
+            
             return new Vec3(x, y, z);
         } else {
             Map.Entry<String, BlockPos> entry = Tools.entryOfUsingStalkerMaster(player);

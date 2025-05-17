@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 
 public class DiligentStalker implements ModInitializer {
     public static final String MODID = "diligentstalker";
-    public static boolean HIDE_EXP_BAR = false; // 添加这个标志用于控制经验条显示
+    public static boolean HIDE_EXP_BAR = false;
 
     public static final Logger LOGGER = LogUtils.getLogger();
 
@@ -21,8 +21,8 @@ public class DiligentStalker implements ModInitializer {
         
         // 注册实体、物品、方块等
         StalkerEntities.register();
-        StalkerItems.register();
         StalkerBlocks.register();
+        StalkerItems.register();
         StalkerBlockEntities.register();
         StalkerCreativeModeTab.register();
         

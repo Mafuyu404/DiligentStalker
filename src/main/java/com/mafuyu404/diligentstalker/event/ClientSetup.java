@@ -22,7 +22,7 @@ public class ClientSetup implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
 
-        ClientEvents.init();
+//        ClientEvents.init();
         StalkerManage.init();
         HideEXPBar.init();
         ChunkLoadTask.init();

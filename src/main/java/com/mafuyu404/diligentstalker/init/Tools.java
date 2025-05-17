@@ -4,6 +4,7 @@ import com.mafuyu404.diligentstalker.entity.VoidStalkerEntity;
 import com.mafuyu404.diligentstalker.event.StalkerManage;
 import com.mafuyu404.diligentstalker.item.StalkerMasterItem;
 import com.mafuyu404.diligentstalker.registry.ModConfig;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
@@ -41,8 +42,18 @@ public class Tools {
         return input;
     }
 
-    public static double lerp(double current, double target) {
-        return current + (target - current) * 0.3;
+    // 修改现有的 lerp 方法
+    public static double lerp(double start, double end) {
+        // 使用更高的插值系数使移动更快更平滑
+        float smoothFactor = 0.6f; // 调整此值以获得最佳效果
+        return start + (end - start) * smoothFactor;
+    }
+
+    // 或者添加一个新的基于时间的 lerp 方法
+    public static double lerpWithDelta(double start, double end) {
+        float deltaTime = Minecraft.getInstance().getDeltaFrameTime() * 0.05f;
+        float smoothFactor = Math.min(0.8f, deltaTime);
+        return start + (end - start) * smoothFactor;
     }
 
     public static Vec3 calculateViewVector(float xRot, float yRot) {
@@ -161,7 +172,7 @@ public class Tools {
                 endPos,
                 ClipContext.Block.OUTLINE, // 检测方块轮廓
                 ClipContext.Fluid.NONE,   // 忽略流体
-                null                      // 不需要实体
+                Minecraft.getInstance().player  // 使用当前玩家实体而不是null
         );
 
         // 执行射线追踪

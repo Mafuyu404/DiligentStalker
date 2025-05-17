@@ -107,11 +107,8 @@ public class StalkerControl {
             }
         });
 
-        // 注册鼠标滚轮事件 - 使用Fabric API的MouseScrollCallback
-        MouseScrollCallback.EVENT.register((client, scrollDelta) -> {
-            handleMouseScroll(scrollDelta);
-            return true; // 返回true表示事件已处理
-        });
+//        // 注册鼠标滚轮事件 - 使用Fabric API的MouseScrollCallback
+//        MouseScrollCallback.EVENT.register((client, scrollDelta) -> handleMouseScroll(scrollDelta));
     }
 
     private static void onClientTick() {
@@ -193,14 +190,15 @@ public class StalkerControl {
             }
         }
     }
-
-    // 处理鼠标滚轮
-    public static void handleMouseScroll(double scrollDelta) {
-        if (Minecraft.getInstance().screen != null) return;
-        Player player = Minecraft.getInstance().player;
-        if (player == null || !Stalker.hasInstanceOf(player)) return;
-        // 取消滚轮事件
-    }
+//
+//    // 处理鼠标滚轮
+//    public static boolean handleMouseScroll(double scrollDelta) {
+//        if (Minecraft.getInstance().screen != null) return true;
+//        Player player = Minecraft.getInstance().player;
+//        if (player == null) return true;
+//        if (!Stalker.hasInstanceOf(player)) return true;
+//        return false;
+//    }
 
     public static CompoundTag handleInput() {
         Options options = Minecraft.getInstance().options;
