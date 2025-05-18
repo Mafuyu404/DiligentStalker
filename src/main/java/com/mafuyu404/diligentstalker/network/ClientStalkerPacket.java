@@ -1,15 +1,13 @@
 package com.mafuyu404.diligentstalker.network;
 
-import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import com.mafuyu404.diligentstalker.init.Stalker;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
-import net.minecraftforge.network.NetworkEvent;
-
-import java.util.function.Supplier;
 
 public class ClientStalkerPacket {
     private final int entityId;
@@ -26,13 +24,17 @@ public class ClientStalkerPacket {
         return new ClientStalkerPacket(buffer.readInt());
     }
 
-    public static void handle(ClientStalkerPacket msg, Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            ClientLevel level = Minecraft.getInstance().level;
-            LocalPlayer player = Minecraft.getInstance().player;
+    public static void handle(Minecraft client, ClientPacketListener handler, FriendlyByteBuf buf, PacketSender responseSender) {
+        ClientStalkerPacket msg = decode(buf);
+        client.execute(() -> {
+            ClientLevel level = client.level;
+            LocalPlayer player = client.player;
+            if (level == null || player == null) return;
+            
             Entity entity = level.getEntity(msg.entityId);
-            Stalker.connect(player, entity);
+            if (entity != null) {
+                Stalker.connect(player, entity);
+            }
         });
-        ctx.get().setPacketHandled(true);
     }
 }

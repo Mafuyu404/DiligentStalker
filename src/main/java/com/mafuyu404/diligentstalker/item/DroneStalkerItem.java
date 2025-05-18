@@ -3,7 +3,6 @@ package com.mafuyu404.diligentstalker.item;
 import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import com.mafuyu404.diligentstalker.registry.StalkerEntities;
 import net.minecraft.ChatFormatting;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
@@ -14,7 +13,6 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
-import java.util.Arrays;
 import java.util.List;
 
 public class DroneStalkerItem extends Item {
@@ -26,7 +24,7 @@ public class DroneStalkerItem extends Item {
     public @NotNull InteractionResult useOn(UseOnContext context) {
         if (context.getPlayer() != null) {
             Level level = context.getLevel();
-            DroneStalkerEntity drone = new DroneStalkerEntity(StalkerEntities.DRONE_STALKER.get(), level);
+            DroneStalkerEntity drone = new DroneStalkerEntity(StalkerEntities.DRONE_STALKER, level);
             drone.setPos(context.getClickLocation());
             level.addFreshEntity(drone);
             context.getItemInHand().shrink(1);

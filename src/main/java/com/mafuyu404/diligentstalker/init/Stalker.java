@@ -30,7 +30,7 @@ public class Stalker {
     }
     public void disconnect() {
         if (level.isClientSide) {
-            NetworkHandler.CHANNEL.sendToServer(new StalkerSyncPacket(this.stalkerId, false));
+            NetworkHandler.sendToServer(new StalkerSyncPacket(this.stalkerId, false));
         }
         InstanceMap.remove(playerUUID);
     }
@@ -40,7 +40,7 @@ public class Stalker {
         if (hasInstanceOf(player) || hasInstanceOf(stalker)) return null;
         if (player.level().isClientSide) {
             StalkerControl.connect(player, stalker);
-            NetworkHandler.CHANNEL.sendToServer(new StalkerSyncPacket(stalker.getId(), true));
+            NetworkHandler.sendToServer(new StalkerSyncPacket(stalker.getId(), true));
         }
         InstanceMap.put(player.getUUID(), stalker.getId());
         return new Stalker(player.getUUID(), stalker.getId(), player.level());

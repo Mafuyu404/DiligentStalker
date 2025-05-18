@@ -11,47 +11,47 @@ import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 
 import java.util.ArrayList;
 import java.util.function.Function;
 
-@Mod.EventBusSubscriber(modid = DiligentStalker.MODID, value = Dist.CLIENT)
+@Environment(EnvType.CLIENT)
 public class ChunkLoadTask {
     public static ArrayList<ClientboundLevelChunkWithLightPacket> TaskList = new ArrayList<>();
     public static ArrayList<ClientboundLevelChunkWithLightPacket> WorkList = new ArrayList<>();
     public static int ChannelLimit = 0;
     private static boolean CacheLock = false;
 
-    @SubscribeEvent
-    public static void onClientTick(TickEvent.ClientTickEvent event) {
-        LocalPlayer player = Minecraft.getInstance().player;
-        ClientLevel level = Minecraft.getInstance().level;
-        if (event.phase == TickEvent.Phase.START) return;
-        if (Stalker.hasInstanceOf(player)) {
-            Entity stalker = Stalker.getInstanceOf(player).getStalker();
-            int timer = 10;
-            if (player.tickCount % timer == 0) {
-                ChannelLimit = (int) Math.ceil(TaskList.size() * 1d / timer);
-                WorkList = createChunksLoadTask(stalker, TaskList);
-                TaskList.clear();
-            }
-            if (WorkList.isEmpty()) return;
-            ClientPacketListener connection = Minecraft.getInstance().getConnection();
-            if (connection == null) return;
-            for (int i = 0; i < WorkList.size(); i++) {
-                if (i < ChannelLimit) {
-                    ClientboundLevelChunkWithLightPacket packet = WorkList.get(i);
-                    if (level.getChunkSource().hasChunk(packet.getX(), packet.getZ()) && CacheLock) continue;
-                    connection.handleLevelChunkWithLight(packet);
-                    WorkList.remove(i);
-                    i++;
+    public static void init() {
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            LocalPlayer player = Minecraft.getInstance().player;
+            ClientLevel level = Minecraft.getInstance().level;
+            if (player == null || level == null) return;
+            if (Stalker.hasInstanceOf(player)) {
+                Entity stalker = Stalker.getInstanceOf(player).getStalker();
+                int timer = 10;
+                if (player.tickCount % timer == 0) {
+                    ChannelLimit = (int) Math.ceil(TaskList.size() * 1d / timer);
+                    WorkList = createChunksLoadTask(stalker, TaskList);
+                    TaskList.clear();
+                }
+                if (WorkList.isEmpty()) return;
+                ClientPacketListener connection = Minecraft.getInstance().getConnection();
+                if (connection == null) return;
+                for (int i = 0; i < WorkList.size(); i++) {
+                    if (i < ChannelLimit) {
+                        ClientboundLevelChunkWithLightPacket packet = WorkList.get(i);
+                        if (level.getChunkSource().hasChunk(packet.getX(), packet.getZ()) && CacheLock) continue;
+                        connection.handleLevelChunkWithLight(packet);
+                        WorkList.remove(i);
+                        i++;
+                    }
                 }
             }
-        }
+        });
     }
 
     public static ArrayList<ClientboundLevelChunkWithLightPacket> createChunksLoadTask(Entity stalker, ArrayList<ClientboundLevelChunkWithLightPacket> toLoadChunks) {
