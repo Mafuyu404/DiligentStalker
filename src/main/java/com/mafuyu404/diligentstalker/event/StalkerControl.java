@@ -97,7 +97,7 @@ public class StalkerControl {
             }
         });
 
-        // 注册鼠标按钮事件 - 使用Fabric API的事件系统
+        // 注册鼠标按钮事件
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             // 在每个tick检查鼠标按钮状态
             if (GLFW.glfwGetMouseButton(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_MOUSE_BUTTON_RIGHT) == GLFW.GLFW_PRESS) {
@@ -107,8 +107,7 @@ public class StalkerControl {
             }
         });
 
-//        // 注册鼠标滚轮事件 - 使用Fabric API的MouseScrollCallback
-//        MouseScrollCallback.EVENT.register((client, scrollDelta) -> handleMouseScroll(scrollDelta));
+
     }
 
     private static void onClientTick() {
@@ -131,7 +130,7 @@ public class StalkerControl {
         if (!Stalker.hasInstanceOf(player)) return;
         Stalker instance = Stalker.getInstanceOf(player);
         Entity stalker = instance.getStalker();
-        if (stalker instanceof DroneStalkerEntity droneStalker) {
+        if (stalker instanceof DroneStalkerEntity) {
             stalker.setXRot(xRot);
             stalker.setYRot(yRot);
             StalkerControl.syncControl();
@@ -190,15 +189,6 @@ public class StalkerControl {
             }
         }
     }
-//
-//    // 处理鼠标滚轮
-//    public static boolean handleMouseScroll(double scrollDelta) {
-//        if (Minecraft.getInstance().screen != null) return true;
-//        Player player = Minecraft.getInstance().player;
-//        if (player == null) return true;
-//        if (!Stalker.hasInstanceOf(player)) return true;
-//        return false;
-//    }
 
     public static CompoundTag handleInput() {
         Options options = Minecraft.getInstance().options;

@@ -26,7 +26,7 @@ import java.util.Map;
 public abstract class ChunkMapMixin implements IChunkMap {
     @Shadow @Nullable protected abstract ChunkHolder getVisibleChunkIfPresent(long p_140328_);
 
-    @Shadow protected abstract void playerLoadedChunk(ServerPlayer p_183761_, MutableObject<ClientboundLevelChunkWithLightPacket> p_183762_, LevelChunk p_183763_);
+    @Shadow protected abstract void playerLoadedChunk(ServerPlayer player, MutableObject<ClientboundLevelChunkWithLightPacket> object, LevelChunk chunk);
 
     @Inject(method = "move", at = @At("HEAD"), cancellable = true)
     private void wwaaa(ServerPlayer player, CallbackInfo ci) {
@@ -44,7 +44,7 @@ public abstract class ChunkMapMixin implements IChunkMap {
             holder.getPersistentData().putBoolean("LoadingCacheChunk", false);
         }
         if (center == null) return;
-        int radius = ModConfig.get().renderRadius.normal;
+        int radius = ModConfig.getRenderRadiusNormal();
         for (int x = -radius; x <= radius; x++) {
             for (int z = -radius; z <= radius; z++) {
                 loadLevelChunk(player, new ChunkPos(center.x + x, center.z + z));

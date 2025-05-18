@@ -32,12 +32,7 @@ public class CameraStalkerRenderer implements BlockEntityRenderer<CameraStalkerB
     }
 
     @Override
-    public void render(CameraStalkerBlockEntity entity,
-                       float partialTick,
-                       PoseStack poseStack,
-                       MultiBufferSource bufferSource,
-                       int packedLight,
-                       int packedOverlay) {
+    public void render(CameraStalkerBlockEntity entity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
         BlockState state = entity.getBlockState();
         BakedModel model = renderer.getBlockModel(state);
 

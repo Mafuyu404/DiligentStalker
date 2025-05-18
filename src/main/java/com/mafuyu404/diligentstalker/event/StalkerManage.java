@@ -88,7 +88,7 @@ public class StalkerManage {
             CompoundTag input = (CompoundTag) holder.getPersistentData().get("DroneStalkerInput");
             Vec3 direction = droneStalker.position().subtract(player.position());
             int distance = (int) direction.length();
-            if (SIGNAL_RADIUS == 0) SIGNAL_RADIUS = ModConfig.get().droneSetting.signalRadius;
+            if (SIGNAL_RADIUS == 0) SIGNAL_RADIUS = ModConfig.getSignalRadius();
             if (input != null) {
                 float xRot = input.getFloat("xRot");
                 float yRot = input.getFloat("yRot");

@@ -14,8 +14,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(PlayerRenderer.class)
 public class PlayerRendererMixin {
     @Inject(method = "renderHand", at = @At("HEAD"), cancellable = true)
-    private void onRenderHand(PoseStack p_117776_, MultiBufferSource p_117777_, int p_117778_, AbstractClientPlayer p_117779_, ModelPart p_117780_, ModelPart p_117781_, CallbackInfo ci) {
-        if (Stalker.hasInstanceOf(p_117779_)) {
+    private void onRenderHand(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, AbstractClientPlayer player, ModelPart armModel, ModelPart sleeveModel, CallbackInfo ci) {
+        if (Stalker.hasInstanceOf(player)) {
             ci.cancel();
         }
     }

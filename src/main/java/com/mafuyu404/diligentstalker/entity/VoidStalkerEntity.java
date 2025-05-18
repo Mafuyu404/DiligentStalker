@@ -35,15 +35,15 @@ public class VoidStalkerEntity extends ThrowableItemProjectile {
         return StalkerItems.VOID_STALKER;
     }
 
-    public void handleEntityEvent(byte p_37402_) {
+    public void handleEntityEvent(byte b) {
 
     }
 
-    protected void onHitEntity(EntityHitResult p_37404_) {
+    protected void onHitEntity(EntityHitResult entityHitResult) {
 
     }
 
-    protected void onHit(HitResult p_37406_) {
+    protected void onHit(HitResult hitResult) {
 
     }
 }

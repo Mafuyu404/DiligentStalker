@@ -41,12 +41,10 @@ public class StalkerSyncPacket {
             if (stalker == null) return;
             
             if (msg.state) {
-                // 创建跟踪狂实例
                 if (!Stalker.hasInstanceOf(player) && !Stalker.hasInstanceOf(stalker)) {
                     Stalker.connect(player, stalker);
                 }
             } else {
-                // 删除跟踪狂实例
                 if (Stalker.hasInstanceOf(player)) {
                     Stalker.getInstanceOf(player).disconnect();
                 }

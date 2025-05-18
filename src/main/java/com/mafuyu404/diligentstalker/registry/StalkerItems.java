@@ -20,7 +20,6 @@ public class StalkerItems {
 
 
     public static void register() {
-        // 注册物品
         CAMERA_STALKER = Registry.register(
                 BuiltInRegistries.ITEM,
                 new ResourceLocation(DiligentStalker.MODID, "camera_stalker"),
