@@ -47,7 +47,7 @@ public class DroneStalkerHUD {
             float yRot = Tools.getYRotFromVec3(direction);
             int distance = (int) direction.length();
             if (stalker instanceof DroneStalkerEntity droneStalker) {
-                if (SIGNAL_RADIUS == 0) SIGNAL_RADIUS = ModConfig.get().droneSetting.signalRadius;
+                if (SIGNAL_RADIUS == 0) SIGNAL_RADIUS = ModConfig.getSignalRadius();
 
                 float signal_percent = 1 - (1f * distance / SIGNAL_RADIUS);
                 float fuel_percent = droneStalker.getFuel() / 100f;

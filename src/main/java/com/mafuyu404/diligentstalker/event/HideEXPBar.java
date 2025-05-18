@@ -16,13 +16,7 @@ public class HideEXPBar {
             Player player = minecraft.player;
             
             // 如果玩家正在使用跟踪器，则设置一个标志来阻止经验条渲染
-            if (player != null && Stalker.hasInstanceOf(player)) {
-                // Fabric中没有直接的方式取消经验条渲染
-                // 我们可以在DiligentStalker类中添加一个静态标志
-                DiligentStalker.HIDE_EXP_BAR = true;
-            } else {
-                DiligentStalker.HIDE_EXP_BAR = false;
-            }
+            DiligentStalker.HIDE_EXP_BAR = player != null && Stalker.hasInstanceOf(player);
         });
     }
 }

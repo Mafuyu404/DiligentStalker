@@ -16,15 +16,13 @@ public class DiligentStalker implements ModInitializer {
     @Override
     public void onInitialize() {
         NetworkHandler.register();
-        // 加载配置
         ModConfig.register();
-        
-        // 注册实体、物品、方块等
         StalkerEntities.register();
         StalkerBlocks.register();
         StalkerItems.register();
         StalkerBlockEntities.register();
         StalkerCreativeModeTab.register();
+        StalkerSounds.register();
         
 
     }

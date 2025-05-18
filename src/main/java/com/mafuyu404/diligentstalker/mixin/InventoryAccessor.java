@@ -18,8 +18,8 @@ public interface InventoryAccessor {
     @Accessor("items")
     NonNullList<ItemStack> getItems();
 
-    @Accessor("compartments") // 访问 compartments 字段
-    @Mutable // 移除 final 修饰符
+    @Accessor("compartments")
+    @Mutable
     void setCompartments(List<NonNullList<ItemStack>> compartments);
 
     @Accessor("compartments")

@@ -58,7 +58,7 @@ public abstract class EntityMixin implements PersistentDataHolder {
     }
 
     @Inject(method = "distanceToSqr(DDD)D", at = @At("HEAD"), cancellable = true)
-    private void modifyDistance(double p_20276_, double p_20277_, double p_20278_, CallbackInfoReturnable<Double> cir) {
+    private void modifyDistance(double x, double y, double z, CallbackInfoReturnable<Double> cir) {
         if (((Object) this) instanceof Player player) {
             if (Stalker.hasInstanceOf(player)) {
                 cir.setReturnValue(1d);
@@ -66,7 +66,7 @@ public abstract class EntityMixin implements PersistentDataHolder {
         }
     }
     @Inject(method = "setPosRaw", at = @At("HEAD"), cancellable = true)
-    private void avoidVoidFall(double p_20210_, double p_20211_, double p_20212_, CallbackInfo ci) {
+    private void avoidVoidFall(double posX, double posY, double posZ, CallbackInfo ci) {
         if (((Object) this) instanceof Player player) {
             if (!this.level.isClientSide) return;
             if (!Stalker.hasInstanceOf(player)) return;
@@ -76,10 +76,9 @@ public abstract class EntityMixin implements PersistentDataHolder {
         }
     }
     @Inject(method = "setPosRaw", at = @At("RETURN"))
-    private void position(double p_20344_, double p_20345_, double p_20346_, CallbackInfo ci) {
+    private void position(double posX, double posY, double posZ, CallbackInfo ci) {
         if (((Object) this) instanceof DroneStalkerEntity) {
             if (this.level.isClientSide) return;
-//            if (!StalkerManage.DronePosition.containsKey(this.uuid)) return;
             String levelKey = this.level.dimension().toString();
             BlockPos blockPos = this.blockPosition();
             StalkerManage.DronePosition.put(this.uuid, new Map.Entry<>() {

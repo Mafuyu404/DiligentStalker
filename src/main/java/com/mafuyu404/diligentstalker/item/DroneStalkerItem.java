@@ -33,7 +33,7 @@ public class DroneStalkerItem extends Item {
         return super.useOn(context);
     }
 
-    public void appendHoverText(ItemStack itemStack, @Nullable Level level, List<Component> result, TooltipFlag p_41214_) {
+    public void appendHoverText(ItemStack itemStack, @Nullable Level level, List<Component> result, TooltipFlag flag) {
         result.add(Component.translatable("item.diligentstalker.drone_stalker.intro1").withStyle(ChatFormatting.GOLD));
         result.add(Component.translatable("item.diligentstalker.drone_stalker.intro2").withStyle(ChatFormatting.GOLD));
     }
