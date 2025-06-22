@@ -1,15 +1,12 @@
 package com.mafuyu404.diligentstalker.init;
 
 import com.mafuyu404.diligentstalker.DiligentStalker;
-import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.*;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraftforge.common.world.ForgeChunkManager;
 
 import java.util.*;
 
-import static com.mafuyu404.diligentstalker.DiligentStalker.MODID;
 
 public class ChunkLoader {
 //    private static final TicketType<ChunkPos> StalkerTicket = TicketType.create(new ResourceLocation(MODID, "stalker").toString(), Comparator.comparingLong(ChunkPos::toLong));
