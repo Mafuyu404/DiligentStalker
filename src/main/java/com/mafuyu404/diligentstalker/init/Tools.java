@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Tools {
     public static HashMap<String, Integer> ControlMap = new HashMap<>();
@@ -168,19 +169,56 @@ public class Tools {
         return world.clip(clipContext);
     }
 
+    // 使用对象池减少内存分配
+    private static final ConcurrentHashMap<String, ArrayList<ChunkPos>> CHUNK_CACHE = new ConcurrentHashMap<>();
+    private static final long CHUNK_CACHE_EXPIRE = 100; // 100ms 缓存
+    private static long lastChunkCacheCleanup = 0;
+
     public static ArrayList<ChunkPos> getToLoadChunks(Entity stalker, int offset) {
         if (stalker == null) return new ArrayList<>();
+
         ChunkPos center = stalker.chunkPosition();
-        ArrayList<ChunkPos> newChunks = new ArrayList<>();
         int radius = Config.RENDER_RADIUS_NORMAL.get() + offset;
         if (stalker instanceof VoidStalkerEntity) radius = Config.RENDER_RADIUS_SPECIAL.get();
+
+        // 使用缓存键
+        String cacheKey = center.x + "," + center.z + "," + radius;
+
+        // 检查缓存
+        ArrayList<ChunkPos> cached = CHUNK_CACHE.get(cacheKey);
+        if (cached != null) {
+            return new ArrayList<>(cached); // 返回副本避免并发修改
+        }
+
+        // 预分配容量减少扩容
+        int expectedSize = (radius * 2 + 1) * (radius * 2 + 1);
+        ArrayList<ChunkPos> newChunks = new ArrayList<>(expectedSize);
+
+        int radiusSquared = radius * radius;
         for (int x = -radius; x <= radius; x++) {
             for (int z = -radius; z <= radius; z++) {
-                if (Math.sqrt(x*x+z*z) > radius && radius >= 5) continue;
-                newChunks.add(new ChunkPos(center.x + x, center.z + z));
+                int distanceSquared = x * x + z * z;
+                if (distanceSquared <= radiusSquared || radius < 5) {
+                    newChunks.add(new ChunkPos(center.x + x, center.z + z));
+                }
             }
         }
+
+        // 缓存结果
+        CHUNK_CACHE.put(cacheKey, new ArrayList<>(newChunks));
+
+        // 定期清理缓存
+        cleanupChunkCache();
+
         return newChunks;
+    }
+
+    private static void cleanupChunkCache() {
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastChunkCacheCleanup > CHUNK_CACHE_EXPIRE) {
+            CHUNK_CACHE.clear();
+            lastChunkCacheCleanup = currentTime;
+        }
     }
 
     public static Map.Entry<String, BlockPos> entryOfUsingStalkerMaster(Player player) {
