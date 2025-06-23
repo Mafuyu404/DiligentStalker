@@ -1,0 +1,41 @@
+名称  :    构建 mod jar
+
+关于:
+ workflow_dispatch   :    # 手动触发
+  推 :
+  分支机构  :   [   “大师”   ]  # 替换为你的实际分支名
+
+工作:
+  构建 :
+  运行  :   ubuntu-latest
+  步骤 :
+      # 1. 检出代码（必须优先执行）
+         -    使用  :    动作/结账@v4
+  关于 :
+  验证包装器  :   false # 关闭验证
+
+      # 2. 设置 JDK 17
+         -    名称  :    设置 JDK 17
+  使用  :   操作/设置-java@v4
+  关于 :
+  java 版本  :   '17'
+  分布  :   'temurin'
+
+      # 3. 设置 Gradle（可选，但推荐）
+         -    名称  :    设置 gradle
+  使用  :   gradle/actions/setup-gradle@v4
+
+      # 4. 修复 gradlew 权限（关键修复！）
+         -    名称  :    使 gradlew 可执行
+  跑步  :   chmod +x gradlew
+
+      # 5. 执行构建
+         -    名称  :    构建
+  跑步  :   ./gradlew 构建
+
+      # 6. 上传生成的 Jar 文件
+         -    名称  :    上传罐
+  使用  :   动作/上传-人工制品@v4
+  关于 :
+  名称  :   Mod-jar
+  路径  :   build/libs/*.jar
