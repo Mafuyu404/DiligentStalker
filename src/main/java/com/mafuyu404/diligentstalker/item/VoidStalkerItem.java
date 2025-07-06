@@ -11,7 +11,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
-public class VoidStalkerItem  extends Item {
+public class VoidStalkerItem extends Item {
     public VoidStalkerItem() {
         super(new Properties());
     }

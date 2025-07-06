@@ -18,7 +18,6 @@ public class StalkerItems {
     public static Item STALKER_CORE;
 
 
-
     public static void register() {
         CAMERA_STALKER = Registry.register(
                 BuiltInRegistries.ITEM,

@@ -12,6 +12,12 @@ import com.mafuyu404.diligentstalker.network.EntityDataPacket;
 import com.mafuyu404.diligentstalker.network.RClickBlockPacket;
 import com.mafuyu404.diligentstalker.registry.KeyBindings;
 import com.mojang.blaze3d.platform.InputConstants;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -26,12 +32,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.event.player.UseBlockCallback;
-import net.fabricmc.fabric.api.event.player.UseEntityCallback;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.UUID;
@@ -76,7 +76,7 @@ public class StalkerControl {
             if (!world.isClientSide()) return;
             Player player = Minecraft.getInstance().player;
             if (player == null) return;
-            
+
             if (entity instanceof DroneStalkerEntity stalker) {
                 UUID entityUUID = Tools.uuidOfUsingStalkerMaster(player);
                 if (stalker.getUUID().equals(entityUUID)) {
@@ -113,10 +113,10 @@ public class StalkerControl {
     private static void onClientTick() {
         screen = Minecraft.getInstance().screen != null;
         if (screen) return;
-        
+
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return;
-        
+
         UUID entityUUID = Tools.uuidOfUsingStalkerMaster(player);
         if (entityUUID != null) {
             ClientLevel level = player.clientLevel;
@@ -126,7 +126,7 @@ public class StalkerControl {
                 }
             });
         }
-        
+
         if (!Stalker.hasInstanceOf(player)) return;
         Stalker instance = Stalker.getInstanceOf(player);
         Entity stalker = instance.getStalker();
@@ -135,22 +135,22 @@ public class StalkerControl {
             stalker.setYRot(yRot);
             StalkerControl.syncControl();
         }
-        
+
         // 处理键盘输入
         handleKeyInput();
     }
 
     private static void handleKeyInput() {
         Player player = Minecraft.getInstance().player;
-        if (player == null || !Stalker.hasInstanceOf(player)) return;
-        
+        if (!Stalker.hasInstanceOf(player)) return;
+
         updateControlMap();
-        
+
         // 检查断开连接键
         if (KeyBindings.DISCONNECT.isDown()) {
             if (Stalker.hasInstanceOf(player)) Stalker.getInstanceOf(player).disconnect();
         }
-        
+
         // 检查移动键
         boolean shouldSync = false;
         for (int key : Tools.ControlMap.values()) {
@@ -159,7 +159,7 @@ public class StalkerControl {
                 break;
             }
         }
-        
+
         if (shouldSync) {
             syncControl();
         }
@@ -169,17 +169,17 @@ public class StalkerControl {
     public static void handleMouseInput(int button, int action) {
         if (Minecraft.getInstance().screen != null) return;
         Player player = Minecraft.getInstance().player;
-        if (player == null || !Stalker.hasInstanceOf(player)) return;
-        
+        if (!Stalker.hasInstanceOf(player)) return;
+
         if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
             DroneStalkerHUD.RPress = action == InputConstants.PRESS;
         }
-        
+
         if (action != InputConstants.PRESS) return;
         if (button != GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
             return;
         }
-        
+
         Stalker instance = Stalker.getInstanceOf(player);
         if (instance.getStalker() instanceof DroneStalkerEntity) {
             BlockHitResult traceResult = Tools.rayTraceBlocks(player.level(), getCameraPosition(), getViewVector(), 4);

@@ -9,6 +9,9 @@ import com.mafuyu404.diligentstalker.registry.ModConfig;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -19,9 +22,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 
 import java.util.List;
 
@@ -55,8 +55,8 @@ public class DroneStalkerHUD {
                         new ArcSection(-157.5f, 0.375f, 0.7f, 0.7f, 0.7f, 0.4f),  // 左上灰色
                         new ArcSection(-157.5f - 0.375f * 180 * (1 - signal_percent), signal_percent * 0.375f, 0.8f, 0.8f, 0.8f, 1f),  // 左上灰色
 
-                        new ArcSection(-22.5f,  0.375f, 0.6f, 0.8f, 1.0f, 0.4f),  // 右上淡蓝
-                        new ArcSection(-22.5f + 0.375f * 180 * (1 - fuel_percent),  fuel_percent * 0.375f, 0.6f, 0.8f, 1.0f, 1f),  // 右上淡蓝
+                        new ArcSection(-22.5f, 0.375f, 0.6f, 0.8f, 1.0f, 0.4f),  // 右上淡蓝
+                        new ArcSection(-22.5f + 0.375f * 180 * (1 - fuel_percent), fuel_percent * 0.375f, 0.6f, 0.8f, 1.0f, 1f),  // 右上淡蓝
 
                         new ArcSection(112.5f, 0.125f, 1.0f, 0.6f, 0.6f, 0.4f), // 左下淡红
 
@@ -115,8 +115,8 @@ public class DroneStalkerHUD {
             float sectionAngle = TOTAL_AVAILABLE * section.percentage;
 
             // 计算起止角度（中心向两侧扩展）
-            float start = section.centerAngle - sectionAngle/2 + GAP/2;
-            float end = section.centerAngle + sectionAngle/2 - GAP/2;
+            float start = section.centerAngle - sectionAngle / 2 + GAP / 2;
+            float end = section.centerAngle + sectionAngle / 2 - GAP / 2;
 
             // 生成顶点
             BufferBuilder buffer = tessellator.getBuilder();

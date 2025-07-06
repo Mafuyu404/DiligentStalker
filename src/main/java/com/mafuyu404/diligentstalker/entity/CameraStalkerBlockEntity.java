@@ -10,15 +10,16 @@ import java.util.UUID;
 
 public class CameraStalkerBlockEntity extends BlockEntity {
     public UUID CameraStalkerUUID;
+
     public CameraStalkerBlockEntity(BlockPos pos, BlockState state) {
         super(StalkerBlockEntities.CAMERA_STALKER, pos, state);
     }
 
 
-
     public UUID getCameraStalkerUUID() {
         return CameraStalkerUUID;
     }
+
     public void setCameraStalkerUUID(UUID uuid) {
         CameraStalkerUUID = uuid;
     }

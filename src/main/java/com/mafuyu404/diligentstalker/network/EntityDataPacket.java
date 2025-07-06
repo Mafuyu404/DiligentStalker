@@ -33,7 +33,7 @@ public class EntityDataPacket {
         server.execute(() -> {
             Level level = player.level();
             if (level == null) return;
-            
+
             Entity entity = level.getEntity(msg.entityId);
             if (entity == null) return;
             PersistentDataHolder holder = (PersistentDataHolder) entity;

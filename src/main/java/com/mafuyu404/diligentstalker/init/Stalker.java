@@ -25,9 +25,11 @@ public class Stalker {
     public Player getPlayer() {
         return level.getPlayerByUUID(playerUUID);
     }
+
     public Entity getStalker() {
         return level.getEntity(stalkerId);
     }
+
     public void disconnect() {
         if (level.isClientSide) {
             NetworkHandler.sendToServer(new StalkerSyncPacket(this.stalkerId, false));
@@ -45,12 +47,14 @@ public class Stalker {
         InstanceMap.put(player.getUUID(), stalker.getId());
         return new Stalker(player.getUUID(), stalker.getId(), player.level());
     }
+
     public static boolean hasInstanceOf(Entity entity) {
         if (entity == null) return false;
         boolean isPlayer = InstanceMap.containsKey(entity.getUUID());
         boolean isStalker = InstanceMap.containsValue(entity.getId());
         return (isPlayer || isStalker);
     }
+
     public static Stalker getInstanceOf(Entity entity) {
         boolean isPlayer = InstanceMap.containsKey(entity.getUUID());
         boolean isStalker = InstanceMap.containsValue(entity.getId());

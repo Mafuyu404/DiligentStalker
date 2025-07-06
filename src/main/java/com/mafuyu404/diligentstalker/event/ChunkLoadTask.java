@@ -1,8 +1,10 @@
 package com.mafuyu404.diligentstalker.event;
 
-import com.mafuyu404.diligentstalker.DiligentStalker;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.init.Tools;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
@@ -11,9 +13,6 @@ import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.Vec3;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 
 import java.util.ArrayList;
 import java.util.function.Function;
@@ -23,7 +22,7 @@ public class ChunkLoadTask {
     public static ArrayList<ClientboundLevelChunkWithLightPacket> TaskList = new ArrayList<>();
     public static ArrayList<ClientboundLevelChunkWithLightPacket> WorkList = new ArrayList<>();
     public static int ChannelLimit = 0;
-    private static boolean CacheLock = false;
+    private static final boolean CacheLock = false;
 
     public static void init() {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
@@ -74,6 +73,7 @@ public class ChunkLoadTask {
 
         return new ArrayList<>(result);
     }
+
     public static void sortChunks(ArrayList<ClientboundLevelChunkWithLightPacket> chunks, Function<ClientboundLevelChunkWithLightPacket, Double> handler) {
         if (chunks == null || chunks.size() <= 1) return;
         for (int i = 1; i < chunks.size(); i++) {

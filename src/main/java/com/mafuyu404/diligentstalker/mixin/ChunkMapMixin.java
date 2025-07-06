@@ -24,9 +24,12 @@ import java.util.Map;
 
 @Mixin(value = ChunkMap.class)
 public abstract class ChunkMapMixin implements IChunkMap {
-    @Shadow @Nullable protected abstract ChunkHolder getVisibleChunkIfPresent(long p_140328_);
+    @Shadow
+    @Nullable
+    protected abstract ChunkHolder getVisibleChunkIfPresent(long p_140328_);
 
-    @Shadow protected abstract void playerLoadedChunk(ServerPlayer player, MutableObject<ClientboundLevelChunkWithLightPacket> object, LevelChunk chunk);
+    @Shadow
+    protected abstract void playerLoadedChunk(ServerPlayer player, MutableObject<ClientboundLevelChunkWithLightPacket> object, LevelChunk chunk);
 
     @Inject(method = "move", at = @At("HEAD"), cancellable = true)
     private void wwaaa(ServerPlayer player, CallbackInfo ci) {

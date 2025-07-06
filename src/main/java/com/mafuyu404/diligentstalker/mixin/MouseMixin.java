@@ -20,9 +20,9 @@ public class MouseMixin {
         // 如果当前没有打开 Screen，并且玩家是 Stalker 实例，就取消后续的滚轮处理
         if (client.screen == null) {
             Player player = client.player;
-            if (player != null && Stalker.hasInstanceOf(player)) {
+            if (Stalker.hasInstanceOf(player)) {
                 ci.cancel();
             }
-         }
-     }
+        }
+    }
 }

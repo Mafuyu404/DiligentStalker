@@ -17,7 +17,9 @@ public class ObjectPool {
         public double x, y, z;
 
         public MutableVec3 set(double x, double y, double z) {
-            this.x = x; this.y = y; this.z = z;
+            this.x = x;
+            this.y = y;
+            this.z = z;
             return this;
         }
 
@@ -50,7 +52,9 @@ public class ObjectPool {
         public MutableVec3 normalize() {
             double len = length();
             if (len > 1e-6) {
-                x /= len; y /= len; z /= len;
+                x /= len;
+                y /= len;
+                z /= len;
             }
             return this;
         }

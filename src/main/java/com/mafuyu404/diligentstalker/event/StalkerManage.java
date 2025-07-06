@@ -14,6 +14,9 @@ import com.mafuyu404.diligentstalker.network.ClientFuelPacket;
 import com.mafuyu404.diligentstalker.network.ClientStalkerPacket;
 import com.mafuyu404.diligentstalker.registry.ModConfig;
 import com.mafuyu404.diligentstalker.registry.StalkerItems;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -25,16 +28,16 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.Vec3;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
-import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class StalkerManage {
     public static final HashMap<UUID, Map.Entry<String, BlockPos>> DronePosition = new HashMap<>();
     private static int SIGNAL_RADIUS = 0;
-    private static HashMap<UUID, ArrayList<ArrayList<ChunkPos>>> LoadingChunks = new HashMap<>();
+    private static final HashMap<UUID, ArrayList<ArrayList<ChunkPos>>> LoadingChunks = new HashMap<>();
 
     public static void init() {
         // 注册服务器Tick事件
@@ -67,8 +70,7 @@ public class StalkerManage {
                             tag.putIntArray("StalkerPosition", new int[]{pos.getX(), pos.getY(), pos.getZ()});
                             player.displayClientMessage(Component.translatable("item.diligentstalker.stalker_master.record_success").withStyle(ChatFormatting.GREEN), true);
                         }
-                    }
-                    else {
+                    } else {
                         NetworkHandler.sendToClient((ServerPlayer) player, new ClientStalkerPacket(entity.getId()));
                     }
                 }
@@ -149,10 +151,12 @@ public class StalkerManage {
                         public String getKey() {
                             return levelKey;
                         }
+
                         @Override
                         public BlockPos getValue() {
                             return new BlockPos(pos[0], pos[1], pos[2]);
                         }
+
                         @Override
                         public BlockPos setValue(BlockPos value) {
                             return null;

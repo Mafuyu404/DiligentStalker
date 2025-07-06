@@ -7,13 +7,14 @@ import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.*;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 import java.util.Map;
 
 @Mixin(LevelRenderer.class)
 public class LevelRendererMixin {
-    @ModifyVariable(method = "setupRender",at = @At("STORE"), ordinal = 0)
+    @ModifyVariable(method = "setupRender", at = @At("STORE"), ordinal = 0)
     private double modifyX(double x) {
         Player player = Minecraft.getInstance().player;
         if (Stalker.hasInstanceOf(player)) {
@@ -26,7 +27,8 @@ public class LevelRendererMixin {
         }
         return x;
     }
-    @ModifyVariable(method = "setupRender",at = @At("STORE"), ordinal = 1)
+
+    @ModifyVariable(method = "setupRender", at = @At("STORE"), ordinal = 1)
     private double modifyY(double y) {
         Player player = Minecraft.getInstance().player;
         if (Stalker.hasInstanceOf(player)) {
@@ -39,7 +41,8 @@ public class LevelRendererMixin {
         }
         return y;
     }
-    @ModifyVariable(method = "setupRender",at = @At("STORE"), ordinal = 2)
+
+    @ModifyVariable(method = "setupRender", at = @At("STORE"), ordinal = 2)
     private double modifyZ(double z) {
         Player player = Minecraft.getInstance().player;
         if (Stalker.hasInstanceOf(player)) {

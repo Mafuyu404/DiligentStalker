@@ -1,15 +1,11 @@
 package com.mafuyu404.diligentstalker.event;
 
-import com.mafuyu404.diligentstalker.DiligentStalker;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
-import java.util.UUID;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+
+import java.util.*;
 
 public class ModSetup {
     // 存储实体UUID和它们强制加载的区块
@@ -32,20 +28,20 @@ public class ModSetup {
     private static void validateChunkTickets(ServerLevel level) {
         // 创建一个需要移除的实体列表
         Set<UUID> toRemove = new HashSet<>();
-        
+
         // 检查每个实体的区块票据
         ENTITY_CHUNKS.forEach((uuid, chunks) -> {
             if (level.getEntity(uuid) == null) {
                 // 如果实体不存在，将其添加到待移除列表
                 toRemove.add(uuid);
-                
+
                 // 取消该实体的所有区块强制加载
                 for (ChunkPos pos : chunks) {
                     level.setChunkForced(pos.x, pos.z, false);
                 }
             }
         });
-        
+
         // 从映射中移除不存在的实体
         toRemove.forEach(ENTITY_CHUNKS::remove);
     }
