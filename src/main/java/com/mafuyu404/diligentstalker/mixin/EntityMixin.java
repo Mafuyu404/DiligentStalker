@@ -21,15 +21,20 @@ import java.util.UUID;
 
 @Mixin(value = Entity.class)
 public abstract class EntityMixin {
-    @Shadow public abstract Level level();
+    @Shadow
+    public abstract Level level();
 
-    @Shadow private Level level;
+    @Shadow
+    private Level level;
 
-    @Shadow private ChunkPos chunkPosition;
+    @Shadow
+    private ChunkPos chunkPosition;
 
-    @Shadow public abstract BlockPos blockPosition();
+    @Shadow
+    public abstract BlockPos blockPosition();
 
-    @Shadow protected UUID uuid;
+    @Shadow
+    protected UUID uuid;
 
     @Inject(method = "setXRot", at = @At("HEAD"), cancellable = true)
     private void redirectXRot(float xRot, CallbackInfo ci) {
@@ -42,6 +47,7 @@ public abstract class EntityMixin {
             ci.cancel();
         }
     }
+
     @Inject(method = "setYRot", at = @At("HEAD"), cancellable = true)
     private void redirectYRot(float yRot, CallbackInfo ci) {
         if (((Object) this) instanceof Player player) {
@@ -62,6 +68,7 @@ public abstract class EntityMixin {
             }
         }
     }
+
     @Inject(method = "setPosRaw", at = @At("HEAD"), cancellable = true)
     private void avoidVoidFall(double p_20210_, double p_20211_, double p_20212_, CallbackInfo ci) {
         if (((Object) this) instanceof Player player) {
@@ -72,6 +79,7 @@ public abstract class EntityMixin {
             }
         }
     }
+
     @Inject(method = "setPosRaw", at = @At("RETURN"))
     private void position(double p_20344_, double p_20345_, double p_20346_, CallbackInfo ci) {
         if (((Object) this) instanceof DroneStalkerEntity) {

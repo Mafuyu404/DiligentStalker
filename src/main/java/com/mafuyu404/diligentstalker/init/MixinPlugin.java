@@ -34,9 +34,19 @@ public class MixinPlugin implements IMixinConfigPlugin {
     }
 
     // 其他方法留空或默认实现
-    @Override public void onLoad(String mixinPackage) {}
-    @Override public String getRefMapperConfig() { return null; }
-    @Override public List<String> getMixins() { return null; }
+    @Override
+    public void onLoad(String mixinPackage) {
+    }
+
+    @Override
+    public String getRefMapperConfig() {
+        return null;
+    }
+
+    @Override
+    public List<String> getMixins() {
+        return null;
+    }
 
     @Override
     public void preApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {

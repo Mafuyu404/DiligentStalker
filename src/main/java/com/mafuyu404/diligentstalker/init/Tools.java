@@ -47,17 +47,19 @@ public class Tools {
     }
 
     public static Vec3 calculateViewVector(float xRot, float yRot) {
-        float f = xRot * ((float)Math.PI / 180F);
-        float f1 = -yRot * ((float)Math.PI / 180F);
+        float f = xRot * ((float) Math.PI / 180F);
+        float f1 = -yRot * ((float) Math.PI / 180F);
         float f2 = Mth.cos(f1);
         float f3 = Mth.sin(f1);
         float f4 = Mth.cos(f);
         float f5 = Mth.sin(f);
         return new Vec3(f3 * f4, -f5, f2 * f4);
     }
+
     public static float getXRotFromVec3(Vec3 vec) {
         return (float) Math.toDegrees(Math.asin(-vec.y));
     }
+
     public static float getYRotFromVec3(Vec3 vec) {
         return (float) Math.toDegrees(Math.atan2(-vec.x, vec.z));
     }
@@ -129,6 +131,7 @@ public class Tools {
 
         return result;
     }
+
     public static Vec3 limitSpeed(Vec3 motion, float speed) {
         float length = (float) motion.length();
         if (Math.round(length * 100) / 100f > speed) {
@@ -232,6 +235,7 @@ public class Tools {
         }
         return null;
     }
+
     public static UUID uuidOfUsingStalkerMaster(Player player) {
         if (player != null && player.isUsingItem()) {
             if (player.getMainHandItem().getItem() instanceof StalkerMasterItem) {

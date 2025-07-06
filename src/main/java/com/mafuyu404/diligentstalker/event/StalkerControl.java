@@ -106,6 +106,7 @@ public class StalkerControl {
             event.setCanceled(true);
         }
     }
+
     @SubscribeEvent
     public static void onUse(PlayerInteractEvent.LeftClickBlock event) {
         if (event.getSide().isClient() && Stalker.hasInstanceOf(event.getEntity())) {

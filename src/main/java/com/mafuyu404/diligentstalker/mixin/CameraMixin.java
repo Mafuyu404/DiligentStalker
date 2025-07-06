@@ -18,12 +18,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.Map;
 
 @Mixin(Camera.class)
-public abstract class CameraMixin{
-    @Shadow private float xRot;
+public abstract class CameraMixin {
+    @Shadow
+    private float xRot;
 
-    @Shadow private float yRot;
+    @Shadow
+    private float yRot;
 
-    @Shadow private Vec3 position;
+    @Shadow
+    private Vec3 position;
 
     @ModifyVariable(method = "setPosition(Lnet/minecraft/world/phys/Vec3;)V", at = @At("HEAD"), argsOnly = true)
     private Vec3 modifyPosition(Vec3 pos1) {
@@ -42,6 +45,7 @@ public abstract class CameraMixin{
         }
         return pos1;
     }
+
     @Inject(method = "setRotation", at = @At("RETURN"))
     private void modifyRotate(float p_90573_, float p_90574_, CallbackInfo ci) {
         if (!Stalker.hasInstanceOf(Minecraft.getInstance().player)) return;

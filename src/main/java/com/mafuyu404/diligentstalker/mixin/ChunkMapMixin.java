@@ -1,13 +1,10 @@
 package com.mafuyu404.diligentstalker.mixin;
 
 import com.mafuyu404.diligentstalker.api.IChunkMap;
-import com.mafuyu404.diligentstalker.event.StalkerManage;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.init.Tools;
-import com.mafuyu404.diligentstalker.item.StalkerMasterItem;
 import com.mafuyu404.diligentstalker.registry.Config;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
 import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.ChunkMap;
@@ -26,9 +23,12 @@ import java.util.Map;
 
 @Mixin(value = ChunkMap.class)
 public abstract class ChunkMapMixin implements IChunkMap {
-    @Shadow @Nullable protected abstract ChunkHolder getVisibleChunkIfPresent(long p_140328_);
+    @Shadow
+    @Nullable
+    protected abstract ChunkHolder getVisibleChunkIfPresent(long p_140328_);
 
-    @Shadow protected abstract void playerLoadedChunk(ServerPlayer p_183761_, MutableObject<ClientboundLevelChunkWithLightPacket> p_183762_, LevelChunk p_183763_);
+    @Shadow
+    protected abstract void playerLoadedChunk(ServerPlayer p_183761_, MutableObject<ClientboundLevelChunkWithLightPacket> p_183762_, LevelChunk p_183763_);
 
     @Inject(method = "move", at = @At("HEAD"), cancellable = true)
     private void wwaaa(ServerPlayer player, CallbackInfo ci) {

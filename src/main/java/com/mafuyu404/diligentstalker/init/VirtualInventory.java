@@ -12,17 +12,20 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Objects;
 
 public class VirtualInventory extends Inventory {
-    public  int size;
+    public int size;
     public int playerInventorySize;
+
     public VirtualInventory(int size, Player player) {
         super(Objects.requireNonNull(player));
         ((InventoryAccessor) this).setItems(NonNullList.withSize(size, ItemStack.EMPTY));
         ((InventoryAccessor) this).setCompartments(ImmutableList.of(this.items, this.armor, this.offhand));
         this.size = size;
     }
+
     public ItemHandler getHandler() {
         return new ItemHandler(this);
     }
+
     public static class ItemHandler implements IItemHandler {
 
         private final VirtualInventory virtualInventory;

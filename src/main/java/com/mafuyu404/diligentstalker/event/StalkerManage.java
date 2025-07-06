@@ -33,22 +33,26 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 @Mod.EventBusSubscriber(modid = DiligentStalker.MODID)
 public class StalkerManage {
     public static final HashMap<UUID, Map.Entry<String, BlockPos>> DronePosition = new HashMap<>();
     private static int SIGNAL_RADIUS = 0;
-    private static HashMap<UUID, ArrayList<ArrayList<ChunkPos>>> LoadingChunks = new HashMap<>();
+    private static final HashMap<UUID, ArrayList<ArrayList<ChunkPos>>> LoadingChunks = new HashMap<>();
 
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.END) return;
-        if (event.getServer().getTickCount() %10 == 0) {
+        if (event.getServer().getTickCount() % 10 == 0) {
             event.getServer().getAllLevels().forEach(StalkerManage::onLevelTick);
         }
         event.getServer().getPlayerList().getPlayers().forEach(StalkerManage::onPlayerTick);
     }
+
     private static void onPlayerTick(ServerPlayer player) {
         if (player.tickCount % 20 == 0) syncMasterTag(player);
         if (!Stalker.hasInstanceOf(player)) return;
@@ -79,6 +83,7 @@ public class StalkerManage {
             player.teleportRelative(0, 0, 0);
         }
     }
+
     private static void onLevelTick(ServerLevel level) {
         ChunkLoader.removeAll(level);
         level.getEntities().getAll().forEach(entity -> {
@@ -125,10 +130,12 @@ public class StalkerManage {
                         public String getKey() {
                             return levelKey;
                         }
+
                         @Override
                         public BlockPos getValue() {
                             return new BlockPos(pos[0], pos[1], pos[2]);
                         }
+
                         @Override
                         public BlockPos setValue(BlockPos value) {
                             return null;
@@ -156,8 +163,7 @@ public class StalkerManage {
                         tag.putIntArray("StalkerPosition", new int[]{pos.getX(), pos.getY(), pos.getZ()});
                         player.displayClientMessage(Component.translatable("item.diligentstalker.stalker_master.record_success").withStyle(ChatFormatting.GREEN), true);
                     }
-                }
-                else {
+                } else {
                     NetworkHandler.sendToClient((ServerPlayer) player, new ClientStalkerPacket(entity.getId()));
                 }
             }
