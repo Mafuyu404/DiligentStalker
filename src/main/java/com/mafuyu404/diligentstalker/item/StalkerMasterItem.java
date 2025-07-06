@@ -1,7 +1,6 @@
 package com.mafuyu404.diligentstalker.item;
 
 import com.mafuyu404.diligentstalker.init.Stalker;
-import com.mafuyu404.diligentstalker.init.Tools;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;

@@ -19,6 +19,7 @@ public class GameRendererMixin {
             ci.cancel();
         }
     }
+
     @Inject(method = "getNightVisionScale", at = @At("HEAD"), cancellable = true)
     private static void getNightVisionScale(LivingEntity entity, float p_109110_, CallbackInfoReturnable<Float> cir) {
         if (Stalker.hasInstanceOf(entity)) {

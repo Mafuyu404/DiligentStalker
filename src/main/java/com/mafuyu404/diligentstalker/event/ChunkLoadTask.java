@@ -24,7 +24,7 @@ public class ChunkLoadTask {
     public static ArrayList<ClientboundLevelChunkWithLightPacket> TaskList = new ArrayList<>();
     public static ArrayList<ClientboundLevelChunkWithLightPacket> WorkList = new ArrayList<>();
     public static int ChannelLimit = 0;
-    private static boolean CacheLock = false;
+    private static final boolean CacheLock = false;
 
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
@@ -74,6 +74,7 @@ public class ChunkLoadTask {
 
         return new ArrayList<>(result);
     }
+
     public static void sortChunks(ArrayList<ClientboundLevelChunkWithLightPacket> chunks, Function<ClientboundLevelChunkWithLightPacket, Double> handler) {
         if (chunks == null || chunks.size() <= 1) return;
         for (int i = 1; i < chunks.size(); i++) {

@@ -49,14 +49,17 @@ public class ArrowStalkerEntity extends AbstractArrow {
     public void setSecondsOnFire(int seconds) {
 
     }
+
     @Override
     public void setCritArrow(boolean critical) {
 
     }
+
     @Override
     public void setKnockback(int knockbackStrengthIn) {
 
     }
+
     @Override
     public void setPierceLevel(byte level) {
 

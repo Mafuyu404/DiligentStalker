@@ -9,7 +9,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.world.*;
+import net.minecraft.world.Containers;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.HasCustomInventoryScreen;
@@ -80,8 +82,7 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
                     }
                 }
                 return InteractionResult.FAIL;
-            }
-            else if (itemStack.is(StalkerItems.STALKER_MASTER.get())) {
+            } else if (itemStack.is(StalkerItems.STALKER_MASTER.get())) {
                 CompoundTag tag = itemStack.getOrCreateTag();
                 if (!tag.contains("StalkerId") || tag.getUUID("StalkerId") != this.uuid) {
                     tag.putUUID("StalkerId", this.uuid);
@@ -114,8 +115,7 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
                 if (fuel_tick <= 0) {
                     consumeFuel(1);
                     fuel_tick = MAX_FUEL_TICK;
-                }
-                else fuel_tick -= 1;
+                } else fuel_tick -= 1;
             }
         }
 
@@ -180,8 +180,6 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
         }
         return false;
     }
-
-
 
 
     protected float getSinglePassengerXOffset() {

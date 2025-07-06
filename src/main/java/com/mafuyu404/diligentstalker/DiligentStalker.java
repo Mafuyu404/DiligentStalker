@@ -1,7 +1,7 @@
 package com.mafuyu404.diligentstalker;
 
-import com.mafuyu404.diligentstalker.registry.*;
 import com.mafuyu404.diligentstalker.init.NetworkHandler;
+import com.mafuyu404.diligentstalker.registry.*;
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;

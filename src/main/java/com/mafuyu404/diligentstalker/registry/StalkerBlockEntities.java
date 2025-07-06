@@ -1,7 +1,6 @@
 package com.mafuyu404.diligentstalker.registry;
 
 import com.mafuyu404.diligentstalker.entity.CameraStalkerBlockEntity;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
