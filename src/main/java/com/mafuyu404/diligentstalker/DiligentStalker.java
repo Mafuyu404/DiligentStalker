@@ -1,8 +1,7 @@
 package com.mafuyu404.diligentstalker;
 
-import com.mafuyu404.diligentstalker.registry.*;
 import com.mafuyu404.diligentstalker.init.NetworkHandler;
-import com.mafuyu404.diligentstalker.registry.ModConfig;
+import com.mafuyu404.diligentstalker.registry.*;
 import com.mojang.logging.LogUtils;
 import net.fabricmc.api.ModInitializer;
 import org.slf4j.Logger;
@@ -23,7 +22,7 @@ public class DiligentStalker implements ModInitializer {
         StalkerBlockEntities.register();
         StalkerCreativeModeTab.register();
         StalkerSounds.register();
-        
+
 
     }
 }

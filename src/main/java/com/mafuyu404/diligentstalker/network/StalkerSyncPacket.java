@@ -35,11 +35,11 @@ public class StalkerSyncPacket {
         StalkerSyncPacket msg = decode(buf);
         server.execute(() -> {
             if (player == null) return;
-            
+
             Level level = player.level();
             Entity stalker = level.getEntity(msg.entityId);
             if (stalker == null) return;
-            
+
             if (msg.state) {
                 if (!Stalker.hasInstanceOf(player) && !Stalker.hasInstanceOf(stalker)) {
                     Stalker.connect(player, stalker);

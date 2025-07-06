@@ -30,7 +30,7 @@ public class ClientStalkerPacket {
             ClientLevel level = client.level;
             LocalPlayer player = client.player;
             if (level == null || player == null) return;
-            
+
             Entity entity = level.getEntity(msg.entityId);
             if (entity != null) {
                 Stalker.connect(player, entity);

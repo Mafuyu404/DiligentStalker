@@ -41,11 +41,11 @@ public class NetworkHandler {
             ServerPlayNetworking.send(player, CLIENT_STALKER_PACKET, buf);
         }
     }
-    
+
     // 发送数据包到服务器
     public static void sendToServer(Object packet) {
         FriendlyByteBuf buf = PacketByteBufs.create();
-        
+
         if (packet instanceof StalkerSyncPacket stalkerSyncPacket) {
             StalkerSyncPacket.encode(stalkerSyncPacket, buf);
             ClientPlayNetworking.send(STALKER_SYNC_PACKET, buf);

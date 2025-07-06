@@ -3,7 +3,9 @@ package com.mafuyu404.diligentstalker.init;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 
 public class ChunkLoader {
     // 存储每个维度中加载的区块
@@ -17,7 +19,7 @@ public class ChunkLoader {
             level.setChunkForced(center.x, center.z, true);
         }
     }
-    
+
     public static void removeAll(ServerLevel level) {
         String key = level.dimension().toString();
         if (!loaders.containsKey(key)) return;

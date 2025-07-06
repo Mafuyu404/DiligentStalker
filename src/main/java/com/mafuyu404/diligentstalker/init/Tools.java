@@ -57,8 +57,8 @@ public class Tools {
         String key = Math.round(xRot * 100) / 100f + "," + Math.round(yRot * 100) / 100f;
 
         return VIEW_VECTOR_CACHE.computeIfAbsent(key, k -> {
-            float f = xRot * ((float)Math.PI / 180F);
-            float f1 = -yRot * ((float)Math.PI / 180F);
+            float f = xRot * ((float) Math.PI / 180F);
+            float f1 = -yRot * ((float) Math.PI / 180F);
             float f2 = Mth.cos(f1);
             float f3 = Mth.sin(f1);
             float f4 = Mth.cos(f);

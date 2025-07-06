@@ -82,8 +82,7 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
                     }
                 }
                 return InteractionResult.FAIL;
-            }
-            else if (itemStack.is(StalkerItems.STALKER_MASTER)) {
+            } else if (itemStack.is(StalkerItems.STALKER_MASTER)) {
                 CompoundTag tag = itemStack.getOrCreateTag();
                 if (!tag.contains("StalkerId") || tag.getUUID("StalkerId") != this.getUUID()) {
                     tag.putUUID("StalkerId", this.getUUID());
@@ -118,8 +117,7 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
                 if (fuel_tick <= 0) {
                     consumeFuel(1);
                     fuel_tick = MAX_FUEL_TICK;
-                }
-                else fuel_tick -= 1;
+                } else fuel_tick -= 1;
             }
         }
 
@@ -208,7 +206,7 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
         super.addAdditionalSaveData(tag);
         tag.putInt(FUEL_TAG, this.fuel);
         tag.putInt("FuelTick", this.fuel_tick);
-        
+
         // 保存容器内容
         if (this.lootTable != null) {
             tag.putString("LootTable", this.lootTable.toString());
@@ -224,7 +222,7 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
         super.readAdditionalSaveData(tag);
         this.fuel = tag.getInt(FUEL_TAG);
         this.fuel_tick = tag.getInt("FuelTick");
-        
+
         // 读取容器内容
         this.itemStacks = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
         if (tag.contains("LootTable", 8)) {
@@ -274,7 +272,7 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
 
     @Override
     public boolean isEmpty() {
-        for(ItemStack itemstack : this.itemStacks) {
+        for (ItemStack itemstack : this.itemStacks) {
             if (!itemstack.isEmpty()) {
                 return false;
             }
@@ -322,16 +320,17 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
 
     @Override
     public SlotAccess getSlot(int slot) {
-        return slot >= 0 && slot < this.getContainerSize() ? 
-            new SlotAccess() {
-                public ItemStack get() {
-                    return DroneStalkerEntity.this.getItem(slot);
-                }
-                public boolean set(ItemStack stack) {
-                    DroneStalkerEntity.this.setItem(slot, stack);
-                    return true;
-                }
-            } : SlotAccess.NULL;
+        return slot >= 0 && slot < this.getContainerSize() ?
+                new SlotAccess() {
+                    public ItemStack get() {
+                        return DroneStalkerEntity.this.getItem(slot);
+                    }
+
+                    public boolean set(ItemStack stack) {
+                        DroneStalkerEntity.this.setItem(slot, stack);
+                        return true;
+                    }
+                } : SlotAccess.NULL;
     }
 
     @Override
@@ -349,11 +348,11 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
         if (this.getLootTable() != null && minecraftserver != null) {
             LootTable loottable = minecraftserver.getLootData().getLootTable(this.getLootTable());
             if (player != null) {
-                CriteriaTriggers.GENERATE_LOOT.trigger((ServerPlayer)player, this.getLootTable());
+                CriteriaTriggers.GENERATE_LOOT.trigger((ServerPlayer) player, this.getLootTable());
             }
-            this.setLootTable((ResourceLocation)null);
-            LootParams.Builder builder = (new LootParams.Builder((ServerLevel)this.level()))
-                .withParameter(LootContextParams.ORIGIN, this.position());
+            this.setLootTable(null);
+            LootParams.Builder builder = (new LootParams.Builder((ServerLevel) this.level()))
+                    .withParameter(LootContextParams.ORIGIN, this.position());
             if (player != null) {
                 builder.withLuck(player.getLuck()).withParameter(LootContextParams.THIS_ENTITY, player);
             }

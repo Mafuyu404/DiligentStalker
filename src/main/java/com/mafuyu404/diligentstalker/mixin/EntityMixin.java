@@ -24,15 +24,20 @@ import java.util.UUID;
 
 @Mixin(value = Entity.class)
 public abstract class EntityMixin implements PersistentDataHolder {
-    @Shadow public abstract Level level();
+    @Shadow
+    public abstract Level level();
 
-    @Shadow private Level level;
+    @Shadow
+    private Level level;
 
-    @Shadow private ChunkPos chunkPosition;
+    @Shadow
+    private ChunkPos chunkPosition;
 
-    @Shadow public abstract BlockPos blockPosition();
+    @Shadow
+    public abstract BlockPos blockPosition();
 
-    @Shadow protected UUID uuid;
+    @Shadow
+    protected UUID uuid;
 
     @Inject(method = "setXRot", at = @At("HEAD"), cancellable = true)
     private void redirectXRot(float xRot, CallbackInfo ci) {
@@ -45,6 +50,7 @@ public abstract class EntityMixin implements PersistentDataHolder {
             ci.cancel();
         }
     }
+
     @Inject(method = "setYRot", at = @At("HEAD"), cancellable = true)
     private void redirectYRot(float yRot, CallbackInfo ci) {
         if (((Object) this) instanceof Player player) {
@@ -65,6 +71,7 @@ public abstract class EntityMixin implements PersistentDataHolder {
             }
         }
     }
+
     @Inject(method = "setPosRaw", at = @At("HEAD"), cancellable = true)
     private void avoidVoidFall(double posX, double posY, double posZ, CallbackInfo ci) {
         if (((Object) this) instanceof Player player) {
@@ -75,6 +82,7 @@ public abstract class EntityMixin implements PersistentDataHolder {
             }
         }
     }
+
     @Inject(method = "setPosRaw", at = @At("RETURN"))
     private void position(double posX, double posY, double posZ, CallbackInfo ci) {
         if (((Object) this) instanceof DroneStalkerEntity) {

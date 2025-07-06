@@ -14,9 +14,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(value = Player.class)
 public abstract class PlayerMixin {
-    @Shadow @Final private Inventory inventory;
+    @Shadow
+    @Final
+    private Inventory inventory;
 
-    @Shadow public abstract boolean isLocalPlayer();
+    @Shadow
+    public abstract boolean isLocalPlayer();
 
     @Inject(method = "getInventory", at = @At("HEAD"), cancellable = true)
     private void wwa(CallbackInfoReturnable<Inventory> cir) {

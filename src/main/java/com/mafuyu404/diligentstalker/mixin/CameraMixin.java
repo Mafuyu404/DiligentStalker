@@ -18,12 +18,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.Map;
 
 @Mixin(Camera.class)
-public abstract class CameraMixin{
-    @Shadow private float xRot;
+public abstract class CameraMixin {
+    @Shadow
+    private float xRot;
 
-    @Shadow private float yRot;
+    @Shadow
+    private float yRot;
 
-    @Shadow private Vec3 position;
+    @Shadow
+    private Vec3 position;
 
     @ModifyVariable(method = "setPosition(Lnet/minecraft/world/phys/Vec3;)V", at = @At("HEAD"), argsOnly = true)
     private Vec3 modifyPosition(Vec3 pos1) {
@@ -33,11 +36,11 @@ public abstract class CameraMixin{
             // 使用更平滑的插值系数，基于帧时间
             float deltaTime = Minecraft.getInstance().getDeltaFrameTime() * 0.05f; // 调整系数
             float smoothFactor = Math.min(0.8f, deltaTime); // 限制最大平滑系数
-            
+
             double x = pos0.x + (pos1.x - pos0.x) * smoothFactor;
             double y = pos0.y + (pos1.y - pos0.y) * smoothFactor;
             double z = pos0.z + (pos1.z - pos0.z) * smoothFactor;
-            
+
             return new Vec3(x, y, z);
         } else {
             Map.Entry<String, BlockPos> entry = Tools.entryOfUsingStalkerMaster(player);
@@ -47,6 +50,7 @@ public abstract class CameraMixin{
         }
         return pos1;
     }
+
     @Inject(method = "setRotation", at = @At("RETURN"))
     private void modifyRotate(float p_90573_, float p_90574_, CallbackInfo ci) {
         if (!Stalker.hasInstanceOf(Minecraft.getInstance().player)) return;

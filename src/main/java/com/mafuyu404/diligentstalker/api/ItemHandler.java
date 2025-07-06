@@ -20,8 +20,9 @@ public interface ItemHandler {
 
     /**
      * 向指定槽位插入物品
-     * @param slot 目标槽位
-     * @param stack 要插入的物品堆
+     *
+     * @param slot     目标槽位
+     * @param stack    要插入的物品堆
      * @param simulate 如果为true，则只模拟操作而不实际执行
      * @return 剩余未能插入的物品
      */
@@ -30,8 +31,9 @@ public interface ItemHandler {
 
     /**
      * 从指定槽位提取物品
-     * @param slot 目标槽位
-     * @param amount 要提取的数量
+     *
+     * @param slot     目标槽位
+     * @param amount   要提取的数量
      * @param simulate 如果为true，则只模拟操作而不实际执行
      * @return 提取的物品
      */

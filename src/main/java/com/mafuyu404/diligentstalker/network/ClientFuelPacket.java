@@ -31,7 +31,7 @@ public class ClientFuelPacket {
         client.execute(() -> {
             ClientLevel level = client.level;
             if (level == null) return;
-            
+
             Entity entity = level.getEntity(msg.entityId);
             if (entity instanceof DroneStalkerEntity droneStalker) {
                 droneStalker.setFuel(msg.fuel);
