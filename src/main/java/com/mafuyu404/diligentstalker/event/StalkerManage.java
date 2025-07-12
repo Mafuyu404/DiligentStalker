@@ -1,5 +1,6 @@
 package com.mafuyu404.diligentstalker.event;
 
+import com.mafuyu404.diligentstalker.DiligentStalker;
 import com.mafuyu404.diligentstalker.api.PersistentDataHolder;
 import com.mafuyu404.diligentstalker.entity.ArrowStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.CameraStalkerBlockEntity;
@@ -16,15 +17,19 @@ import com.mafuyu404.diligentstalker.registry.ModConfig;
 import com.mafuyu404.diligentstalker.registry.StalkerItems;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.Vec3;
@@ -37,6 +42,9 @@ import java.util.UUID;
 public class StalkerManage {
     public static final HashMap<UUID, Map.Entry<String, BlockPos>> DronePosition = new HashMap<>();
     private static int SIGNAL_RADIUS = 0;
+
+    private static int tickCounter = 0;
+
     private static final HashMap<UUID, ArrayList<ArrayList<ChunkPos>>> LoadingChunks = new HashMap<>();
 
     public static void init() {
@@ -46,6 +54,12 @@ public class StalkerManage {
                 server.getAllLevels().forEach(StalkerManage::onLevelTick);
             }
             server.getPlayerList().getPlayers().forEach(StalkerManage::onPlayerTick);
+            if (server.getTickCount() % 6000 == 0) {
+                performPeriodicCleanup(server);
+            }
+            if (server.getTickCount() % 600 == 0) {
+                performLightweightCleanup(server);
+            }
         });
 
         // 注册实体离开世界事件
@@ -54,6 +68,33 @@ public class StalkerManage {
                 Stalker.getInstanceOf(entity).disconnect();
             }
         });
+
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
+            Player player = handler.getPlayer();
+            if (Stalker.hasInstanceOf(player)) {
+                Stalker stalkerInstance = Stalker.getInstanceOf(player);
+                if (stalkerInstance != null) {
+                    stalkerInstance.disconnect();
+                }
+            }
+            Stalker.cleanupPlayer(player.getUUID());
+        });
+
+        ServerEntityEvents.ENTITY_UNLOAD.register((entity, world) -> {
+            if (Stalker.hasInstanceOf(entity)) {
+                if (entity instanceof Player) {
+                    Stalker.cleanupPlayer(entity.getUUID());
+                } else {
+                    Stalker.cleanupStalker(entity.getId());
+                }
+            }
+        });
+
+        ServerWorldEvents.UNLOAD.register((server, world) -> {
+            Stalker.cleanupLevel(world);
+        });
+
+
 
         // 注册方块交互事件
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
@@ -162,6 +203,28 @@ public class StalkerManage {
                             return null;
                         }
                     });
+                }
+            }
+        });
+    }
+    private static void performPeriodicCleanup(MinecraftServer server) {
+        int beforeCount = Stalker.getMappingCount();
+        server.getAllLevels().forEach(Stalker::cleanupInvalidMappings);
+        int afterCount = Stalker.getMappingCount();
+        if (beforeCount != afterCount) {
+            DiligentStalker.LOGGER.info("Periodic cleanup removed {} invalid stalker mappings", beforeCount - afterCount);
+        }
+    }
+
+    private static void performLightweightCleanup(MinecraftServer server) {
+        server.getPlayerList().getPlayers().forEach(player -> {
+            if (Stalker.hasInstanceOf(player)) {
+                Stalker stalkerInstance = Stalker.getInstanceOf(player);
+                if (stalkerInstance != null) {
+                    Entity stalker = stalkerInstance.getStalker();
+                    if (stalker == null || !stalker.isAlive()) {
+                        stalkerInstance.disconnect();
+                    }
                 }
             }
         });
