@@ -182,7 +182,7 @@ public class StalkerControl {
 
         Stalker instance = Stalker.getInstanceOf(player);
         if (instance.getStalker() instanceof DroneStalkerEntity) {
-            BlockHitResult traceResult = Tools.rayTraceBlocks(player.level(), getCameraPosition(), getViewVector(), 4);
+            BlockHitResult traceResult = Tools.rayTraceBlocks(player.level(), getCameraPosition(), getViewVector(), 4, player);
             if (traceResult.getType() == HitResult.Type.BLOCK) {
                 NetworkHandler.sendToServer(new RClickBlockPacket(getCameraPosition(), getViewVector()));
                 RightClickBlock(player, getCameraPosition(), getViewVector());
@@ -214,7 +214,7 @@ public class StalkerControl {
 
     public static void RightClickBlock(Player player, Vec3 position, Vec3 viewVec) {
         Level level = player.level();
-        BlockHitResult traceResult = Tools.rayTraceBlocks(level, position, viewVec, 4);
+        BlockHitResult traceResult = Tools.rayTraceBlocks(level, position, viewVec, 4, player);
         BlockState state = level.getBlockState(traceResult.getBlockPos());
         InteractionResult result = state.use(level, player, InteractionHand.MAIN_HAND, traceResult);
         if (result.consumesAction()) {
