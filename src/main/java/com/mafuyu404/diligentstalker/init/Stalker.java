@@ -8,13 +8,13 @@ import net.minecraft.world.level.Level;
 
 import java.util.HashMap;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class Stalker {
     private final UUID playerUUID;
     private final int stalkerId;
     public final Level level;
     public static final HashMap<UUID, Integer> InstanceMap = new HashMap<>();
+    private static final HashMap<Integer, UUID> StalkerToPlayerMap = new HashMap<>();
 
     public Stalker(UUID playerUUID, int stalkerId, Level level) {
         this.playerUUID = playerUUID;
@@ -25,14 +25,17 @@ public class Stalker {
     public Player getPlayer() {
         return level.getPlayerByUUID(playerUUID);
     }
+
     public Entity getStalker() {
         return level.getEntity(stalkerId);
     }
+
     public void disconnect() {
         if (level.isClientSide) {
             NetworkHandler.CHANNEL.sendToServer(new StalkerSyncPacket(this.stalkerId, false));
         }
         InstanceMap.remove(playerUUID);
+        StalkerToPlayerMap.remove(stalkerId);
     }
 
     public static Stalker connect(Player player, Entity stalker) {
@@ -43,30 +46,84 @@ public class Stalker {
             NetworkHandler.CHANNEL.sendToServer(new StalkerSyncPacket(stalker.getId(), true));
         }
         InstanceMap.put(player.getUUID(), stalker.getId());
+        StalkerToPlayerMap.put(stalker.getId(), player.getUUID());
         return new Stalker(player.getUUID(), stalker.getId(), player.level());
     }
+
     public static boolean hasInstanceOf(Entity entity) {
         if (entity == null) return false;
         boolean isPlayer = InstanceMap.containsKey(entity.getUUID());
-        boolean isStalker = InstanceMap.containsValue(entity.getId());
+        boolean isStalker = StalkerToPlayerMap.containsKey(entity.getId());
         return (isPlayer || isStalker);
     }
+
     public static Stalker getInstanceOf(Entity entity) {
-        boolean isPlayer = InstanceMap.containsKey(entity.getUUID());
-        boolean isStalker = InstanceMap.containsValue(entity.getId());
-        if (isPlayer) {
-            if (InstanceMap.get(entity.getUUID()) != null) {
-                int stalkerId = InstanceMap.get(entity.getUUID());
+        if (entity == null) return null;
+
+        if (InstanceMap.containsKey(entity.getUUID())) {
+            Integer stalkerId = InstanceMap.get(entity.getUUID());
+            if (stalkerId != null) {
                 return new Stalker(entity.getUUID(), stalkerId, entity.level());
             }
         }
-        if (isStalker) {
-            AtomicReference<UUID> playerUUID = new AtomicReference<>();
-            InstanceMap.forEach((uuid, stalkerId) -> {
-                if (stalkerId == entity.getId()) playerUUID.set(uuid);
-            });
-            return new Stalker(playerUUID.get(), entity.getId(), entity.level());
+
+        if (StalkerToPlayerMap.containsKey(entity.getId())) {
+            UUID playerUUID = StalkerToPlayerMap.get(entity.getId());
+            if (playerUUID != null) {
+                return new Stalker(playerUUID, entity.getId(), entity.level());
+            }
         }
+
         return null;
+    }
+
+    public static void cleanupPlayer(UUID playerUUID) {
+        Integer stalkerId = InstanceMap.remove(playerUUID);
+        if (stalkerId != null) {
+            StalkerToPlayerMap.remove(stalkerId);
+        }
+    }
+
+    public static void cleanupStalker(int stalkerId) {
+        UUID playerUUID = StalkerToPlayerMap.remove(stalkerId);
+        if (playerUUID != null) {
+            InstanceMap.remove(playerUUID);
+        }
+    }
+
+    public static void cleanupLevel(Level level) {
+        InstanceMap.entrySet().removeIf(entry -> {
+            UUID playerUUID = entry.getKey();
+            Integer stalkerId = entry.getValue();
+
+            Player player = level.getPlayerByUUID(playerUUID);
+            Entity stalker = level.getEntity(stalkerId);
+
+            if (player != null || stalker != null) {
+                StalkerToPlayerMap.remove(stalkerId);
+                return true;
+            }
+            return false;
+        });
+    }
+
+    public static void cleanupInvalidMappings(Level level) {
+        InstanceMap.entrySet().removeIf(entry -> {
+            UUID playerUUID = entry.getKey();
+            Integer stalkerId = entry.getValue();
+
+            Player player = level.getPlayerByUUID(playerUUID);
+            Entity stalker = level.getEntity(stalkerId);
+
+            if (player == null || stalker == null) {
+                StalkerToPlayerMap.remove(stalkerId);
+                return true;
+            }
+            return false;
+        });
+    }
+
+    public static int getMappingCount() {
+        return InstanceMap.size();
     }
 }

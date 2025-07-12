@@ -18,6 +18,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -29,7 +30,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -47,10 +51,19 @@ public class StalkerManage {
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.END) return;
+
         if (event.getServer().getTickCount() % 10 == 0) {
             event.getServer().getAllLevels().forEach(StalkerManage::onLevelTick);
         }
         event.getServer().getPlayerList().getPlayers().forEach(StalkerManage::onPlayerTick);
+
+        if (event.getServer().getTickCount() % 6000 == 0) {
+            performPeriodicCleanup(event.getServer());
+        }
+
+        if (event.getServer().getTickCount() % 600 == 0) {
+            performLightweightCleanup(event.getServer());
+        }
     }
 
     private static void onPlayerTick(ServerPlayer player) {
@@ -169,5 +182,73 @@ public class StalkerManage {
             }
             event.setCanceled(true);
         }
+    }
+
+    @SubscribeEvent
+    public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+        Player player = event.getEntity();
+        if (Stalker.hasInstanceOf(player)) {
+            Stalker stalkerInstance = Stalker.getInstanceOf(player);
+            if (stalkerInstance != null) {
+                stalkerInstance.disconnect();
+            }
+        }
+        Stalker.cleanupPlayer(player.getUUID());
+    }
+
+    @SubscribeEvent
+    public static void onEntityDeath(LivingDeathEvent event) {
+        Entity entity = event.getEntity();
+        if (Stalker.hasInstanceOf(entity)) {
+            Stalker stalkerInstance = Stalker.getInstanceOf(entity);
+            if (stalkerInstance != null) {
+                stalkerInstance.disconnect();
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onEntityRemove(EntityLeaveLevelEvent event) {
+        Entity entity = event.getEntity();
+        if (Stalker.hasInstanceOf(entity)) {
+            if (entity instanceof Player) {
+                Stalker.cleanupPlayer(entity.getUUID());
+            } else {
+                Stalker.cleanupStalker(entity.getId());
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onWorldUnload(LevelEvent.Unload event) {
+        if (event.getLevel() instanceof Level level) {
+            Stalker.cleanupLevel(level);
+        }
+    }
+
+    private static void performPeriodicCleanup(MinecraftServer server) {
+        int beforeCount = Stalker.getMappingCount();
+
+        server.getAllLevels().forEach(Stalker::cleanupInvalidMappings);
+
+        int afterCount = Stalker.getMappingCount();
+        if (beforeCount != afterCount) {
+            DiligentStalker.LOGGER.info("Periodic cleanup removed {} invalid stalker mappings",
+                    beforeCount - afterCount);
+        }
+    }
+
+    private static void performLightweightCleanup(MinecraftServer server) {
+        server.getPlayerList().getPlayers().forEach(player -> {
+            if (Stalker.hasInstanceOf(player)) {
+                Stalker stalkerInstance = Stalker.getInstanceOf(player);
+                if (stalkerInstance != null) {
+                    Entity stalker = stalkerInstance.getStalker();
+                    if (stalker == null || !stalker.isAlive()) {
+                        stalkerInstance.disconnect();
+                    }
+                }
+            }
+        });
     }
 }
