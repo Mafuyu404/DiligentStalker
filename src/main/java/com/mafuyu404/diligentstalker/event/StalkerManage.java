@@ -5,10 +5,7 @@ import com.mafuyu404.diligentstalker.entity.ArrowStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.CameraStalkerBlockEntity;
 import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.VoidStalkerEntity;
-import com.mafuyu404.diligentstalker.init.ChunkLoader;
-import com.mafuyu404.diligentstalker.init.NetworkHandler;
-import com.mafuyu404.diligentstalker.init.Stalker;
-import com.mafuyu404.diligentstalker.init.Tools;
+import com.mafuyu404.diligentstalker.init.*;
 import com.mafuyu404.diligentstalker.item.StalkerMasterItem;
 import com.mafuyu404.diligentstalker.network.ClientFuelPacket;
 import com.mafuyu404.diligentstalker.network.ClientStalkerPacket;
@@ -68,7 +65,14 @@ public class StalkerManage {
 
     private static void onPlayerTick(ServerPlayer player) {
         if (player.tickCount % 20 == 0) syncMasterTag(player);
-        if (!Stalker.hasInstanceOf(player)) return;
+        if (!Stalker.hasInstanceOf(player)) {
+            var data = StalkerUtil.entryOfUsingStalkerMaster(player);
+            if (data != null) {
+                ServerUtil.setVisualCenter(player, data.getValue());
+            }
+            return;
+        }
+        player.getPersistentData().remove("visualCenter");
         Entity stalker = Stalker.getInstanceOf(player).getStalker();
         int timer = 10;
         if (stalker instanceof DroneStalkerEntity droneStalker) {
@@ -82,9 +86,9 @@ public class StalkerManage {
                 stalker.setXRot(xRot);
                 stalker.setYRot(yRot);
                 if ((droneStalker.getFuel() > 0 && distance < SIGNAL_RADIUS) || player.isCreative()) {
-                    stalker.setDeltaMovement(Tools.move(input, stalker.getDeltaMovement()));
+                    stalker.setDeltaMovement(StalkerUtil.move(input, stalker.getDeltaMovement()));
                 } else {
-                    stalker.setDeltaMovement(Tools.move(Tools.getEmptyInput(), stalker.getDeltaMovement()));
+                    stalker.setDeltaMovement(StalkerUtil.move(StalkerUtil.getEmptyInput(), stalker.getDeltaMovement()));
                 }
             }
             if (player.tickCount % timer == 0) {
@@ -105,14 +109,14 @@ public class StalkerManage {
                 boolean isArrowStalker = entity instanceof ArrowStalkerEntity;
                 boolean isVoidStalker = entity instanceof VoidStalkerEntity;
                 if (isDroneStalker || isArrowStalker || isVoidStalker) {
-                    Tools.getToLoadChunks(entity, 0).forEach(chunkPos -> {
+                    StalkerUtil.getToLoadChunks(entity, 0).forEach(chunkPos -> {
                         ChunkLoader.add(level, chunkPos);
                     });
                 }
             }
         });
         level.players().forEach(player -> {
-            Map.Entry<String, BlockPos> entry = Tools.entryOfUsingStalkerMaster(player);
+            Map.Entry<String, BlockPos> entry = StalkerUtil.entryOfUsingStalkerMaster(player);
             if (entry != null) {
                 ChunkLoader.add(level, new ChunkPos(entry.getValue()));
             }

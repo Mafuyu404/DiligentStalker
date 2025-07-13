@@ -1,16 +1,13 @@
 package com.mafuyu404.diligentstalker.mixin;
 
+import com.mafuyu404.diligentstalker.event.StalkerControl;
 import com.mafuyu404.diligentstalker.init.Stalker;
-import com.mafuyu404.diligentstalker.init.Tools;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
-
-import java.util.Map;
 
 @Mixin(LevelRenderer.class)
 public class LevelRendererMixin {
@@ -20,10 +17,7 @@ public class LevelRendererMixin {
         if (Stalker.hasInstanceOf(player)) {
             return Stalker.getInstanceOf(player).getStalker().getX();
         } else {
-            Map.Entry<String, BlockPos> entry = Tools.entryOfUsingStalkerMaster(player);
-            if (entry != null) {
-                return entry.getValue().getX();
-            }
+            if (StalkerControl.visualCenter != null) return StalkerControl.visualCenter.getX();
         }
         return x;
     }
@@ -34,10 +28,7 @@ public class LevelRendererMixin {
         if (Stalker.hasInstanceOf(player)) {
             return Stalker.getInstanceOf(player).getStalker().getY();
         } else {
-            Map.Entry<String, BlockPos> entry = Tools.entryOfUsingStalkerMaster(player);
-            if (entry != null) {
-                return entry.getValue().getY();
-            }
+            if (StalkerControl.visualCenter != null) return StalkerControl.visualCenter.getY();
         }
         return y;
     }
@@ -48,10 +39,7 @@ public class LevelRendererMixin {
         if (Stalker.hasInstanceOf(player)) {
             return Stalker.getInstanceOf(player).getStalker().getZ();
         } else {
-            Map.Entry<String, BlockPos> entry = Tools.entryOfUsingStalkerMaster(player);
-            if (entry != null) {
-                return entry.getValue().getZ();
-            }
+            if (StalkerControl.visualCenter != null) return StalkerControl.visualCenter.getZ();
         }
         return z;
     }

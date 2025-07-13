@@ -3,7 +3,7 @@ package com.mafuyu404.diligentstalker.event;
 import com.mafuyu404.diligentstalker.DiligentStalker;
 import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import com.mafuyu404.diligentstalker.init.Stalker;
-import com.mafuyu404.diligentstalker.init.Tools;
+import com.mafuyu404.diligentstalker.init.StalkerUtil;
 import com.mafuyu404.diligentstalker.item.StalkerMasterItem;
 import com.mafuyu404.diligentstalker.registry.Config;
 import com.mojang.blaze3d.platform.Window;
@@ -42,7 +42,7 @@ public class DroneStalkerHUD {
             if (Stalker.hasInstanceOf(player)) {
                 Entity stalker = Stalker.getInstanceOf(player).getStalker();
                 Vec3 direction = stalker.position().subtract(player.position());
-                float yRot = Tools.getYRotFromVec3(direction);
+                float yRot = StalkerUtil.getYRotFromVec3(direction);
                 int distance = (int) direction.length();
                 if (stalker instanceof DroneStalkerEntity droneStalker) {
                     if (SIGNAL_RADIUS == 0) SIGNAL_RADIUS = Config.SIGNAL_RADIUS.get();
@@ -71,7 +71,7 @@ public class DroneStalkerHUD {
                     if (tag.contains("StalkerPosition")) {
                         int[] pos = tag.getIntArray("StalkerPosition");
                         Vec3 direction = new Vec3(pos[0], pos[1], pos[2]).subtract(player.position());
-                        float yRot = Tools.getYRotFromVec3(direction);
+                        float yRot = StalkerUtil.getYRotFromVec3(direction);
                         int distance = (int) direction.length();
                         float signal_percent = 1 - (1f * distance / SIGNAL_RADIUS);
                         List<ArcSection> sections = List.of(

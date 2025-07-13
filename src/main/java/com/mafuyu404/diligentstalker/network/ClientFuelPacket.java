@@ -1,10 +1,8 @@
 package com.mafuyu404.diligentstalker.network;
 
-import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
+import com.mafuyu404.diligentstalker.event.StalkerControl;
+import com.mafuyu404.diligentstalker.init.ClientUtil;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.entity.Entity;
 import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
@@ -29,11 +27,7 @@ public class ClientFuelPacket {
 
     public static void handle(ClientFuelPacket msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-            ClientLevel level = Minecraft.getInstance().level;
-            Entity entity = level.getEntity(msg.entityId);
-            if (entity instanceof DroneStalkerEntity droneStalker) {
-                droneStalker.setFuel(msg.fuel);
-            }
+            ClientUtil.updateFuel(msg.entityId, msg.fuel);
         });
         ctx.get().setPacketHandled(true);
     }

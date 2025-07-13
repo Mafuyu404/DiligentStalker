@@ -2,7 +2,7 @@ package com.mafuyu404.diligentstalker.event;
 
 import com.mafuyu404.diligentstalker.DiligentStalker;
 import com.mafuyu404.diligentstalker.init.Stalker;
-import com.mafuyu404.diligentstalker.init.Tools;
+import com.mafuyu404.diligentstalker.init.StalkerUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
@@ -55,14 +55,14 @@ public class ChunkLoadTask {
     }
 
     public static ArrayList<ClientboundLevelChunkWithLightPacket> createChunksLoadTask(Entity stalker, ArrayList<ClientboundLevelChunkWithLightPacket> toLoadChunks) {
-        Vec3 direction = Tools.calculateViewVector(StalkerControl.xRot, StalkerControl.yRot);
+        Vec3 direction = StalkerUtil.calculateViewVector(StalkerControl.xRot, StalkerControl.yRot);
         ArrayList<ClientboundLevelChunkWithLightPacket> result = new ArrayList<>();
 
         // 先对拟合度排序
         sortChunks(toLoadChunks, packet -> {
             Vec3 start = stalker.chunkPosition().getWorldPosition().getCenter();
             Vec3 end = new ChunkPos(packet.getX(), packet.getZ()).getWorldPosition().getCenter();
-            double n = Tools.calculateViewAlignment(direction, start, end);
+            double n = StalkerUtil.calculateViewAlignment(direction, start, end);
             return n * -1;
         });
         for (int i = 0; i < toLoadChunks.size() * 0.6; i++) {

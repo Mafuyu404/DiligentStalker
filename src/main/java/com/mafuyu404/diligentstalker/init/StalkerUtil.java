@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class Tools {
+public class StalkerUtil {
     public static HashMap<String, Integer> ControlMap = new HashMap<>();
 
     private static void initControlMap() {
@@ -92,7 +92,7 @@ public class Tools {
         if (input.getBoolean("Left") || input.getBoolean("Right")) {
             float x = 0;
             float z = 0;
-            Vec3 subAngle = Tools.calculateViewVector(xRot, yRot - 90);
+            Vec3 subAngle = StalkerUtil.calculateViewVector(xRot, yRot - 90);
             double xz = Math.sqrt(subAngle.x * subAngle.x + subAngle.z * subAngle.z);
             float forwardX = (float) (subAngle.x / xz);
             float forwardZ = (float) (subAngle.z / xz);

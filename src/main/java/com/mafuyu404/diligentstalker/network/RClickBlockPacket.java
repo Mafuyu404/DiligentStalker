@@ -40,7 +40,7 @@ public class RClickBlockPacket {
 
 //            BlockState state = level.getBlockState(msg.blockPos);
 //            Vec3 hitVec = new Vec3(msg.blockPos.getX() + 0.5, msg.blockPos.getY() + 0.5, msg.blockPos.getZ() + 0.5);
-//            BlockHitResult traceResult = Tools.rayTraceBlocks(level, entity.position(), msg.lookAngle, 4);
+//            BlockHitResult traceResult = StalkerUtil.rayTraceBlocks(level, entity.position(), msg.lookAngle, 4);
 //            BlockHitResult hitResult = new BlockHitResult(hitVec, traceResult.getDirection(), msg.blockPos, false);
 //
 ////            PlayerInteractEvent.RightClickBlock event = new PlayerInteractEvent.RightClickBlock(

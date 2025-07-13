@@ -4,9 +4,10 @@ import com.mafuyu404.diligentstalker.DiligentStalker;
 import com.mafuyu404.diligentstalker.entity.ArrowStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.VoidStalkerEntity;
+import com.mafuyu404.diligentstalker.init.ClientUtil;
 import com.mafuyu404.diligentstalker.init.NetworkHandler;
 import com.mafuyu404.diligentstalker.init.Stalker;
-import com.mafuyu404.diligentstalker.init.Tools;
+import com.mafuyu404.diligentstalker.init.StalkerUtil;
 import com.mafuyu404.diligentstalker.item.StalkerCoreItem;
 import com.mafuyu404.diligentstalker.network.EntityDataPacket;
 import com.mafuyu404.diligentstalker.network.RClickBlockPacket;
@@ -16,6 +17,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -35,13 +37,22 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.lwjgl.glfw.GLFW;
 
+import java.util.Map;
 import java.util.UUID;
+
+import static com.mafuyu404.diligentstalker.init.ClientUtil.getCameraPosition;
 
 @Mod.EventBusSubscriber(modid = DiligentStalker.MODID, value = Dist.CLIENT)
 public class StalkerControl {
     public static float fixedXRot, fixedYRot;
     public static float xRot, yRot;
     public static boolean screen = false;
+    public static BlockPos visualCenter;
+
+    public static void setVisualCenter(BlockPos blockPos) {
+        if (Stalker.hasInstanceOf(Minecraft.getInstance().player)) return;
+        visualCenter = blockPos;
+    }
 
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
@@ -49,7 +60,7 @@ public class StalkerControl {
         if (screen) return;
         if (event.phase == TickEvent.Phase.START) return;
         LocalPlayer player = Minecraft.getInstance().player;
-        UUID entityUUID = Tools.uuidOfUsingStalkerMaster(player);
+        UUID entityUUID = StalkerUtil.uuidOfUsingStalkerMaster(player);
         if (entityUUID != null) {
             ClientLevel level = player.clientLevel;
             level.entitiesForRendering().forEach(entity -> {
@@ -58,7 +69,12 @@ public class StalkerControl {
                 }
             });
         }
+        Map.Entry<String, BlockPos> entry = StalkerUtil.entryOfUsingStalkerMaster(player);
+        if (entry != null) {
+            visualCenter = entry.getValue();
+        }
         if (!Stalker.hasInstanceOf(player)) return;
+        visualCenter = null;
         Stalker instance = Stalker.getInstanceOf(player);
         Entity stalker = instance.getStalker();
         if (stalker instanceof DroneStalkerEntity droneStalker) {
@@ -95,7 +111,7 @@ public class StalkerControl {
                 if (Stalker.hasInstanceOf(player)) Stalker.getInstanceOf(player).disconnect();
             }
         }
-        if (Tools.ControlMap.containsValue(event.getKey())) {
+        if (StalkerUtil.ControlMap.containsValue(event.getKey())) {
             syncControl();
         }
     }
@@ -129,7 +145,7 @@ public class StalkerControl {
         }
         Stalker instance = Stalker.getInstanceOf(player);
         if (instance.getStalker() instanceof DroneStalkerEntity) {
-            BlockHitResult traceResult = Tools.rayTraceBlocks(player.level(), getCameraPosition(), getViewVector(), 4);
+            BlockHitResult traceResult = StalkerUtil.rayTraceBlocks(player.level(), getCameraPosition(), getViewVector(), 4);
             if (traceResult.getType() == HitResult.Type.BLOCK) {
                 NetworkHandler.CHANNEL.sendToServer(new RClickBlockPacket(getCameraPosition(), getViewVector()));
                 RightClickBlock(player, getCameraPosition(), getViewVector());
@@ -149,8 +165,8 @@ public class StalkerControl {
     public static CompoundTag handleInput() {
         Options options = Minecraft.getInstance().options;
         CompoundTag input = new CompoundTag();
-        Tools.ControlMap.forEach((s, key) -> {
-            input.putBoolean(s, isKeyPressed(key));
+        StalkerUtil.ControlMap.forEach((s, key) -> {
+            input.putBoolean(s, ClientUtil.isKeyPressed(key));
         });
         input.putFloat("xRot", xRot);
         input.putFloat("yRot", yRot);
@@ -168,7 +184,7 @@ public class StalkerControl {
 
     public static void RightClickBlock(Player player, Vec3 position, Vec3 viewVec) {
         Level level = player.level();
-        BlockHitResult traceResult = Tools.rayTraceBlocks(level, position, viewVec, 4);
+        BlockHitResult traceResult = StalkerUtil.rayTraceBlocks(level, position, viewVec, 4);
         BlockState state = level.getBlockState(traceResult.getBlockPos());
         InteractionResult result = state.use(level, player, InteractionHand.MAIN_HAND, traceResult);
         if (result.consumesAction()) {
@@ -188,21 +204,13 @@ public class StalkerControl {
         }
     }
 
-    public static Vec3 getViewVector() {
-        return Tools.calculateViewVector(xRot, yRot);
-    }
-
-    public static Vec3 getCameraPosition() {
-        return Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
-    }
-
     @SubscribeEvent
     public static void onClientEnter(EntityJoinLevelEvent event) {
         if (!event.getLevel().isClientSide) return;
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
         if (event.getEntity() instanceof DroneStalkerEntity stalker) {
-            UUID entityUUID = Tools.uuidOfUsingStalkerMaster(player);
+            UUID entityUUID = StalkerUtil.uuidOfUsingStalkerMaster(player);
             if (stalker.getUUID().equals(entityUUID)) {
                 Stalker.connect(player, stalker);
             }
@@ -223,17 +231,15 @@ public class StalkerControl {
 
     private static void updateControlMap() {
         Options options = Minecraft.getInstance().options;
-        Tools.ControlMap.put("Up", options.keyUp.getKey().getValue());
-        Tools.ControlMap.put("Down", options.keyDown.getKey().getValue());
-        Tools.ControlMap.put("Left", options.keyLeft.getKey().getValue());
-        Tools.ControlMap.put("Right", options.keyRight.getKey().getValue());
-        Tools.ControlMap.put("Jump", options.keyJump.getKey().getValue());
-        Tools.ControlMap.put("Shift", options.keyShift.getKey().getValue());
+        StalkerUtil.ControlMap.put("Up", options.keyUp.getKey().getValue());
+        StalkerUtil.ControlMap.put("Down", options.keyDown.getKey().getValue());
+        StalkerUtil.ControlMap.put("Left", options.keyLeft.getKey().getValue());
+        StalkerUtil.ControlMap.put("Right", options.keyRight.getKey().getValue());
+        StalkerUtil.ControlMap.put("Jump", options.keyJump.getKey().getValue());
+        StalkerUtil.ControlMap.put("Shift", options.keyShift.getKey().getValue());
     }
 
-    public static boolean isKeyPressed(int glfwKeyCode) {
-        Minecraft minecraft = Minecraft.getInstance();
-        long windowHandle = minecraft.getWindow().getWindow();
-        return GLFW.glfwGetKey(windowHandle, glfwKeyCode) == GLFW.GLFW_PRESS;
+    public static Vec3 getViewVector() {
+        return StalkerUtil.calculateViewVector(xRot, yRot);
     }
 }

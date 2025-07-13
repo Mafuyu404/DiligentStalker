@@ -1,7 +1,6 @@
 package com.mafuyu404.diligentstalker.mixin;
 
 import com.mafuyu404.diligentstalker.init.Stalker;
-import com.mafuyu404.diligentstalker.init.Tools;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -9,8 +8,6 @@ import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
-
-import java.util.Map;
 
 @Mixin(targets = "net.minecraft.server.level.ChunkMap$TrackedEntity")
 public class ChunkMap$TrackedEntityMixin {
@@ -20,9 +17,9 @@ public class ChunkMap$TrackedEntityMixin {
             Entity stalker = Stalker.getInstanceOf(player).getStalker();
             return stalker.position();
         } else {
-            Map.Entry<String, BlockPos> entry = Tools.entryOfUsingStalkerMaster(player);
-            if (entry != null) {
-                return entry.getValue().getCenter();
+            if (player.getPersistentData().contains("visualCenter")) {
+                BlockPos blockPos = BlockPos.of(player.getPersistentData().getLong("visualCenter"));
+                return blockPos.getCenter();
             }
         }
         return player.position();

@@ -158,14 +158,6 @@ repositories {
         }
     }
     maven {
-        name = 'GeckoLib'
-        url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
-        content {
-            includeGroupByRegex("software\\.bernie.*")
-            includeGroup("com.eliotlash.mclib")
-        }
-    }
-    maven {
         // location of the maven that hosts JEI files since January 2023
         // Patchouli
         name = "Jared's maven"
@@ -217,7 +209,7 @@ dependencies {
 
     implementation fg.deobf("curse.maven:embeddium-908741:5681725")
 //    implementation fg.deobf("curse.maven:touhou-little-maid-355044:6440955")
-    implementation fg.deobf("libs:touhoulittlemaid:1.20.1-release-1.2.2-hotfix")
+//    implementation fg.deobf("libs:touhoulittlemaid:1.20.1-release-1.2.2-hotfix")
 
 }
 
