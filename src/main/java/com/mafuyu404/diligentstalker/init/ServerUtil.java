@@ -7,4 +7,16 @@ public class ServerUtil {
     public static void setVisualCenter(Player player, BlockPos blockPos) {
         player.getPersistentData().putLong("visualCenter", blockPos.asLong());
     }
+
+    public static void clearVisualCenter(Player player) {
+        player.getPersistentData().remove("visualCenter");
+    }
+
+    public static boolean hasVisualCenter(Player player) {
+        return player.getPersistentData().contains("visualCenter");
+    }
+
+    public static BlockPos getVisualCenter(Player player) {
+        return BlockPos.of(player.getPersistentData().getLong("visualCenter"));
+    }
 }

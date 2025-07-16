@@ -72,7 +72,7 @@ public class StalkerManage {
             }
             return;
         }
-        player.getPersistentData().remove("visualCenter");
+        ServerUtil.clearVisualCenter(player);
         Entity stalker = Stalker.getInstanceOf(player).getStalker();
         int timer = 10;
         if (stalker instanceof DroneStalkerEntity droneStalker) {
@@ -116,9 +116,8 @@ public class StalkerManage {
             }
         });
         level.players().forEach(player -> {
-            Map.Entry<String, BlockPos> entry = StalkerUtil.entryOfUsingStalkerMaster(player);
-            if (entry != null) {
-                ChunkLoader.add(level, new ChunkPos(entry.getValue()));
+            if (ServerUtil.hasVisualCenter(player)) {
+                ChunkLoader.add(level, new ChunkPos(ServerUtil.getVisualCenter(player)));
             }
         });
     }
