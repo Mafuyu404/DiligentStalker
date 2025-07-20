@@ -1,6 +1,7 @@
 package com.mafuyu404.diligentstalker.mixin;
 
 import com.mafuyu404.diligentstalker.event.StalkerControl;
+import com.mafuyu404.diligentstalker.init.ClientStalkerUtil;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -17,7 +18,7 @@ public class LevelRendererMixin {
         if (Stalker.hasInstanceOf(player)) {
             return Stalker.getInstanceOf(player).getStalker().getX();
         } else {
-            if (StalkerControl.visualCenter != null) return StalkerControl.visualCenter.getX();
+            if (ClientStalkerUtil.getVisualCenter() != null) return ClientStalkerUtil.getVisualCenter().getX();
         }
         return x;
     }
@@ -28,7 +29,7 @@ public class LevelRendererMixin {
         if (Stalker.hasInstanceOf(player)) {
             return Stalker.getInstanceOf(player).getStalker().getY();
         } else {
-            if (StalkerControl.visualCenter != null) return StalkerControl.visualCenter.getY();
+            if (ClientStalkerUtil.getVisualCenter() != null) return ClientStalkerUtil.getVisualCenter().getY();
         }
         return y;
     }
@@ -39,7 +40,7 @@ public class LevelRendererMixin {
         if (Stalker.hasInstanceOf(player)) {
             return Stalker.getInstanceOf(player).getStalker().getZ();
         } else {
-            if (StalkerControl.visualCenter != null) return StalkerControl.visualCenter.getZ();
+            if (ClientStalkerUtil.getVisualCenter() != null) return ClientStalkerUtil.getVisualCenter().getZ();
         }
         return z;
     }

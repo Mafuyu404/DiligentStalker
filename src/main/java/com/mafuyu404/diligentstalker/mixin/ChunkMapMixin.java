@@ -1,6 +1,7 @@
 package com.mafuyu404.diligentstalker.mixin;
 
 import com.mafuyu404.diligentstalker.api.IChunkMap;
+import com.mafuyu404.diligentstalker.init.ServerStalkerUtil;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.registry.Config;
 import net.minecraft.core.BlockPos;
@@ -30,10 +31,8 @@ public abstract class ChunkMapMixin implements IChunkMap {
 
     @Inject(method = "move", at = @At("HEAD"), cancellable = true)
     private void wwaaa(ServerPlayer player, CallbackInfo ci) {
-        if (player.getPersistentData().contains("visualCenter")) {
-            System.out.print("loading\n");
-            BlockPos blockPos = BlockPos.of(player.getPersistentData().getLong("visualCenter"));
-            loadLevelChunk(player, new ChunkPos(blockPos));
+        if (ServerStalkerUtil.hasVisualCenter(player)) {
+            loadLevelChunk(player, new ChunkPos(ServerStalkerUtil.getVisualCenter(player)));
         }
         ChunkPos center = null;
         if (Stalker.hasInstanceOf(player)) {

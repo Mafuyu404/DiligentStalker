@@ -1,14 +1,10 @@
 package com.mafuyu404.diligentstalker.init;
 
 import com.mafuyu404.diligentstalker.entity.VoidStalkerEntity;
-import com.mafuyu404.diligentstalker.event.StalkerManage;
-import com.mafuyu404.diligentstalker.item.StalkerMasterItem;
 import com.mafuyu404.diligentstalker.registry.Config;
-import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -17,8 +13,6 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class StalkerUtil {
@@ -222,29 +216,5 @@ public class StalkerUtil {
             CHUNK_CACHE.clear();
             lastChunkCacheCleanup = currentTime;
         }
-    }
-
-    public static Map.Entry<String, BlockPos> entryOfUsingStalkerMaster(Player player) {
-        if (player != null && player.isUsingItem()) {
-            if (player.getMainHandItem().getItem() instanceof StalkerMasterItem) {
-                CompoundTag tag = player.getMainHandItem().getOrCreateTag();
-                if (tag.contains("StalkerId") && StalkerManage.DronePosition.containsKey(tag.getUUID("StalkerId"))) {
-                    return StalkerManage.DronePosition.get(tag.getUUID("StalkerId"));
-                }
-            }
-        }
-        return null;
-    }
-
-    public static UUID uuidOfUsingStalkerMaster(Player player) {
-        if (player != null && player.isUsingItem()) {
-            if (player.getMainHandItem().getItem() instanceof StalkerMasterItem) {
-                CompoundTag tag = player.getMainHandItem().getOrCreateTag();
-                if (tag.contains("StalkerId")) {
-                    return tag.getUUID("StalkerId");
-                }
-            }
-        }
-        return null;
     }
 }

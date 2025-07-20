@@ -1,7 +1,6 @@
 package com.mafuyu404.diligentstalker.network;
 
-import com.mafuyu404.diligentstalker.event.StalkerControl;
-import com.mafuyu404.diligentstalker.init.ClientUtil;
+import com.mafuyu404.diligentstalker.init.ClientStalkerUtil;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 
@@ -27,7 +26,7 @@ public class ClientFuelPacket {
 
     public static void handle(ClientFuelPacket msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-            ClientUtil.updateFuel(msg.entityId, msg.fuel);
+            ClientStalkerUtil.updateFuel(msg.entityId, msg.fuel);
         });
         ctx.get().setPacketHandled(true);
     }

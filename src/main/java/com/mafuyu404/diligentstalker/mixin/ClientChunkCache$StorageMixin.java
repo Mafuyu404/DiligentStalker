@@ -1,6 +1,7 @@
 package com.mafuyu404.diligentstalker.mixin;
 
 import com.mafuyu404.diligentstalker.event.StalkerControl;
+import com.mafuyu404.diligentstalker.init.ClientStalkerUtil;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.init.StalkerUtil;
 import net.minecraft.client.Minecraft;
@@ -25,8 +26,8 @@ public class ClientChunkCache$StorageMixin {
                 cir.setReturnValue(true);
             }
         } else {
-            if (StalkerControl.visualCenter != null) {
-                if (new ChunkPos(StalkerControl.visualCenter).equals(new ChunkPos(x, z))) {
+            if (ClientStalkerUtil.getVisualCenter() != null) {
+                if (new ChunkPos(ClientStalkerUtil.getVisualCenter()).equals(new ChunkPos(x, z))) {
                     cir.setReturnValue(true);
                 }
             }

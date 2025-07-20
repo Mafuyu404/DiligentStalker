@@ -4,7 +4,7 @@ import com.mafuyu404.diligentstalker.DiligentStalker;
 import com.mafuyu404.diligentstalker.entity.ArrowStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.VoidStalkerEntity;
-import com.mafuyu404.diligentstalker.init.ClientUtil;
+import com.mafuyu404.diligentstalker.init.ClientStalkerUtil;
 import com.mafuyu404.diligentstalker.init.NetworkHandler;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.init.StalkerUtil;
@@ -39,20 +39,16 @@ import org.lwjgl.glfw.GLFW;
 
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Predicate;
 
-import static com.mafuyu404.diligentstalker.init.ClientUtil.getCameraPosition;
+import static com.mafuyu404.diligentstalker.init.ClientStalkerUtil.getCameraPosition;
 
 @Mod.EventBusSubscriber(modid = DiligentStalker.MODID, value = Dist.CLIENT)
 public class StalkerControl {
     public static float fixedXRot, fixedYRot;
     public static float xRot, yRot;
     public static boolean screen = false;
-    public static BlockPos visualCenter;
-
-    public static void setVisualCenter(BlockPos blockPos) {
-        if (Stalker.hasInstanceOf(Minecraft.getInstance().player)) return;
-        visualCenter = blockPos;
-    }
 
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
@@ -60,27 +56,30 @@ public class StalkerControl {
         if (screen) return;
         if (event.phase == TickEvent.Phase.START) return;
         LocalPlayer player = Minecraft.getInstance().player;
-        UUID entityUUID = StalkerUtil.uuidOfUsingStalkerMaster(player);
-        if (entityUUID != null) {
+        if (player == null) return;
+
+        Predicate<Entity> ConnectingTarget = ClientStalkerUtil.getConnectingTarget();
+        if (ConnectingTarget != null) {
             ClientLevel level = player.clientLevel;
-            level.entitiesForRendering().forEach(entity -> {
-                if (entity.getUUID().equals(entityUUID)) {
+            for (Entity entity : level.entitiesForRendering()) {
+                if (ConnectingTarget.test(entity)) {
                     Stalker.connect(player, entity);
+                    ClientStalkerUtil.setConnectingTarget(null);
+                    break;
                 }
-            });
+            }
         }
-        Map.Entry<String, BlockPos> entry = StalkerUtil.entryOfUsingStalkerMaster(player);
-        if (entry != null) {
-            visualCenter = entry.getValue();
-        }
-        if (!Stalker.hasInstanceOf(player)) return;
-        visualCenter = null;
-        Stalker instance = Stalker.getInstanceOf(player);
-        Entity stalker = instance.getStalker();
-        if (stalker instanceof DroneStalkerEntity droneStalker) {
-            stalker.setXRot(xRot);
-            stalker.setYRot(yRot);
-            StalkerControl.syncControl();
+
+        if (Stalker.hasInstanceOf(player)) {
+            ClientStalkerUtil.setVisualCenter(null);
+
+            Stalker instance = Stalker.getInstanceOf(player);
+            Entity stalker = instance.getStalker();
+            if (stalker instanceof DroneStalkerEntity droneStalker) {
+                stalker.setXRot(xRot);
+                stalker.setYRot(yRot);
+                StalkerControl.syncControl();
+            }
         }
     }
 
@@ -166,7 +165,7 @@ public class StalkerControl {
         Options options = Minecraft.getInstance().options;
         CompoundTag input = new CompoundTag();
         StalkerUtil.ControlMap.forEach((s, key) -> {
-            input.putBoolean(s, ClientUtil.isKeyPressed(key));
+            input.putBoolean(s, ClientStalkerUtil.isKeyPressed(key));
         });
         input.putFloat("xRot", xRot);
         input.putFloat("yRot", yRot);
@@ -209,12 +208,10 @@ public class StalkerControl {
         if (!event.getLevel().isClientSide) return;
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
-        if (event.getEntity() instanceof DroneStalkerEntity stalker) {
-            UUID entityUUID = StalkerUtil.uuidOfUsingStalkerMaster(player);
-            if (stalker.getUUID().equals(entityUUID)) {
-                Stalker.connect(player, stalker);
-            }
+        if (ClientStalkerUtil.getConnectingTarget() != null && ClientStalkerUtil.getConnectingTarget().test(event.getEntity())) {
+            Stalker.connect(player, event.getEntity());
         }
+
         if (event.getEntity() instanceof ArrowStalkerEntity stalker) {
             if (stalker.getOwner() != null && stalker.getOwner().getUUID().equals(player.getUUID())) {
                 if (Stalker.hasInstanceOf(player)) return;

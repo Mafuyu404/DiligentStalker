@@ -33,6 +33,7 @@ public class Stalker {
     public void disconnect() {
         if (level.isClientSide) {
             NetworkHandler.CHANNEL.sendToServer(new StalkerSyncPacket(this.stalkerId, false));
+            ClientStalkerUtil.cancelRemoteConnect();
         }
         InstanceMap.remove(playerUUID);
         StalkerToPlayerMap.remove(stalkerId);
@@ -44,6 +45,7 @@ public class Stalker {
         if (player.level().isClientSide) {
             StalkerControl.connect(player, stalker);
             NetworkHandler.CHANNEL.sendToServer(new StalkerSyncPacket(stalker.getId(), true));
+            ClientStalkerUtil.cancelRemoteConnect();
         }
         InstanceMap.put(player.getUUID(), stalker.getId());
         StalkerToPlayerMap.put(stalker.getId(), player.getUUID());

@@ -3,6 +3,7 @@ package com.mafuyu404.diligentstalker.init;
 import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import com.mafuyu404.diligentstalker.event.ChunkLoadTask;
 import com.mafuyu404.diligentstalker.event.StalkerControl;
+import com.mafuyu404.diligentstalker.network.ServerRemoteConnectPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
@@ -14,7 +15,10 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.Vec3;
 import org.lwjgl.glfw.GLFW;
 
-public class ClientUtil {
+import java.util.HashMap;
+import java.util.function.Predicate;
+
+public class ClientStalkerUtil {
     public static boolean isKeyPressed(int glfwKeyCode) {
         Minecraft minecraft = Minecraft.getInstance();
         long windowHandle = minecraft.getWindow().getWindow();
@@ -42,11 +46,39 @@ public class ClientUtil {
 
     public static boolean handleChunkPacket(ClientboundLevelChunkWithLightPacket packet) {
         Player player = Minecraft.getInstance().player;
-        if (new ChunkPos(packet.getX(), packet.getZ()).equals(new ChunkPos(BlockPos.containing(ClientUtil.getCameraPosition())))) return false;
+        if (new ChunkPos(packet.getX(), packet.getZ()).equals(new ChunkPos(BlockPos.containing(ClientStalkerUtil.getCameraPosition())))) return false;
         if (Stalker.hasInstanceOf(player)) {
             ChunkLoadTask.TaskList.add(packet);
             return true;
         }
         return false;
+    }
+
+    private static Predicate<Entity> ConnectingTarget;
+    public static void setConnectingTarget(Predicate<Entity> predicate) {
+        ConnectingTarget = predicate;
+    }
+    public static Predicate<Entity> getConnectingTarget() {
+        return ConnectingTarget;
+    }
+
+    private static BlockPos VisualCenter;
+    public static void setVisualCenter(BlockPos blockPos) {
+        if (Stalker.hasInstanceOf(Minecraft.getInstance().player)) return;
+        VisualCenter = blockPos;
+    }
+    public static BlockPos getVisualCenter() {
+        return VisualCenter;
+    }
+
+    public static void tryRemoteConnect(BlockPos center, Predicate<Entity> predicate) {
+        setVisualCenter(center);
+        NetworkHandler.CHANNEL.sendToServer(new ServerRemoteConnectPacket(center));
+        setConnectingTarget(predicate);
+    }
+    public static void cancelRemoteConnect() {
+        setVisualCenter(null);
+        NetworkHandler.CHANNEL.sendToServer(new ServerRemoteConnectPacket(BlockPos.ZERO));
+        setConnectingTarget(null);
     }
 }

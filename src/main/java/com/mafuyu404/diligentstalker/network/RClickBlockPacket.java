@@ -33,31 +33,8 @@ public class RClickBlockPacket {
             ServerPlayer player = ctx.get().getSender();
             ServerLevel level = player.serverLevel();
             if (!Stalker.hasInstanceOf(player)) return;
-//            Entity entity = Stalker.getInstanceOf(player).getStalker();
-//            if (entity == null) return;
 
             StalkerControl.RightClickBlock(player, msg.position, msg.viewVec);
-
-//            BlockState state = level.getBlockState(msg.blockPos);
-//            Vec3 hitVec = new Vec3(msg.blockPos.getX() + 0.5, msg.blockPos.getY() + 0.5, msg.blockPos.getZ() + 0.5);
-//            BlockHitResult traceResult = StalkerUtil.rayTraceBlocks(level, entity.position(), msg.lookAngle, 4);
-//            BlockHitResult hitResult = new BlockHitResult(hitVec, traceResult.getDirection(), msg.blockPos, false);
-//
-////            PlayerInteractEvent.RightClickBlock event = new PlayerInteractEvent.RightClickBlock(
-////                    player,
-////                    InteractionHand.MAIN_HAND,
-////                    msg.blockPos,
-////                    hitResult
-////            );
-////            if (MinecraftForge.EVENT_BUS.post(event)) {
-////                return;
-////            }
-////            if (event.getResult() == Event.Result.DENY) return;
-//
-//            InteractionResult result = state.use(level, player, InteractionHand.MAIN_HAND, traceResult);
-//            if (result.consumesAction()) {
-//                level.sendBlockUpdated(msg.blockPos, state, state, 3);
-//            }
         });
         ctx.get().setPacketHandled(true);
     }

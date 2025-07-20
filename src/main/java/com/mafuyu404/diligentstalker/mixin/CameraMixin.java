@@ -1,6 +1,7 @@
 package com.mafuyu404.diligentstalker.mixin;
 
 import com.mafuyu404.diligentstalker.event.StalkerControl;
+import com.mafuyu404.diligentstalker.init.ClientStalkerUtil;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.init.StalkerUtil;
 import net.minecraft.client.Camera;
@@ -35,7 +36,7 @@ public abstract class CameraMixin {
             double z = StalkerUtil.lerp(pos0.z, pos1.z);
             return new Vec3(x, y, z);
         } else {
-            if (StalkerControl.visualCenter != null) return StalkerControl.visualCenter.getCenter();
+            if (ClientStalkerUtil.getVisualCenter() != null) return ClientStalkerUtil.getVisualCenter().getCenter();
         }
         return pos1;
     }

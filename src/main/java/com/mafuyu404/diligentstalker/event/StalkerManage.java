@@ -66,13 +66,8 @@ public class StalkerManage {
     private static void onPlayerTick(ServerPlayer player) {
         if (player.tickCount % 20 == 0) syncMasterTag(player);
         if (!Stalker.hasInstanceOf(player)) {
-            var data = StalkerUtil.entryOfUsingStalkerMaster(player);
-            if (data != null) {
-                ServerUtil.setVisualCenter(player, data.getValue());
-            }
             return;
         }
-        ServerUtil.clearVisualCenter(player);
         Entity stalker = Stalker.getInstanceOf(player).getStalker();
         int timer = 10;
         if (stalker instanceof DroneStalkerEntity droneStalker) {
@@ -116,8 +111,8 @@ public class StalkerManage {
             }
         });
         level.players().forEach(player -> {
-            if (ServerUtil.hasVisualCenter(player)) {
-                ChunkLoader.add(level, new ChunkPos(ServerUtil.getVisualCenter(player)));
+            if (ServerStalkerUtil.hasVisualCenter(player)) {
+                ChunkLoader.add(level, new ChunkPos(ServerStalkerUtil.getVisualCenter(player)));
             }
         });
     }
