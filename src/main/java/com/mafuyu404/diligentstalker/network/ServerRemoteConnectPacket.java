@@ -12,7 +12,7 @@ public class ServerRemoteConnectPacket {
     private final BlockPos blockPos;
 
     public ServerRemoteConnectPacket(BlockPos blockPos) {
-        this.blockPos = blockPos;
+        this.blockPos = blockPos == null ? BlockPos.ZERO :blockPos;
     }
 
     public static void encode(ServerRemoteConnectPacket msg, FriendlyByteBuf buffer) {

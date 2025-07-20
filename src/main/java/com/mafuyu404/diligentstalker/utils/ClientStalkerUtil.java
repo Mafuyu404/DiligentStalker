@@ -68,7 +68,8 @@ public class ClientStalkerUtil {
         VisualCenter = blockPos;
     }
     public static BlockPos getVisualCenter() {
-        return VisualCenter;
+        if (VisualCenter == null) return null;
+        return VisualCenter.equals(BlockPos.ZERO) ? null : VisualCenter;
     }
 
     public static void tryRemoteConnect(BlockPos center, Predicate<Entity> predicate) {
@@ -77,7 +78,7 @@ public class ClientStalkerUtil {
         setConnectingTarget(predicate);
     }
     public static void cancelRemoteConnect() {
-        setVisualCenter(null);
+        setVisualCenter(BlockPos.ZERO);
         NetworkHandler.CHANNEL.sendToServer(new ServerRemoteConnectPacket(BlockPos.ZERO));
         setConnectingTarget(null);
     }
