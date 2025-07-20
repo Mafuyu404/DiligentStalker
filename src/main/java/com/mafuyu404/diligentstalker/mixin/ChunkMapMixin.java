@@ -1,10 +1,9 @@
 package com.mafuyu404.diligentstalker.mixin;
 
 import com.mafuyu404.diligentstalker.api.IChunkMap;
-import com.mafuyu404.diligentstalker.init.ServerStalkerUtil;
+import com.mafuyu404.diligentstalker.utils.ServerStalkerUtil;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.registry.Config;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
 import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.ChunkMap;

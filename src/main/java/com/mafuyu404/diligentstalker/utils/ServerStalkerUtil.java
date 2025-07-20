@@ -1,4 +1,4 @@
-package com.mafuyu404.diligentstalker.init;
+package com.mafuyu404.diligentstalker.utils;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;

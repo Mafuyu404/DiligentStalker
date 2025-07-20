@@ -1,41 +1,50 @@
 package com.mafuyu404.diligentstalker.init;
 
-import com.mafuyu404.diligentstalker.DiligentStalker;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraftforge.common.world.ForgeChunkManager;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-
+import java.util.HashSet;
+import java.util.Set;
 
 public class ChunkLoader {
-    //    private static final TicketType<ChunkPos> StalkerTicket = TicketType.create(new ResourceLocation(MODID, "stalker").toString(), Comparator.comparingLong(ChunkPos::toLong));
-    private static final HashMap<String, ArrayList<ChunkPos>> loaders = new HashMap<>();
+    private static final HashMap<ResourceLocation, ChunkLoader> dimension = new HashMap<>();
+    public static ChunkLoader of(ServerLevel serverLevel) {
+        ResourceLocation id = serverLevel.dimension().location();
+        if (!dimension.containsKey(id)) dimension.put(id, new ChunkLoader(serverLevel));
+        return dimension.get(id);
+    }
 
-    public static void add(ServerLevel level, ChunkPos center) {
-        String key = level.dimension().toString();
-        if (!loaders.containsKey(key)) loaders.put(key, new ArrayList<>());
-        if (!loaders.get(key).contains(center)) {
-            loaders.get(key).add(center);
-//            level.getChunkSource().addRegionTicket(StalkerTicket, center, 33, center);
-            ForgeChunkManager.forceChunk(level, DiligentStalker.MODID, center.getMiddleBlockPosition(0),
-                    center.x, center.z, true, true);
+    private final ServerLevel level;
+    private final Set<ChunkPos> forcedChunks = new HashSet<>();
+
+    public ChunkLoader(ServerLevel level) {
+        this.level = level;
+    }
+
+    public void addChunk(ChunkPos chunkPos) {
+        if (!forcedChunks.contains(chunkPos)) {
+            level.getChunkSource().addRegionTicket(
+                    TicketType.PLAYER,
+                    chunkPos,
+                    2, // 加载半径（0=单区块），不然会动不了
+                    chunkPos // 标识
+            );
+            forcedChunks.add(chunkPos);
         }
     }
 
-    public static void removeAll(ServerLevel level) {
-        String key = level.dimension().toString();
-        if (!loaders.containsKey(key)) return;
-        if (loaders.get(key).isEmpty()) return;
-        Iterator<ChunkPos> iterator = loaders.get(key).iterator();
-        while (iterator.hasNext()) {
-            ChunkPos center = iterator.next();
-            iterator.remove();
-//            level.getChunkSource().addRegionTicket(StalkerTicket, chunkPos, 33, chunkPos);
-            ForgeChunkManager.forceChunk(level, DiligentStalker.MODID, center.getMiddleBlockPosition(0),
-                    center.x, center.z, false, false);
+    public void removeAll() {
+        for (ChunkPos chunkPos : forcedChunks) {
+            level.getChunkSource().removeRegionTicket(
+                    TicketType.PLAYER,
+                    chunkPos,
+                    2,
+                    chunkPos
+            );
         }
+        forcedChunks.clear();
     }
 }

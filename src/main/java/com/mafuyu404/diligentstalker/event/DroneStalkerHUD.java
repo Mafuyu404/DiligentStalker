@@ -3,7 +3,7 @@ package com.mafuyu404.diligentstalker.event;
 import com.mafuyu404.diligentstalker.DiligentStalker;
 import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import com.mafuyu404.diligentstalker.init.Stalker;
-import com.mafuyu404.diligentstalker.init.StalkerUtil;
+import com.mafuyu404.diligentstalker.utils.StalkerUtil;
 import com.mafuyu404.diligentstalker.item.StalkerMasterItem;
 import com.mafuyu404.diligentstalker.registry.Config;
 import com.mojang.blaze3d.platform.Window;

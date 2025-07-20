@@ -1,8 +1,9 @@
-package com.mafuyu404.diligentstalker.init;
+package com.mafuyu404.diligentstalker.utils;
 
 import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import com.mafuyu404.diligentstalker.event.ChunkLoadTask;
-import com.mafuyu404.diligentstalker.event.StalkerControl;
+import com.mafuyu404.diligentstalker.init.NetworkHandler;
+import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.network.ServerRemoteConnectPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -15,7 +16,6 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.Vec3;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.HashMap;
 import java.util.function.Predicate;
 
 public class ClientStalkerUtil {

@@ -1,6 +1,6 @@
 package com.mafuyu404.diligentstalker.network;
 
-import com.mafuyu404.diligentstalker.init.ServerStalkerUtil;
+import com.mafuyu404.diligentstalker.utils.ServerStalkerUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;

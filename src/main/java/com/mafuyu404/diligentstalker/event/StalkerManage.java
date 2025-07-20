@@ -5,12 +5,16 @@ import com.mafuyu404.diligentstalker.entity.ArrowStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.CameraStalkerBlockEntity;
 import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.VoidStalkerEntity;
-import com.mafuyu404.diligentstalker.init.*;
+import com.mafuyu404.diligentstalker.init.NetworkHandler;
 import com.mafuyu404.diligentstalker.item.StalkerMasterItem;
 import com.mafuyu404.diligentstalker.network.ClientFuelPacket;
 import com.mafuyu404.diligentstalker.network.ClientStalkerPacket;
 import com.mafuyu404.diligentstalker.registry.Config;
 import com.mafuyu404.diligentstalker.registry.StalkerItems;
+import com.mafuyu404.diligentstalker.init.ChunkLoader;
+import com.mafuyu404.diligentstalker.utils.ServerStalkerUtil;
+import com.mafuyu404.diligentstalker.init.Stalker;
+import com.mafuyu404.diligentstalker.utils.StalkerUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -34,7 +38,6 @@ import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -43,7 +46,6 @@ import java.util.UUID;
 public class StalkerManage {
     public static final HashMap<UUID, Map.Entry<String, BlockPos>> DronePosition = new HashMap<>();
     private static int SIGNAL_RADIUS = 0;
-    private static final HashMap<UUID, ArrayList<ArrayList<ChunkPos>>> LoadingChunks = new HashMap<>();
 
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event) {
@@ -97,22 +99,23 @@ public class StalkerManage {
     }
 
     private static void onLevelTick(ServerLevel level) {
-        ChunkLoader.removeAll(level);
+        ChunkLoader chunkLoader = ChunkLoader.of(level);
+
+        chunkLoader.removeAll();
+
         level.getEntities().getAll().forEach(entity -> {
             if (Stalker.hasInstanceOf(entity)) {
                 boolean isDroneStalker = entity instanceof DroneStalkerEntity;
                 boolean isArrowStalker = entity instanceof ArrowStalkerEntity;
                 boolean isVoidStalker = entity instanceof VoidStalkerEntity;
                 if (isDroneStalker || isArrowStalker || isVoidStalker) {
-                    StalkerUtil.getToLoadChunks(entity, 0).forEach(chunkPos -> {
-                        ChunkLoader.add(level, chunkPos);
-                    });
+                    StalkerUtil.getToLoadChunks(entity, 0).forEach(chunkLoader::addChunk);
                 }
             }
         });
         level.players().forEach(player -> {
             if (ServerStalkerUtil.hasVisualCenter(player)) {
-                ChunkLoader.add(level, new ChunkPos(ServerStalkerUtil.getVisualCenter(player)));
+                chunkLoader.addChunk(new ChunkPos(ServerStalkerUtil.getVisualCenter(player)));
             }
         });
     }

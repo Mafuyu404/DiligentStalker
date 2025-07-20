@@ -4,10 +4,10 @@ import com.mafuyu404.diligentstalker.DiligentStalker;
 import com.mafuyu404.diligentstalker.entity.ArrowStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.VoidStalkerEntity;
-import com.mafuyu404.diligentstalker.init.ClientStalkerUtil;
+import com.mafuyu404.diligentstalker.utils.ClientStalkerUtil;
 import com.mafuyu404.diligentstalker.init.NetworkHandler;
 import com.mafuyu404.diligentstalker.init.Stalker;
-import com.mafuyu404.diligentstalker.init.StalkerUtil;
+import com.mafuyu404.diligentstalker.utils.StalkerUtil;
 import com.mafuyu404.diligentstalker.item.StalkerCoreItem;
 import com.mafuyu404.diligentstalker.network.EntityDataPacket;
 import com.mafuyu404.diligentstalker.network.RClickBlockPacket;
@@ -17,7 +17,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -37,12 +36,9 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 
-import static com.mafuyu404.diligentstalker.init.ClientStalkerUtil.getCameraPosition;
+import static com.mafuyu404.diligentstalker.utils.ClientStalkerUtil.getCameraPosition;
 
 @Mod.EventBusSubscriber(modid = DiligentStalker.MODID, value = Dist.CLIENT)
 public class StalkerControl {

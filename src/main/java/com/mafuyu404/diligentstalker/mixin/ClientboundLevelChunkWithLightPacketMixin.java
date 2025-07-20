@@ -1,6 +1,6 @@
 package com.mafuyu404.diligentstalker.mixin;
 
-import com.mafuyu404.diligentstalker.init.ClientStalkerUtil;
+import com.mafuyu404.diligentstalker.utils.ClientStalkerUtil;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
 import org.spongepowered.asm.mixin.Mixin;

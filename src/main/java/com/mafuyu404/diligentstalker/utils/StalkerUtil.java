@@ -1,4 +1,4 @@
-package com.mafuyu404.diligentstalker.init;
+package com.mafuyu404.diligentstalker.utils;
 
 import com.mafuyu404.diligentstalker.entity.VoidStalkerEntity;
 import com.mafuyu404.diligentstalker.registry.Config;

@@ -1,6 +1,6 @@
 package com.mafuyu404.diligentstalker.network;
 
-import com.mafuyu404.diligentstalker.init.ClientStalkerUtil;
+import com.mafuyu404.diligentstalker.utils.ClientStalkerUtil;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 

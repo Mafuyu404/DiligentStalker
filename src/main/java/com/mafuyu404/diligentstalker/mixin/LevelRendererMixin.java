@@ -1,7 +1,6 @@
 package com.mafuyu404.diligentstalker.mixin;
 
-import com.mafuyu404.diligentstalker.event.StalkerControl;
-import com.mafuyu404.diligentstalker.init.ClientStalkerUtil;
+import com.mafuyu404.diligentstalker.utils.ClientStalkerUtil;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;

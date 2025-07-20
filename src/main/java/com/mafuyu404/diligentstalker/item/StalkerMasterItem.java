@@ -1,9 +1,8 @@
 package com.mafuyu404.diligentstalker.item;
 
 import com.mafuyu404.diligentstalker.event.StalkerManage;
-import com.mafuyu404.diligentstalker.init.ClientStalkerUtil;
+import com.mafuyu404.diligentstalker.utils.ClientStalkerUtil;
 import com.mafuyu404.diligentstalker.init.Stalker;
-import com.mafuyu404.diligentstalker.init.StalkerUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;

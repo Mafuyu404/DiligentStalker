@@ -1,9 +1,9 @@
 package com.mafuyu404.diligentstalker.mixin;
 
 import com.mafuyu404.diligentstalker.event.StalkerControl;
-import com.mafuyu404.diligentstalker.init.ClientStalkerUtil;
+import com.mafuyu404.diligentstalker.utils.ClientStalkerUtil;
 import com.mafuyu404.diligentstalker.init.Stalker;
-import com.mafuyu404.diligentstalker.init.StalkerUtil;
+import com.mafuyu404.diligentstalker.utils.StalkerUtil;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
