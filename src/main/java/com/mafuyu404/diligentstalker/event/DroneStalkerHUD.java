@@ -3,6 +3,7 @@ package com.mafuyu404.diligentstalker.event;
 import com.mafuyu404.diligentstalker.DiligentStalker;
 import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import com.mafuyu404.diligentstalker.init.Stalker;
+import com.mafuyu404.diligentstalker.utils.ControllableUtils;
 import com.mafuyu404.diligentstalker.utils.StalkerUtil;
 import com.mafuyu404.diligentstalker.item.StalkerMasterItem;
 import com.mafuyu404.diligentstalker.registry.Config;
@@ -48,7 +49,7 @@ public class DroneStalkerHUD {
                     if (SIGNAL_RADIUS == 0) SIGNAL_RADIUS = Config.SIGNAL_RADIUS.get();
 
                     float signal_percent = 1 - (1f * distance / SIGNAL_RADIUS);
-                    float fuel_percent = droneStalker.getFuel() / 100f;
+                    float fuel_percent = ControllableUtils.getFuelPercent(droneStalker);
                     List<ArcSection> sections = List.of(
                             new ArcSection(-157.5f, 0.375f, 0.7f, 0.7f, 0.7f, 0.4f),  // 左上灰色
                             new ArcSection(-157.5f - 0.375f * 180 * (1 - signal_percent), signal_percent * 0.375f, 0.8f, 0.8f, 0.8f, 1f),  // 左上灰色

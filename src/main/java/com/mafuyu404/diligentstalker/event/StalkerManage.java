@@ -12,6 +12,7 @@ import com.mafuyu404.diligentstalker.network.ClientStalkerPacket;
 import com.mafuyu404.diligentstalker.registry.Config;
 import com.mafuyu404.diligentstalker.registry.StalkerItems;
 import com.mafuyu404.diligentstalker.init.ChunkLoader;
+import com.mafuyu404.diligentstalker.utils.ControllableUtils;
 import com.mafuyu404.diligentstalker.utils.ServerStalkerUtil;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.utils.StalkerUtil;
@@ -82,14 +83,14 @@ public class StalkerManage {
                 float yRot = input.getFloat("yRot");
                 stalker.setXRot(xRot);
                 stalker.setYRot(yRot);
-                if ((droneStalker.getFuel() > 0 && distance < SIGNAL_RADIUS) || player.isCreative()) {
+                if ((ControllableUtils.getFuel(droneStalker) > 0 && distance < SIGNAL_RADIUS) || player.isCreative()) {
                     stalker.setDeltaMovement(StalkerUtil.move(input, stalker.getDeltaMovement()));
                 } else {
                     stalker.setDeltaMovement(StalkerUtil.move(StalkerUtil.getEmptyInput(), stalker.getDeltaMovement()));
                 }
             }
             if (player.tickCount % timer == 0) {
-                NetworkHandler.sendToClient(player, new ClientFuelPacket(stalker.getId(), droneStalker.getFuel()));
+//                NetworkHandler.sendToClient(player, new ClientFuelPacket(stalker.getId(), droneStalker.getFuel()));
             }
         }
         if (player.tickCount % timer == 0) {

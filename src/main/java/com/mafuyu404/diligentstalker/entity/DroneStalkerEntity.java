@@ -1,7 +1,9 @@
 package com.mafuyu404.diligentstalker.entity;
 
+import com.mafuyu404.diligentstalker.api.Controllable;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.registry.StalkerItems;
+import com.mafuyu404.diligentstalker.utils.ControllableUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
@@ -44,9 +46,7 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
     @Nullable
     private ResourceLocation lootTable;
     private long lootTableSeed;
-    private int fuel = 0;
     private static final int MAX_FUEL = 100;
-    private static final String FUEL_TAG = "DroneFuel";
     private static final int MAX_FUEL_TICK = 720;
     private int fuel_tick = MAX_FUEL_TICK;
     private static final int ITEM_PICKUP_RANGE = 2;
@@ -54,6 +54,7 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
 
     public DroneStalkerEntity(EntityType<? extends Boat> p_219869_, Level level) {
         super(p_219869_, level);
+        ControllableUtils.register(this, MAX_FUEL);
     }
 
     public DroneStalkerEntity(Level p_219872_, double p_219873_, double p_219874_, double p_219875_) {
@@ -71,10 +72,10 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
             ItemStack itemStack = player.getMainHandItem();
             if (itemStack.is(Items.SUGAR)) {
                 if (!level().isClientSide) {
-                    int needed = MAX_FUEL - this.fuel;
+                    int needed = MAX_FUEL - ControllableUtils.getFuel(this);
                     if (needed > 0) {
                         int toAdd = Math.min(itemStack.getCount(), needed);
-                        setFuel(this.fuel + toAdd);
+                        ControllableUtils.setFuel(this, ControllableUtils.getFuel(this) + toAdd);
                         itemStack.shrink(toAdd);
                         player.displayClientMessage(Component.translatable("entity.diligentstalker.drone_stalker.fuel_added", toAdd).withStyle(ChatFormatting.GREEN), true);
                     } else {
@@ -113,7 +114,7 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
         } else {
             if (!this.level().isClientSide && this.getDeltaMovement().length() > 0.1) {
                 if (fuel_tick <= 0) {
-                    consumeFuel(1);
+                    ControllableUtils.consumeFuel(this, 1);
                     fuel_tick = MAX_FUEL_TICK;
                 } else fuel_tick -= 1;
             }
@@ -155,30 +156,13 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
     public void remove(RemovalReason reason) {
         if (!this.level().isClientSide && reason.shouldDestroy()) {
             Containers.dropContents(this.level(), this, this);
+            int fuel = ControllableUtils.getFuel(this);
             if (fuel > 0) {
                 ItemEntity itementity = new ItemEntity(level(), getX(), getY(), getZ(), new ItemStack(Items.SUGAR, fuel));
                 level().addFreshEntity(itementity);
             }
         }
         super.remove(reason);
-    }
-
-    public int getFuel() {
-        return this.fuel;
-    }
-
-    public void setFuel(int amount) {
-        this.fuel = Mth.clamp(amount, 0, MAX_FUEL);
-    }
-
-    public boolean consumeFuel(int amount) {
-        if (this.fuel >= amount) {
-            if (Stalker.hasInstanceOf(this)) {
-                setFuel(this.fuel - amount);
-                return true;
-            }
-        }
-        return false;
     }
 
 
@@ -192,15 +176,11 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
 
     protected void addAdditionalSaveData(CompoundTag p_219908_) {
         super.addAdditionalSaveData(p_219908_);
-        p_219908_.putInt(FUEL_TAG, this.fuel);
-        p_219908_.putInt("FuelTick", this.fuel_tick);
         this.addChestVehicleSaveData(p_219908_);
     }
 
     protected void readAdditionalSaveData(CompoundTag p_219901_) {
         super.readAdditionalSaveData(p_219901_);
-        this.fuel = p_219901_.getInt(FUEL_TAG);
-        this.fuel_tick = p_219901_.getInt("FuelTick");
         this.readChestVehicleSaveData(p_219901_);
     }
 

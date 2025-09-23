@@ -33,12 +33,15 @@ public class StalkerItems {
             StalkerCoreItem::new);
 
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
-    public static final RegistryObject<CreativeModeTab> STALKER_GROUP = CREATIVE_MODE_TABS.register("diligentstalker", () -> CreativeModeTab.builder().title(Component.translatable("itemGroup.tab.diligentstalker")).withTabsBefore(CreativeModeTabs.COMBAT).icon(() -> STALKER_MASTER.get().getDefaultInstance()).displayItems((parameters, output) -> {
-        output.accept(DRONE_STALKER.get());
-        output.accept(ARROW_STALKER.get());
-        output.accept(VOID_STALKER.get());
-        output.accept(STALKER_MASTER.get());
-        output.accept(STALKER_CORE.get());
-        output.accept(CAMERA_STALKER.get());
-    }).build());
+
+    static {
+        CREATIVE_MODE_TABS.register("diligentstalker", () -> CreativeModeTab.builder().title(Component.translatable("itemGroup.tab.diligentstalker")).withTabsBefore(CreativeModeTabs.COMBAT).icon(() -> STALKER_MASTER.get().getDefaultInstance()).displayItems((parameters, output) -> {
+            output.accept(DRONE_STALKER.get());
+            output.accept(ARROW_STALKER.get());
+            output.accept(VOID_STALKER.get());
+            output.accept(STALKER_MASTER.get());
+            output.accept(STALKER_CORE.get());
+            output.accept(CAMERA_STALKER.get());
+        }).build());
+    }
 }

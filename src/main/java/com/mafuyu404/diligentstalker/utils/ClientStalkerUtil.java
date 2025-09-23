@@ -28,9 +28,7 @@ public class ClientStalkerUtil {
     public static void updateFuel(int id, int fuel) {
         ClientLevel level = Minecraft.getInstance().level;
         Entity entity = level.getEntity(id);
-        if (entity instanceof DroneStalkerEntity droneStalker) {
-            droneStalker.setFuel(fuel);
-        }
+        ControllableUtils.setFuel(entity, fuel);
     }
 
     public static void clientConnect(int id) {
