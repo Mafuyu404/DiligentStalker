@@ -13,4 +13,8 @@ public interface Controllable {
     void setMaxFuel(int amount);
 
     int getMaxFuel();
+
+    void setCameraControlling(boolean value);
+
+    boolean getCameraControlling();
 }

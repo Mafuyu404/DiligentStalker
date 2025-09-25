@@ -10,6 +10,7 @@ public class ControllableStorage implements Controllable {
 
     private int fuel = 0;
     private int maxFuel = 0;
+    private boolean isCameraControlling = false;
 
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
@@ -50,5 +51,15 @@ public class ControllableStorage implements Controllable {
     @Override
     public int getMaxFuel() {
         return maxFuel;
+    }
+
+    @Override
+    public void setCameraControlling(boolean value) {
+        isCameraControlling = value;
+    }
+
+    @Override
+    public boolean getCameraControlling() {
+        return isCameraControlling;
     }
 }
