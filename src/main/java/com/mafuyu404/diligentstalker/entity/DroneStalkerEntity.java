@@ -1,9 +1,10 @@
 package com.mafuyu404.diligentstalker.entity;
 
-import com.mafuyu404.diligentstalker.api.Controllable;
+import com.mafuyu404.diligentstalker.api.IControllable;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.registry.StalkerItems;
 import com.mafuyu404.diligentstalker.utils.ControllableUtils;
+import com.mafuyu404.diligentstalker.utils.StalkerUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
@@ -34,18 +35,22 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.wrapper.InvWrapper;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen, ContainerEntity {
+import static com.mafuyu404.diligentstalker.utils.StalkerUtil.limitSpeed;
+
+public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen, ContainerEntity, IControllable {
     private static final int CONTAINER_SIZE = 27;
     private NonNullList<ItemStack> itemStacks = NonNullList.withSize(CONTAINER_SIZE, ItemStack.EMPTY);
     @Nullable
     private ResourceLocation lootTable;
     private long lootTableSeed;
+    private static final int SIGNAL_RADIUS = 1024;
     private static final int MAX_FUEL = 100;
     private static final int MAX_FUEL_TICK = 720;
     private int fuel_tick = MAX_FUEL_TICK;
@@ -54,7 +59,8 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
 
     public DroneStalkerEntity(EntityType<? extends Boat> p_219869_, Level level) {
         super(p_219869_, level);
-        ControllableUtils.register(this, MAX_FUEL);
+        ControllableUtils.setMaxFuel(this, MAX_FUEL);
+        ControllableUtils.setSignalRadius(this, SIGNAL_RADIUS);
     }
 
     public DroneStalkerEntity(Level p_219872_, double p_219873_, double p_219874_, double p_219875_) {
@@ -63,6 +69,80 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
         this.xo = p_219873_;
         this.yo = p_219874_;
         this.zo = p_219875_;
+    }
+
+    @Override
+    public void pushAdditionalControl(CompoundTag input) {
+
+    }
+
+    @Override
+    public Vec3 tickServerControl(CompoundTag input, Vec3 motion) {
+        float xRot = input.getFloat("xRot");
+        float yRot = input.getFloat("yRot");
+        float speed = 0.45f;
+        Vec3 forward = Vec3.ZERO;
+        Vec3 right = Vec3.ZERO;
+        Vec3 top = Vec3.ZERO;
+        Vec3 result = Vec3.ZERO;
+        if (input.getBoolean("Up") || input.getBoolean("Down")) {
+            float x = 0;
+            float z = 0;
+            Vec3 lookAngle = calculateViewVector(xRot, yRot);
+            double xz = Math.sqrt(lookAngle.x * lookAngle.x + lookAngle.z * lookAngle.z);
+            float forwardX = (float) (lookAngle.x / xz);
+            float forwardZ = (float) (lookAngle.z / xz);
+            if (input.getBoolean("Up")) {
+                x += forwardX * speed;
+                z += forwardZ * speed;
+            }
+            if (input.getBoolean("Down")) {
+                x -= forwardX * speed;
+                z -= forwardZ * speed;
+            }
+            forward = limitSpeed(new Vec3(x, 0, z), speed);
+        }
+        if (input.getBoolean("Left") || input.getBoolean("Right")) {
+            float x = 0;
+            float z = 0;
+            Vec3 subAngle = StalkerUtil.calculateViewVector(xRot, yRot - 90);
+            double xz = Math.sqrt(subAngle.x * subAngle.x + subAngle.z * subAngle.z);
+            float forwardX = (float) (subAngle.x / xz);
+            float forwardZ = (float) (subAngle.z / xz);
+            if (input.getBoolean("Left")) {
+                x += forwardX * speed;
+                z += forwardZ * speed;
+            }
+            if (input.getBoolean("Right")) {
+                x -= forwardX * speed;
+                z -= forwardZ * speed;
+            }
+            right = limitSpeed(new Vec3(x, 0, z), speed);
+        }
+        if (input.getBoolean("Jump") || input.getBoolean("Shift")) {
+            float y = 0;
+            if (input.getBoolean("Jump")) {
+                y = speed;
+            }
+            if (input.getBoolean("Shift")) {
+                y = -speed;
+            }
+            top = limitSpeed(new Vec3(0, y, 0), speed);
+        }
+
+        result = result.add(forward).add(right).add(top);
+
+        result = new Vec3(
+                Mth.lerp(0.3f, motion.x, motion.x + result.x),
+                Mth.lerp(0.3f, motion.y, motion.y + result.y),
+                Mth.lerp(0.3f, motion.z, motion.z + result.z)
+        );
+
+        result = limitSpeed(new Vec3(result.x, 0, result.z), speed).add(limitSpeed(new Vec3(0, result.y, 0), speed));
+
+        result = result.scale(0.8);
+
+        return result;
     }
 
     public InteractionResult interact(Player player, InteractionHand hand) {
@@ -77,9 +157,9 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
                         int toAdd = Math.min(itemStack.getCount(), needed);
                         ControllableUtils.setFuel(this, ControllableUtils.getFuel(this) + toAdd);
                         itemStack.shrink(toAdd);
-                        player.displayClientMessage(Component.translatable("entity.diligentstalker.drone_stalker.fuel_added", toAdd).withStyle(ChatFormatting.GREEN), true);
+                        player.displayClientMessage(Component.translatable("message.diligentstalker.fuel_added", toAdd).withStyle(ChatFormatting.GREEN), true);
                     } else {
-                        player.displayClientMessage(Component.translatable("entity.diligentstalker.drone_stalker.fuel_full").withStyle(ChatFormatting.RED), true);
+                        player.displayClientMessage(Component.translatable("message.diligentstalker.fuel_full").withStyle(ChatFormatting.RED), true);
                     }
                 }
                 return InteractionResult.FAIL;
@@ -89,7 +169,7 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
                     tag.putUUID("StalkerId", this.uuid);
                     BlockPos pos = this.blockPosition();
                     tag.putIntArray("StalkerPosition", new int[]{pos.getX(), pos.getY(), pos.getZ()});
-                    player.displayClientMessage(Component.translatable("item.diligentstalker.stalker_master.record_success").withStyle(ChatFormatting.GREEN), true);
+                    player.displayClientMessage(Component.translatable("message.diligentstalker.record_success").withStyle(ChatFormatting.GREEN), true);
                 }
             } else {
                 if (!level().isClientSide) {

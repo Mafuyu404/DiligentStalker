@@ -1,12 +1,14 @@
 package com.mafuyu404.diligentstalker.event;
 
 import com.mafuyu404.diligentstalker.DiligentStalker;
+import com.mafuyu404.diligentstalker.api.IControllable;
 import com.mafuyu404.diligentstalker.entity.ArrowStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.VoidStalkerEntity;
 import com.mafuyu404.diligentstalker.utils.ClientStalkerUtil;
 import com.mafuyu404.diligentstalker.init.NetworkHandler;
 import com.mafuyu404.diligentstalker.init.Stalker;
+import com.mafuyu404.diligentstalker.utils.ControllableUtils;
 import com.mafuyu404.diligentstalker.utils.StalkerUtil;
 import com.mafuyu404.diligentstalker.item.StalkerCoreItem;
 import com.mafuyu404.diligentstalker.network.EntityDataPacket;
@@ -36,8 +38,6 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.function.Predicate;
-
 import static com.mafuyu404.diligentstalker.utils.ClientStalkerUtil.getCameraPosition;
 
 @Mod.EventBusSubscriber(modid = DiligentStalker.MODID, value = Dist.CLIENT)
@@ -54,26 +54,26 @@ public class StalkerControl {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return;
 
-        Predicate<Entity> ConnectingTarget = ClientStalkerUtil.getConnectingTarget();
-        if (ConnectingTarget != null) {
-            ClientLevel level = player.clientLevel;
-            for (Entity entity : level.entitiesForRendering()) {
-                if (ConnectingTarget.test(entity)) {
-                    Stalker.connect(player, entity);
-                    ClientStalkerUtil.setConnectingTarget(null);
-                    break;
-                }
+        ClientLevel level = player.clientLevel;
+        for (Entity entity : level.entitiesForRendering()) {
+            if (ClientStalkerUtil.matchConnectingTarget(entity)) {
+                Stalker.connect(player, entity);
+                ClientStalkerUtil.setConnectingTarget(null);
+                break;
             }
         }
 
-        if (Stalker.hasInstanceOf(player)) {
+        Entity stalker = ClientStalkerUtil.getLocalStalker();
+        if (stalker != null) {
+            System.out.print(ControllableUtils.getCameraState(stalker)+"\n");
+            System.out.print(ControllableUtils.isActionControlling(stalker)+"\n");
             ClientStalkerUtil.setVisualCenter(null);
 
-            Stalker instance = Stalker.getInstanceOf(player);
-            Entity stalker = instance.getStalker();
-            if (stalker instanceof DroneStalkerEntity droneStalker) {
-                stalker.setXRot(xRot);
-                stalker.setYRot(yRot);
+            if (ControllableUtils.isControllable(stalker)) {
+                if (ControllableUtils.isCameraControlling(stalker)) {
+                    stalker.setXRot(xRot);
+                    stalker.setYRot(yRot);
+                }
                 StalkerControl.syncControl();
             }
         }
@@ -99,11 +99,18 @@ public class StalkerControl {
         if (Minecraft.getInstance().screen != null) return;
         Player player = Minecraft.getInstance().player;
         Options options = Minecraft.getInstance().options;
-        if (!Stalker.hasInstanceOf(player)) return;
+        Entity stalker = ClientStalkerUtil.getLocalStalker();
+        if (stalker == null) return;
         updateControlMap();
         if (event.getAction() == InputConstants.PRESS) {
             if (event.getKey() == KeyBindings.DISCONNECT.getKey().getValue()) {
                 if (Stalker.hasInstanceOf(player)) Stalker.getInstanceOf(player).disconnect();
+            }
+            if (event.getKey() == KeyBindings.VIEW.getKey().getValue()) {
+                ControllableUtils.switchCameraState(stalker);
+            }
+            if (event.getKey() == KeyBindings.CONTROL.getKey().getValue()) {
+                ControllableUtils.turnActionControlling(stalker);
             }
         }
         if (StalkerUtil.ControlMap.containsValue(event.getKey())) {
@@ -140,10 +147,11 @@ public class StalkerControl {
         }
         Stalker instance = Stalker.getInstanceOf(player);
         if (instance.getStalker() instanceof DroneStalkerEntity) {
-            BlockHitResult traceResult = StalkerUtil.rayTraceBlocks(player.level(), getCameraPosition(), getViewVector(), 4);
+            Vec3 viewVector = StalkerUtil.calculateViewVector(xRot, yRot);
+            BlockHitResult traceResult = StalkerUtil.rayTraceBlocks(player.level(), getCameraPosition(), viewVector, 4);
             if (traceResult.getType() == HitResult.Type.BLOCK) {
-                NetworkHandler.CHANNEL.sendToServer(new RClickBlockPacket(getCameraPosition(), getViewVector()));
-                RightClickBlock(player, getCameraPosition(), getViewVector());
+                NetworkHandler.CHANNEL.sendToServer(new RClickBlockPacket(getCameraPosition(), viewVector));
+                RightClickBlock(player, getCameraPosition(), viewVector);
             }
         }
         event.setCanceled(true);
@@ -163,8 +171,11 @@ public class StalkerControl {
         StalkerUtil.ControlMap.forEach((s, key) -> {
             input.putBoolean(s, ClientStalkerUtil.isKeyPressed(key));
         });
-        input.putFloat("xRot", xRot);
-        input.putFloat("yRot", yRot);
+        Entity stalker = ClientStalkerUtil.getLocalStalker();
+        if (stalker != null && ControllableUtils.isCameraControlling(stalker)) {
+            input.putFloat("xRot", xRot);
+            input.putFloat("yRot", yRot);
+        }
         return input;
     }
 
@@ -173,7 +184,12 @@ public class StalkerControl {
         if (player == null) return;
         updateControlMap();
         CompoundTag input = StalkerControl.handleInput();
-        player.getPersistentData().put("DroneStalkerInput", input);
+        Entity stalker = ClientStalkerUtil.getLocalStalker();
+        if (stalker != null) {
+            ((IControllable) stalker).pushAdditionalControl(input);
+            if (!ControllableUtils.isActionControlling(stalker)) input = StalkerUtil.getEmptyInput();
+        }
+        player.getPersistentData().put(ControllableUtils.CONTROL_INPUT_KEY, input);
         NetworkHandler.CHANNEL.sendToServer(new EntityDataPacket(player.getId(), player.getPersistentData()));
     }
 
@@ -193,9 +209,10 @@ public class StalkerControl {
         fixedYRot = player.getYRot();
         xRot = fixedXRot;
         yRot = fixedYRot;
-        if (stalker instanceof DroneStalkerEntity) {
+        if (ControllableUtils.isControllable(stalker)) {
             xRot = stalker.getXRot();
             yRot = stalker.getYRot();
+            ControllableUtils.setCameraControlling(stalker);
         }
     }
 
@@ -204,7 +221,7 @@ public class StalkerControl {
         if (!event.getLevel().isClientSide) return;
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
-        if (ClientStalkerUtil.getConnectingTarget() != null && ClientStalkerUtil.getConnectingTarget().test(event.getEntity())) {
+        if (ClientStalkerUtil.matchConnectingTarget(event.getEntity())) {
             Stalker.connect(player, event.getEntity());
         }
 
@@ -230,9 +247,5 @@ public class StalkerControl {
         StalkerUtil.ControlMap.put("Right", options.keyRight.getKey().getValue());
         StalkerUtil.ControlMap.put("Jump", options.keyJump.getKey().getValue());
         StalkerUtil.ControlMap.put("Shift", options.keyShift.getKey().getValue());
-    }
-
-    public static Vec3 getViewVector() {
-        return StalkerUtil.calculateViewVector(xRot, yRot);
     }
 }

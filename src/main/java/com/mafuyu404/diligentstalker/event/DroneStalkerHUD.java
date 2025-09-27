@@ -3,6 +3,7 @@ package com.mafuyu404.diligentstalker.event;
 import com.mafuyu404.diligentstalker.DiligentStalker;
 import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import com.mafuyu404.diligentstalker.init.Stalker;
+import com.mafuyu404.diligentstalker.utils.ClientStalkerUtil;
 import com.mafuyu404.diligentstalker.utils.ControllableUtils;
 import com.mafuyu404.diligentstalker.utils.StalkerUtil;
 import com.mafuyu404.diligentstalker.item.StalkerMasterItem;
@@ -46,7 +47,7 @@ public class DroneStalkerHUD {
                 float yRot = StalkerUtil.getYRotFromVec3(direction);
                 int distance = (int) direction.length();
                 if (stalker instanceof DroneStalkerEntity droneStalker) {
-                    if (SIGNAL_RADIUS == 0) SIGNAL_RADIUS = Config.SIGNAL_RADIUS.get();
+                    if (SIGNAL_RADIUS == 0) SIGNAL_RADIUS = ControllableUtils.getSignalRadius(stalker);
 
                     float signal_percent = 1 - (1f * distance / SIGNAL_RADIUS);
                     float fuel_percent = ControllableUtils.getFuelPercent(droneStalker);
@@ -64,7 +65,7 @@ public class DroneStalkerHUD {
                     );
                     drawHud(event.getGuiGraphics(), sections);
                 }
-                drawPlayerPosition(event.getGuiGraphics(), yRot - StalkerControl.yRot + 180, distance, icon);
+                drawPlayerPosition(event.getGuiGraphics(), yRot - ClientStalkerUtil.getCameraYRot() + 180, distance, icon);
             } else {
                 ItemStack itemStack = player.getMainHandItem();
                 if (itemStack.getItem() instanceof StalkerMasterItem) {

@@ -1,7 +1,7 @@
 package com.mafuyu404.diligentstalker.utils;
 
-import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import com.mafuyu404.diligentstalker.event.ChunkLoadTask;
+import com.mafuyu404.diligentstalker.event.StalkerControl;
 import com.mafuyu404.diligentstalker.init.NetworkHandler;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.network.ServerRemoteConnectPacket;
@@ -30,6 +30,9 @@ public class ClientStalkerUtil {
         Entity entity = level.getEntity(id);
         ControllableUtils.setFuel(entity, fuel);
     }
+    public static void updateStorage() {
+
+    }
 
     public static void clientConnect(int id) {
         ClientLevel level = Minecraft.getInstance().level;
@@ -56,8 +59,11 @@ public class ClientStalkerUtil {
     public static void setConnectingTarget(Predicate<Entity> predicate) {
         ConnectingTarget = predicate;
     }
-    public static Predicate<Entity> getConnectingTarget() {
-        return ConnectingTarget;
+    public static boolean matchConnectingTarget(Entity entity) {
+        if (ConnectingTarget != null) {
+            return ConnectingTarget.test(entity);
+        }
+        return false;
     }
 
     private static BlockPos VisualCenter;
@@ -79,5 +85,25 @@ public class ClientStalkerUtil {
         setVisualCenter(BlockPos.ZERO);
         NetworkHandler.CHANNEL.sendToServer(new ServerRemoteConnectPacket(BlockPos.ZERO));
         setConnectingTarget(null);
+    }
+
+    public static Entity getLocalStalker() {
+        Stalker instance = Stalker.getInstanceOf(Minecraft.getInstance().player);
+        if (instance != null) return instance.getStalker();
+        return null;
+    }
+
+    public static void setLocalViewXRot(float value) {
+        StalkerControl.xRot = value;
+    }
+    public static void setLocalViewYRot(float value) {
+        StalkerControl.yRot = value;
+    }
+
+    public static float getCameraXRot() {
+        return Minecraft.getInstance().gameRenderer.getMainCamera().getXRot();
+    }
+    public static float getCameraYRot() {
+        return Minecraft.getInstance().gameRenderer.getMainCamera().getYRot();
     }
 }

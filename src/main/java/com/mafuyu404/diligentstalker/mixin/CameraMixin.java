@@ -3,9 +3,11 @@ package com.mafuyu404.diligentstalker.mixin;
 import com.mafuyu404.diligentstalker.event.StalkerControl;
 import com.mafuyu404.diligentstalker.utils.ClientStalkerUtil;
 import com.mafuyu404.diligentstalker.init.Stalker;
+import com.mafuyu404.diligentstalker.utils.ControllableUtils;
 import com.mafuyu404.diligentstalker.utils.StalkerUtil;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
@@ -43,8 +45,12 @@ public abstract class CameraMixin {
 
     @Inject(method = "setRotation", at = @At("RETURN"))
     private void modifyRotate(float p_90573_, float p_90574_, CallbackInfo ci) {
-        if (!Stalker.hasInstanceOf(Minecraft.getInstance().player)) return;
-        this.xRot = StalkerControl.xRot;
-        this.yRot = StalkerControl.yRot;
+        Entity stalker = ClientStalkerUtil.getLocalStalker();
+        if (stalker != null) {
+            if (!ControllableUtils.isCameraFollowing(stalker)) {
+                this.xRot = StalkerControl.xRot;
+                this.yRot = StalkerControl.yRot;
+            }
+        }
     }
 }

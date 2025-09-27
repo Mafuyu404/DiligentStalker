@@ -1,6 +1,6 @@
 package com.mafuyu404.diligentstalker;
 
-import com.mafuyu404.diligentstalker.api.Controllable;
+import com.mafuyu404.diligentstalker.api.IControllableStorage;
 import com.mafuyu404.diligentstalker.init.ControllableStorageProvider;
 import com.mafuyu404.diligentstalker.init.NetworkHandler;
 import com.mafuyu404.diligentstalker.registry.*;
@@ -44,7 +44,7 @@ public class DiligentStalker {
 
     @SubscribeEvent
     public void onRegisterCapabilities(RegisterCapabilitiesEvent event) {
-        event.register(Controllable.class);
+        event.register(IControllableStorage.class);
     }
 
     @SubscribeEvent

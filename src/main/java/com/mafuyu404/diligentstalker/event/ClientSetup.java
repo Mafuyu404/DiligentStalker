@@ -42,10 +42,4 @@ public class ClientSetup {
 
         event.registerBlockEntityRenderer(StalkerBlockEntities.CAMERA_STALKER.get(), CameraStalkerRenderer::new);
     }
-
-    @SubscribeEvent
-    public static void registerKeyMapping(RegisterKeyMappingsEvent event) {
-        // 注册键位
-        event.register(KeyBindings.DISCONNECT);
-    }
 }

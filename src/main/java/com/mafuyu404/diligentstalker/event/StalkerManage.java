@@ -1,6 +1,7 @@
 package com.mafuyu404.diligentstalker.event;
 
 import com.mafuyu404.diligentstalker.DiligentStalker;
+import com.mafuyu404.diligentstalker.api.IControllable;
 import com.mafuyu404.diligentstalker.entity.ArrowStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.CameraStalkerBlockEntity;
 import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
@@ -46,7 +47,6 @@ import java.util.UUID;
 @Mod.EventBusSubscriber(modid = DiligentStalker.MODID)
 public class StalkerManage {
     public static final HashMap<UUID, Map.Entry<String, BlockPos>> DronePosition = new HashMap<>();
-    private static int SIGNAL_RADIUS = 0;
 
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event) {
@@ -73,23 +73,24 @@ public class StalkerManage {
         }
         Entity stalker = Stalker.getInstanceOf(player).getStalker();
         int timer = 10;
-        if (stalker instanceof DroneStalkerEntity droneStalker) {
-            CompoundTag input = (CompoundTag) player.getPersistentData().get("DroneStalkerInput");
-            Vec3 direction = droneStalker.position().subtract(player.position());
-            int distance = (int) direction.length();
-            if (SIGNAL_RADIUS == 0) SIGNAL_RADIUS = Config.SIGNAL_RADIUS.get();
+        if (ControllableUtils.isControllable(stalker)) {
+            CompoundTag input = (CompoundTag) player.getPersistentData().get(ControllableUtils.CONTROL_INPUT_KEY);
             if (input != null) {
-                float xRot = input.getFloat("xRot");
-                float yRot = input.getFloat("yRot");
-                stalker.setXRot(xRot);
-                stalker.setYRot(yRot);
-                if ((ControllableUtils.getFuel(droneStalker) > 0 && distance < SIGNAL_RADIUS) || player.isCreative()) {
-                    stalker.setDeltaMovement(StalkerUtil.move(input, stalker.getDeltaMovement()));
-                } else {
-                    stalker.setDeltaMovement(StalkerUtil.move(StalkerUtil.getEmptyInput(), stalker.getDeltaMovement()));
-                }
+                if (input.contains("xRot")) stalker.setXRot(input.getFloat("xRot"));
+                if (input.contains("yRot")) stalker.setXRot(input.getFloat("yRot"));
+
+                Vec3 direction = stalker.position().subtract(player.position());
+                int distance = (int) direction.length();
+                boolean checkFuel = ControllableUtils.getFuel(stalker) > 0;
+                boolean checkSignal = distance < ControllableUtils.getSignalRadius(stalker);
+
+                CompoundTag _input = StalkerUtil.getEmptyInput();
+                if ((checkFuel && checkSignal) || player.isCreative()) _input = input;
+
+                stalker.setDeltaMovement(ControllableUtils.tickServerControl(stalker, _input, stalker.getDeltaMovement()));
             }
             if (player.tickCount % timer == 0) {
+                ControllableUtils.syneFuel(stalker, ControllableUtils.getFuel(stalker));
 //                NetworkHandler.sendToClient(player, new ClientFuelPacket(stalker.getId(), droneStalker.getFuel()));
             }
         }
