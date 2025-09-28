@@ -30,5 +30,6 @@
   "message.diligentstalker.follow_camera": "Camera Mode: Follow",
   "message.diligentstalker.control_camera": "Camera Mode: Control",
   "message.diligentstalker.action_control_on": "Action Control: On",
-  "message.diligentstalker.action_control_off": "Action Control: OFF"
+  "message.diligentstalker.action_control_off": "Action Control: OFF",
+  "message.diligentstalker.under_maintaining": "Under Maintaining"
 }

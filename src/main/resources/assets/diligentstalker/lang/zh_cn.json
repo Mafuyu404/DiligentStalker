@@ -30,5 +30,6 @@
   "message.diligentstalker.follow_camera": "视角模式: 跟随",
   "message.diligentstalker.control_camera": "视角模式: 控制",
   "message.diligentstalker.action_control_on": "操作输入: 开启",
-  "message.diligentstalker.action_control_off": "操作输入: 关闭"
+  "message.diligentstalker.action_control_off": "操作输入: 关闭",
+  "message.diligentstalker.under_maintaining": "功能维护中"
 }

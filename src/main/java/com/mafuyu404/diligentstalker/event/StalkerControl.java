@@ -15,11 +15,13 @@ import com.mafuyu404.diligentstalker.network.EntityDataPacket;
 import com.mafuyu404.diligentstalker.network.RClickBlockPacket;
 import com.mafuyu404.diligentstalker.registry.KeyBindings;
 import com.mojang.blaze3d.platform.InputConstants;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -65,8 +67,6 @@ public class StalkerControl {
 
         Entity stalker = ClientStalkerUtil.getLocalStalker();
         if (stalker != null) {
-            System.out.print(ControllableUtils.getCameraState(stalker)+"\n");
-            System.out.print(ControllableUtils.isActionControlling(stalker)+"\n");
             ClientStalkerUtil.setVisualCenter(null);
 
             if (ControllableUtils.isControllable(stalker)) {
@@ -194,13 +194,14 @@ public class StalkerControl {
     }
 
     public static void RightClickBlock(Player player, Vec3 position, Vec3 viewVec) {
-        Level level = player.level();
-        BlockHitResult traceResult = StalkerUtil.rayTraceBlocks(level, position, viewVec, 4);
-        BlockState state = level.getBlockState(traceResult.getBlockPos());
-        InteractionResult result = state.use(level, player, InteractionHand.MAIN_HAND, traceResult);
-        if (result.consumesAction()) {
-            level.sendBlockUpdated(traceResult.getBlockPos(), state, state, 3);
-        }
+        player.displayClientMessage(Component.translatable("message.diligentstalker.under_maintaining").withStyle(ChatFormatting.RED), true);
+//        Level level = player.level();
+//        BlockHitResult traceResult = StalkerUtil.rayTraceBlocks(level, position, viewVec, 4);
+//        BlockState state = level.getBlockState(traceResult.getBlockPos());
+//        InteractionResult result = state.use(level, player, InteractionHand.MAIN_HAND, traceResult);
+//        if (result.consumesAction()) {
+//            level.sendBlockUpdated(traceResult.getBlockPos(), state, state, 3);
+//        }
     }
 
     public static void connect(Player player, Entity stalker) {
