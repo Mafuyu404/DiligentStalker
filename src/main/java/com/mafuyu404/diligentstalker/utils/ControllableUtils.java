@@ -130,11 +130,17 @@ public class ControllableUtils {
     }
 
     public static boolean isActionControlling(Entity entity) {
-        AtomicBoolean result = new AtomicBoolean(false);
-        entity.getCapability(ControllableStorageProvider.CONTROLLABLE_STORAGE).ifPresent(controllable -> {
-            result.set(controllable.isActionControlling());
-        });
-        return result.get();
+        if (!entity.level().isClientSide) {
+            Stalker instance = Stalker.getInstanceOf(entity);
+            CompoundTag input = (CompoundTag) instance.getPlayer().getPersistentData().get(ControllableUtils.CONTROL_INPUT_KEY);
+            return input != null && !input.isEmpty();
+        } else {
+            AtomicBoolean result = new AtomicBoolean(false);
+            entity.getCapability(ControllableStorageProvider.CONTROLLABLE_STORAGE).ifPresent(controllable -> {
+                result.set(controllable.isActionControlling());
+            });
+            return result.get();
+        }
     }
     public static void turnActionControlling(Entity entity) {
         entity.getCapability(ControllableStorageProvider.CONTROLLABLE_STORAGE).ifPresent(controllable -> {

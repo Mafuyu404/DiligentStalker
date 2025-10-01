@@ -1,16 +1,12 @@
 package com.mafuyu404.diligentstalker.event;
 
 import com.mafuyu404.diligentstalker.DiligentStalker;
-import com.mafuyu404.diligentstalker.api.IControllable;
 import com.mafuyu404.diligentstalker.entity.ArrowStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.CameraStalkerBlockEntity;
-import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.VoidStalkerEntity;
 import com.mafuyu404.diligentstalker.init.NetworkHandler;
 import com.mafuyu404.diligentstalker.item.StalkerMasterItem;
-import com.mafuyu404.diligentstalker.network.ClientFuelPacket;
 import com.mafuyu404.diligentstalker.network.ClientStalkerPacket;
-import com.mafuyu404.diligentstalker.registry.Config;
 import com.mafuyu404.diligentstalker.registry.StalkerItems;
 import com.mafuyu404.diligentstalker.init.ChunkLoader;
 import com.mafuyu404.diligentstalker.utils.ControllableUtils;
@@ -75,7 +71,7 @@ public class StalkerManage {
         int timer = 10;
         if (ControllableUtils.isControllable(stalker)) {
             CompoundTag input = (CompoundTag) player.getPersistentData().get(ControllableUtils.CONTROL_INPUT_KEY);
-            if (input != null) {
+            if (input != null && !input.isEmpty()) {
                 if (input.contains("xRot")) stalker.setXRot(input.getFloat("xRot"));
                 if (input.contains("yRot")) stalker.setXRot(input.getFloat("yRot"));
 
@@ -107,10 +103,10 @@ public class StalkerManage {
 
         level.getEntities().getAll().forEach(entity -> {
             if (Stalker.hasInstanceOf(entity)) {
-                boolean isDroneStalker = entity instanceof DroneStalkerEntity;
+                boolean isControllable = ControllableUtils.isControllable(entity);
                 boolean isArrowStalker = entity instanceof ArrowStalkerEntity;
                 boolean isVoidStalker = entity instanceof VoidStalkerEntity;
-                if (isDroneStalker || isArrowStalker || isVoidStalker) {
+                if (isControllable || isArrowStalker || isVoidStalker) {
                     StalkerUtil.getToLoadChunks(entity, 0).forEach(chunkLoader::addChunk);
                 }
             }

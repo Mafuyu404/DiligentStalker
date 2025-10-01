@@ -146,7 +146,7 @@ public class StalkerControl {
             return;
         }
         Stalker instance = Stalker.getInstanceOf(player);
-        if (instance.getStalker() instanceof DroneStalkerEntity) {
+        if (ControllableUtils.isControllable(instance.getStalker())) {
             Vec3 viewVector = StalkerUtil.calculateViewVector(xRot, yRot);
             BlockHitResult traceResult = StalkerUtil.rayTraceBlocks(player.level(), getCameraPosition(), viewVector, 4);
             if (traceResult.getType() == HitResult.Type.BLOCK) {
@@ -187,7 +187,7 @@ public class StalkerControl {
         Entity stalker = ClientStalkerUtil.getLocalStalker();
         if (stalker != null) {
             ((IControllable) stalker).pushAdditionalControl(input);
-            if (!ControllableUtils.isActionControlling(stalker)) input = StalkerUtil.getEmptyInput();
+            if (!ControllableUtils.isActionControlling(stalker)) input = new CompoundTag();
         }
         player.getPersistentData().put(ControllableUtils.CONTROL_INPUT_KEY, input);
         NetworkHandler.CHANNEL.sendToServer(new EntityDataPacket(player.getId(), player.getPersistentData()));
