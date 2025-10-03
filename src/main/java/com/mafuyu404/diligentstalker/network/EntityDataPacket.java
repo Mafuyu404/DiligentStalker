@@ -1,5 +1,6 @@
 package com.mafuyu404.diligentstalker.network;
 
+import com.mafuyu404.diligentstalker.utils.ControllableUtils;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
@@ -33,6 +34,7 @@ public class EntityDataPacket {
             Entity entity = level.getEntity(msg.entityId);
             if (entity == null) return;
             entity.getPersistentData().merge(msg.nbt);
+            entity.getPersistentData().put(ControllableUtils.CONTROL_INPUT_KEY, msg.nbt.get(ControllableUtils.CONTROL_INPUT_KEY));
         });
         ctx.get().setPacketHandled(true);
     }

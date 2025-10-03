@@ -27,12 +27,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.world.ForgeChunkManager;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.level.LevelEvent;
+import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -113,9 +115,15 @@ public class StalkerManage {
         });
         level.players().forEach(player -> {
             if (ServerStalkerUtil.hasVisualCenter(player)) {
-                chunkLoader.addChunk(new ChunkPos(ServerStalkerUtil.getVisualCenter(player)));
+                ChunkPos center = new ChunkPos(ServerStalkerUtil.getVisualCenter(player));
+                chunkLoader.addChunk(center);
             }
         });
+    }
+
+    @SubscribeEvent
+    public static void onServerLaunch(ServerAboutToStartEvent event) {
+        ChunkLoader.init();
     }
 
     @SubscribeEvent

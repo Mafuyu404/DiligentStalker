@@ -37,7 +37,7 @@ public class StalkerUtil {
     }
 
     public static double lerp(double current, double target) {
-        return current + (target - current) * 0.3;
+        return current + (target - current) * 0.2;
     }
 
     public static Vec3 calculateViewVector(float xRot, float yRot) {

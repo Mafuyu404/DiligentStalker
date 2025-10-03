@@ -10,11 +10,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class ChunkLoader {
-    private static final HashMap<ResourceLocation, ChunkLoader> dimension = new HashMap<>();
+    private static HashMap<ResourceLocation, ChunkLoader> dimension = new HashMap<>();
     public static ChunkLoader of(ServerLevel serverLevel) {
         ResourceLocation id = serverLevel.dimension().location();
         if (!dimension.containsKey(id)) dimension.put(id, new ChunkLoader(serverLevel));
         return dimension.get(id);
+    }
+    public static void init() {
+        dimension = new HashMap<>();
     }
 
     private final ServerLevel level;

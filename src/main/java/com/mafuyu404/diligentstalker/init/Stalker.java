@@ -3,9 +3,12 @@ package com.mafuyu404.diligentstalker.init;
 import com.mafuyu404.diligentstalker.event.StalkerControl;
 import com.mafuyu404.diligentstalker.network.StalkerSyncPacket;
 import com.mafuyu404.diligentstalker.utils.ClientStalkerUtil;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 
 import java.util.HashMap;
 import java.util.UUID;
@@ -35,7 +38,13 @@ public class Stalker {
         if (level.isClientSide) {
             NetworkHandler.CHANNEL.sendToServer(new StalkerSyncPacket(this.stalkerId, false));
             ClientStalkerUtil.cancelRemoteConnect();
+        } else {
+            ChunkLoader.of((ServerLevel) level).removeAll();
         }
+
+        DisconnectEvent event = new DisconnectEvent(getPlayer(), getStalker());
+        MinecraftForge.EVENT_BUS.post(event);
+
         InstanceMap.remove(playerUUID);
         StalkerToPlayerMap.remove(stalkerId);
     }
@@ -48,6 +57,10 @@ public class Stalker {
             NetworkHandler.CHANNEL.sendToServer(new StalkerSyncPacket(stalker.getId(), true));
             ClientStalkerUtil.cancelRemoteConnect();
         }
+
+        ConnectEvent event = new ConnectEvent(player, stalker);
+        MinecraftForge.EVENT_BUS.post(event);
+
         InstanceMap.put(player.getUUID(), stalker.getId());
         StalkerToPlayerMap.put(stalker.getId(), player.getUUID());
         return new Stalker(player.getUUID(), stalker.getId(), player.level());
@@ -128,5 +141,31 @@ public class Stalker {
 
     public static int getMappingCount() {
         return InstanceMap.size();
+    }
+
+    public static class ConnectEvent extends PlayerEvent {
+        private final Entity stalker;
+
+        public ConnectEvent(Player player, Entity stalker) {
+            super(player);
+            this.stalker = stalker;
+        }
+
+        public Entity getStalker() {
+            return stalker;
+        }
+    }
+
+    public static class DisconnectEvent extends PlayerEvent {
+        private final Entity stalker;
+
+        public DisconnectEvent(Player player, Entity stalker) {
+            super(player);
+            this.stalker = stalker;
+        }
+
+        public Entity getStalker() {
+            return stalker;
+        }
     }
 }
