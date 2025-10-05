@@ -38,8 +38,6 @@ public class Stalker {
         if (level.isClientSide) {
             NetworkHandler.CHANNEL.sendToServer(new StalkerSyncPacket(this.stalkerId, false));
             ClientStalkerUtil.cancelRemoteConnect();
-        } else {
-            ChunkLoader.of((ServerLevel) level).removeAll();
         }
 
         DisconnectEvent event = new DisconnectEvent(getPlayer(), getStalker());

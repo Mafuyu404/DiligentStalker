@@ -30,7 +30,7 @@ public class ChunkLoader {
     public void addChunk(ChunkPos chunkPos) {
         if (!forcedChunks.contains(chunkPos)) {
             level.getChunkSource().addRegionTicket(
-                    TicketType.PLAYER,
+                    TicketType.FORCED,
                     chunkPos,
                     2, // 加载半径（0=单区块），不然会动不了
                     chunkPos // 标识
@@ -42,7 +42,7 @@ public class ChunkLoader {
     public void removeAll() {
         for (ChunkPos chunkPos : forcedChunks) {
             level.getChunkSource().removeRegionTicket(
-                    TicketType.PLAYER,
+                    TicketType.FORCED,
                     chunkPos,
                     2,
                     chunkPos

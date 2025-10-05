@@ -140,6 +140,9 @@ public class StalkerControl {
         if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
             DroneStalkerHUD.RPress = event.getAction() == InputConstants.PRESS;
         }
+        if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+            DroneStalkerHUD.LPress = event.getAction() == InputConstants.PRESS;
+        }
         if (event.getAction() != InputConstants.PRESS) return;
         if (event.getButton() != GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
             event.setCanceled(true);

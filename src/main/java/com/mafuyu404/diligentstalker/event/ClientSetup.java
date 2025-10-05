@@ -1,6 +1,7 @@
 package com.mafuyu404.diligentstalker.event;
 
 import com.mafuyu404.diligentstalker.DiligentStalker;
+import com.mafuyu404.diligentstalker.compat.KeyPrompts;
 import com.mafuyu404.diligentstalker.registry.KeyBindings;
 import com.mafuyu404.diligentstalker.registry.StalkerBlockEntities;
 import com.mafuyu404.diligentstalker.registry.StalkerEntities;
@@ -23,6 +24,7 @@ public class ClientSetup {
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
         EntityRenderers.register(StalkerEntities.DRONE_STALKER.get(), DroneStalkerRenderer::new);
+        event.enqueueWork(KeyPrompts::init);
     }
 
     @SubscribeEvent

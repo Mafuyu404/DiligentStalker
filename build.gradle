@@ -211,6 +211,8 @@ dependencies {
 //    implementation fg.deobf("curse.maven:touhou-little-maid-355044:6440955")
 //    implementation fg.deobf("libs:touhoulittlemaid:1.20.1-release-1.2.2-hotfix")
 
+    implementation fg.deobf("curse.maven:smart-key-prompts-1300195:6885325")
+
 }
 
 // This blocks of code expands all declared replace properties in the specified resource targets.

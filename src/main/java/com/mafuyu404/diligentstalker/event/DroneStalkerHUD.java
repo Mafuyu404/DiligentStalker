@@ -1,13 +1,12 @@
 package com.mafuyu404.diligentstalker.event;
 
 import com.mafuyu404.diligentstalker.DiligentStalker;
-import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
+import com.mafuyu404.diligentstalker.compat.KeyPrompts;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.utils.ClientStalkerUtil;
 import com.mafuyu404.diligentstalker.utils.ControllableUtils;
 import com.mafuyu404.diligentstalker.utils.StalkerUtil;
 import com.mafuyu404.diligentstalker.item.StalkerMasterItem;
-import com.mafuyu404.diligentstalker.registry.Config;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
@@ -24,6 +23,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -31,7 +31,16 @@ import java.util.List;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class DroneStalkerHUD {
+    @SubscribeEvent
+    public static void skp(TickEvent.ClientTickEvent event) {
+        if (Stalker.hasInstanceOf(Minecraft.getInstance().player)) {
+            KeyPrompts.show("key.diligentstalker.view.desc");
+            KeyPrompts.show("key.diligentstalker.control.desc");
+        }
+    }
+
     private static int SIGNAL_RADIUS = 0;
+    public static boolean LPress = false;
     public static boolean RPress = false;
 
     @SubscribeEvent
@@ -46,11 +55,11 @@ public class DroneStalkerHUD {
                 Vec3 direction = stalker.position().subtract(player.position());
                 float yRot = StalkerUtil.getYRotFromVec3(direction);
                 int distance = (int) direction.length();
-                if (stalker instanceof DroneStalkerEntity droneStalker) {
+                if (ControllableUtils.isControllable(stalker)) {
                     if (SIGNAL_RADIUS == 0) SIGNAL_RADIUS = ControllableUtils.getSignalRadius(stalker);
 
                     float signal_percent = 1 - (1f * distance / SIGNAL_RADIUS);
-                    float fuel_percent = ControllableUtils.getFuelPercent(droneStalker);
+                    float fuel_percent = ControllableUtils.getFuelPercent(stalker);
                     List<ArcSection> sections = List.of(
                             new ArcSection(-157.5f, 0.375f, 0.7f, 0.7f, 0.7f, 0.4f),  // 左上灰色
                             new ArcSection(-157.5f - 0.375f * 180 * (1 - signal_percent), signal_percent * 0.375f, 0.8f, 0.8f, 0.8f, 1f),  // 左上灰色
@@ -59,6 +68,7 @@ public class DroneStalkerHUD {
                             new ArcSection(-22.5f + 0.375f * 180 * (1 - fuel_percent), fuel_percent * 0.375f, 0.6f, 0.8f, 1.0f, 1f),  // 右上淡蓝
 
                             new ArcSection(112.5f, 0.125f, 1.0f, 0.6f, 0.6f, 0.4f), // 左下淡红
+                            new ArcSection(112.5f, LPress ? 0.125f : 0, 1.0f, 0.6f, 0.6f, 1f), // 左下淡红
 
                             new ArcSection(67.5f, 0.125f, 0.6f, 1.0f, 0.6f, 0.4f),  // 右下淡绿
                             new ArcSection(67.5f, RPress ? 0.125f : 0, 0.6f, 1.0f, 0.6f, 1f)  // 右下淡绿
