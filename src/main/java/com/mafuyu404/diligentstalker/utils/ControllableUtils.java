@@ -126,7 +126,7 @@ public class ControllableUtils {
     public static boolean isActionControlling(Entity entity) {
         if (!entity.level().isClientSide) {
             Stalker instance = Stalker.getInstanceOf(entity);
-            CompoundTag input = ModComponents.STALKER_DATA.get(instance).getStalkerData().getCompound(CONTROL_INPUT_KEY);
+            CompoundTag input = ModComponents.STALKER_DATA.get(instance.getStalker()).getStalkerData().getCompound(CONTROL_INPUT_KEY);
             return !input.isEmpty();
         } else {
             return getStorage(entity).isActionControlling();

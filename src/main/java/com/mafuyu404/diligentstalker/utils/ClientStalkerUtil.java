@@ -51,7 +51,7 @@ public class ClientStalkerUtil {
         if (new ChunkPos(packet.getX(), packet.getZ()).equals(new ChunkPos(BlockPos.containing(ClientStalkerUtil.getCameraPosition()))))
             return false;
         if (Stalker.hasInstanceOf(player)) {
-            ChunkLoadTask.TaskList.add(packet);
+            ChunkLoadTask.TASK_LIST.add(packet);
             return true;
         }
         return false;

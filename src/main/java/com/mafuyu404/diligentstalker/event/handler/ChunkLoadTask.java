@@ -12,78 +12,94 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
+import java.util.*;
 import java.util.function.Function;
 
 public class ChunkLoadTask {
-    public static ArrayList<ClientboundLevelChunkWithLightPacket> TaskList = new ArrayList<>();
-    public static ArrayList<ClientboundLevelChunkWithLightPacket> WorkList = new ArrayList<>();
-    public static int ChannelLimit = 0;
-    private static final boolean CacheLock = false;
+    public static final List<ClientboundLevelChunkWithLightPacket> TASK_LIST = Collections.synchronizedList(new ArrayList<>());
+    public static final List<ClientboundLevelChunkWithLightPacket> WORK_LIST = new ArrayList<>();
+    public static int channelLimit = 0;
 
     public static void initClientTick() {
         ClientTickEvents.END_CLIENT_TICK.register(client -> onClientTick());
     }
 
     public static void onClientTick() {
-        LocalPlayer player = Minecraft.getInstance().player;
-        ClientLevel level = Minecraft.getInstance().level;
-        if (player == null) return;
-        if (Stalker.hasInstanceOf(player)) {
-            Entity stalker = Stalker.getInstanceOf(player).getStalker();
-            int timer = 10;
-            if (player.tickCount % timer == 0) {
-                ChannelLimit = (int) Math.ceil(TaskList.size() * 1d / timer);
-                WorkList = createChunksLoadTask(stalker, TaskList);
-                TaskList.clear();
-            }
-            if (WorkList.isEmpty()) return;
-            ClientPacketListener connection = Minecraft.getInstance().getConnection();
-            if (connection == null) return;
-            for (int i = 0; i < WorkList.size(); i++) {
-                if (i < ChannelLimit) {
-                    ClientboundLevelChunkWithLightPacket packet = WorkList.get(i);
-                    if (level.getChunkSource().hasChunk(packet.getX(), packet.getZ()) && CacheLock) continue;
-                    connection.handleLevelChunkWithLight(packet);
-                    WorkList.remove(i);
-                    i++;
-                }
+        Minecraft mc = Minecraft.getInstance();
+        LocalPlayer player = mc.player;
+        ClientLevel level = mc.level;
+
+        if (player == null || level == null) return;
+
+        if (!Stalker.hasInstanceOf(player)) return;
+        Entity stalker = Stalker.getInstanceOf(player).getStalker();
+
+        int timer = 10;
+        if (player.tickCount % timer == 0) {
+            synchronized (TASK_LIST) {
+                TASK_LIST.removeIf(Objects::isNull);
+                if (TASK_LIST.isEmpty()) return;
+
+                channelLimit = Math.max(1, (int) Math.ceil(TASK_LIST.size() / (double) timer));
+                WORK_LIST.clear();
+                WORK_LIST.addAll(createChunksLoadTask(stalker, TASK_LIST));
+                TASK_LIST.clear();
             }
         }
-    }
 
-    public static ArrayList<ClientboundLevelChunkWithLightPacket> createChunksLoadTask(Entity stalker, ArrayList<ClientboundLevelChunkWithLightPacket> toLoadChunks) {
+        if (WORK_LIST.isEmpty()) return;
+
+        ClientPacketListener connection = mc.getConnection();
+        if (connection == null) return;
+
+        Iterator<ClientboundLevelChunkWithLightPacket> it = WORK_LIST.iterator();
+        int count = 0;
+
+        while (it.hasNext() && count < channelLimit) {
+            ClientboundLevelChunkWithLightPacket packet = it.next();
+            if (packet == null) {
+                it.remove();
+                continue;
+            }
+
+            if (!level.getChunkSource().hasChunk(packet.getX(), packet.getZ())) {
+                connection.handleLevelChunkWithLight(packet);
+            }
+
+            it.remove();
+            count++;
+        }
+    }
+    public static List<ClientboundLevelChunkWithLightPacket> createChunksLoadTask(Entity stalker, List<ClientboundLevelChunkWithLightPacket> toLoadChunks) {
+        List<ClientboundLevelChunkWithLightPacket> safeList = new ArrayList<>(toLoadChunks);
+        safeList.removeIf(Objects::isNull);
+
         Vec3 direction = StalkerUtil.calculateViewVector(StalkerControl.xRot, StalkerControl.yRot);
-        ArrayList<ClientboundLevelChunkWithLightPacket> result = new ArrayList<>();
+        Vec3 startCenter = stalker.chunkPosition().getWorldPosition().getCenter();
 
-        // 先对拟合度排序
-        sortChunks(toLoadChunks, packet -> {
-            Vec3 start = stalker.chunkPosition().getWorldPosition().getCenter();
+        // 按视线方向排序
+        sortChunks(safeList, packet -> {
             Vec3 end = new ChunkPos(packet.getX(), packet.getZ()).getWorldPosition().getCenter();
-            double n = StalkerUtil.calculateViewAlignment(direction, start, end);
-            return n * -1;
+            return -StalkerUtil.calculateViewAlignment(direction, startCenter, end);
         });
-        for (int i = 0; i < toLoadChunks.size() * 0.6; i++) {
-            result.add(toLoadChunks.get(i));
-        }
 
-        // 后对距离排序
-        sortChunks(result, packet -> new ChunkPos(packet.getX(), packet.getZ()).getWorldPosition().getCenter().subtract(stalker.chunkPosition().getWorldPosition().getCenter()).length());
+        // 截取前 60%
+        int limit = (int) (safeList.size() * 0.6);
+        List<ClientboundLevelChunkWithLightPacket> result = new ArrayList<>(safeList.subList(0, Math.max(1, limit)));
 
-        return new ArrayList<>(result);
+        // 后按距离排序
+        sortChunks(result, packet -> {
+            Vec3 end = new ChunkPos(packet.getX(), packet.getZ()).getWorldPosition().getCenter();
+            return end.subtract(startCenter).length();
+        });
+
+        return result;
     }
 
-    public static void sortChunks(ArrayList<ClientboundLevelChunkWithLightPacket> chunks, Function<ClientboundLevelChunkWithLightPacket, Double> handler) {
+    public static void sortChunks(List<ClientboundLevelChunkWithLightPacket> chunks, Function<ClientboundLevelChunkWithLightPacket, Double> handler) {
         if (chunks == null || chunks.size() <= 1) return;
-        for (int i = 1; i < chunks.size(); i++) {
-            ClientboundLevelChunkWithLightPacket current = chunks.get(i);
-            double currentView = handler.apply(current);
-            int j = i - 1;
-            while (j >= 0 && handler.apply(chunks.get(j)) > currentView) {
-                chunks.set(j + 1, chunks.get(j));
-                j--;
-            }
-            chunks.set(j + 1, current);
-        }
+        chunks.removeIf(Objects::isNull);
+
+        chunks.sort(Comparator.comparingDouble(handler::apply));
     }
 }
