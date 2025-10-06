@@ -129,7 +129,11 @@ public class StalkerManage {
     @SubscribeEvent
     public static void onUnload(EntityLeaveLevelEvent event) {
         if (Stalker.hasInstanceOf(event.getEntity())) {
-            Stalker.getInstanceOf(event.getEntity()).disconnect();
+            try {
+                Stalker.getInstanceOf(event.getEntity()).disconnect();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
