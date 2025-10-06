@@ -129,7 +129,7 @@ public class StalkerControl {
     }
 
 
-    public static boolean onAction(int button, int action) {
+    public static boolean onAction(int button, int action, double mouseX, double mouseY, int modifiers) {
         if (Minecraft.getInstance().screen != null) return false;
         Player player = Minecraft.getInstance().player;
         if (!Stalker.hasInstanceOf(player)) return false;
@@ -156,7 +156,8 @@ public class StalkerControl {
     }
 
 
-    private static boolean onMouseScrolling(double xOffset, double yOffset) {
+    private static boolean onMouseScrolling(double scrollDelta, double mouseX, double mouseY,
+                                            boolean leftDown, boolean middleDown, boolean rightDown) {
         if (Minecraft.getInstance().screen != null) return false;
         Player player = Minecraft.getInstance().player;
         if (player == null) return false;
