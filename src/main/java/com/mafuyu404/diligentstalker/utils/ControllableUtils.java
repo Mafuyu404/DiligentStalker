@@ -1,8 +1,8 @@
 package com.mafuyu404.diligentstalker.utils;
 
 import com.mafuyu404.diligentstalker.api.IControllable;
-import com.mafuyu404.diligentstalker.data.ControllableStorage;
-import com.mafuyu404.diligentstalker.data.ModComponents;
+import com.mafuyu404.diligentstalker.component.ControllableStorage;
+import com.mafuyu404.diligentstalker.component.ModComponents;
 import com.mafuyu404.diligentstalker.init.NetworkHandler;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.network.ClientFuelPacket;
@@ -57,7 +57,7 @@ public class ControllableUtils {
         Stalker instance = Stalker.getInstanceOf(entity);
         if (instance != null) {
             Player player = instance.getPlayer();
-            NetworkHandler.sendToClient((ServerPlayer) player, NetworkHandler.CLIENT_FUEL_PACKET, new ClientFuelPacket(entity.getId(), fuel));
+            NetworkHandler.sendToClient((ServerPlayer) player, new ClientFuelPacket(entity.getId(), fuel));
         }
 
         ModComponents.CONTROLLABLE_STORAGE.sync(entity);

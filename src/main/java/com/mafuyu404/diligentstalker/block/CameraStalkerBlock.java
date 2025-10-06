@@ -3,6 +3,7 @@ package com.mafuyu404.diligentstalker.block;
 import com.mafuyu404.diligentstalker.entity.CameraStalkerBlockEntity;
 import com.mafuyu404.diligentstalker.entity.CameraStalkerEntity;
 import com.mafuyu404.diligentstalker.registry.StalkerEntities;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
@@ -26,6 +27,11 @@ public class CameraStalkerBlock extends BaseEntityBlock {
 
     public CameraStalkerBlock(Properties p_49795_) {
         super(p_49795_.strength(1f));
+    }
+
+    @Override
+    protected MapCodec<? extends BaseEntityBlock> codec() {
+        return null;
     }
 
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult p_49727_) {

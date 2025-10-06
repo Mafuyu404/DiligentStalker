@@ -64,7 +64,7 @@ public class ContainerStorageAdapter implements Storage<ItemVariant> {
         for (int i = 0; i < size && inserted < maxAmount; i++) {
             ItemStack stack = container.getItem(i);
             if (stack.isEmpty()) {
-                int toAdd = (int) Math.min(maxAmount - inserted, resource.getItem().getMaxStackSize());
+                int toAdd = (int) Math.min(maxAmount - inserted, resource.getItem().getDefaultMaxStackSize());
                 ItemStack newStack = resource.toStack(toAdd);
                 container.setItem(i, newStack);
                 inserted += toAdd;

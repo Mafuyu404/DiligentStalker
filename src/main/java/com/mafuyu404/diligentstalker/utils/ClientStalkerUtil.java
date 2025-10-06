@@ -19,10 +19,13 @@ import org.lwjgl.glfw.GLFW;
 import java.util.function.Predicate;
 
 public class ClientStalkerUtil {
+    private static int pendingConnectEntityId = -1;
+    private static int connectRetryCount = 0;
+    private static final int MAX_CONNECT_RETRIES = 100; // 最多重试100次（约5秒）
+    
     public static boolean isKeyPressed(int glfwKeyCode) {
-        Minecraft minecraft = Minecraft.getInstance();
-        long windowHandle = minecraft.getWindow().getWindow();
-        return GLFW.glfwGetKey(windowHandle, glfwKeyCode) == GLFW.GLFW_PRESS;
+        long window = Minecraft.getInstance().getWindow().getWindow();
+        return GLFW.glfwGetKey(window, glfwKeyCode) == GLFW.GLFW_PRESS;
     }
 
     public static void updateFuel(int id, int fuel) {
@@ -35,11 +38,49 @@ public class ClientStalkerUtil {
 
     }
 
+    //TODO 临时解决，待修复
     public static void clientConnect(int id) {
         ClientLevel level = Minecraft.getInstance().level;
         LocalPlayer player = Minecraft.getInstance().player;
+        
+        if (level == null || player == null) return;
+        
         Entity entity = level.getEntity(id);
-        Stalker.connect(player, entity);
+        if (entity != null) {
+            // 实体存在，直接连接
+            Stalker.connect(player, entity);
+            // 清除待连接状态
+            pendingConnectEntityId = -1;
+        } else {
+            // 实体不存在，设置为待连接状态
+            pendingConnectEntityId = id;
+        }
+        connectRetryCount = 0;
+    }
+    
+    // 在客户端tick中检查待连接的实体
+    public static void checkPendingConnect() {
+        if (pendingConnectEntityId == -1) return;
+        
+        ClientLevel level = Minecraft.getInstance().level;
+        LocalPlayer player = Minecraft.getInstance().player;
+        
+        if (level == null || player == null) return;
+        
+        Entity entity = level.getEntity(pendingConnectEntityId);
+        if (entity != null) {
+            // 实体现在存在了，进行连接
+            Stalker.connect(player, entity);
+            pendingConnectEntityId = -1;
+            connectRetryCount = 0;
+        } else {
+            connectRetryCount++;
+            if (connectRetryCount >= MAX_CONNECT_RETRIES) {
+                // 超过最大重试次数，放弃连接
+                pendingConnectEntityId = -1;
+                connectRetryCount = 0;
+            }
+        }
     }
 
     public static Vec3 getCameraPosition() {
@@ -48,13 +89,12 @@ public class ClientStalkerUtil {
 
     public static boolean handleChunkPacket(ClientboundLevelChunkWithLightPacket packet) {
         Player player = Minecraft.getInstance().player;
-        if (new ChunkPos(packet.getX(), packet.getZ()).equals(new ChunkPos(BlockPos.containing(ClientStalkerUtil.getCameraPosition()))))
-            return false;
-        if (Stalker.hasInstanceOf(player)) {
-            ChunkLoadTask.TASK_LIST.add(packet);
-            return true;
-        }
-        return false;
+        if (player == null) return false;
+        if (!Stalker.hasInstanceOf(player)) return false;
+        Entity stalker = Stalker.getInstanceOf(player).getStalker();
+        if (stalker == null) return false;
+        ChunkLoadTask.TASK_LIST.add(packet);
+        return true;
     }
 
     private static Predicate<Entity> ConnectingTarget;
@@ -73,24 +113,22 @@ public class ClientStalkerUtil {
     private static BlockPos VisualCenter;
 
     public static void setVisualCenter(BlockPos blockPos) {
-        if (Stalker.hasInstanceOf(Minecraft.getInstance().player)) return;
         VisualCenter = blockPos;
     }
 
     public static BlockPos getVisualCenter() {
-        if (VisualCenter == null) return null;
-        return VisualCenter.equals(BlockPos.ZERO) ? null : VisualCenter;
+        return VisualCenter;
     }
 
     public static void tryRemoteConnect(BlockPos center, Predicate<Entity> predicate) {
         setVisualCenter(center);
-        NetworkHandler.sendToServer(NetworkHandler.SERVER_REMOTE_CONNECT_PACKET, new ServerRemoteConnectPacket(center));
+        NetworkHandler.sendToServer(new ServerRemoteConnectPacket(center));
         setConnectingTarget(predicate);
     }
 
     public static void cancelRemoteConnect() {
         setVisualCenter(BlockPos.ZERO);
-        NetworkHandler.sendToServer(NetworkHandler.SERVER_REMOTE_CONNECT_PACKET, new ServerRemoteConnectPacket(BlockPos.ZERO));
+        NetworkHandler.sendToServer(new ServerRemoteConnectPacket(BlockPos.ZERO));
         setConnectingTarget(null);
     }
 

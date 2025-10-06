@@ -14,7 +14,7 @@ public class StalkerBlocks {
     public static void register() {
         CAMERA_STALKER = Registry.register(
                 BuiltInRegistries.BLOCK,
-                new ResourceLocation(DiligentStalker.MODID, "camera_stalker"),
+                ResourceLocation.fromNamespaceAndPath(DiligentStalker.MODID, "camera_stalker"),
                 new CameraStalkerBlock(BlockBehaviour.Properties.of().noCollission())
         );
     }

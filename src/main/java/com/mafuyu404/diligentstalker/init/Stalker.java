@@ -34,7 +34,7 @@ public class Stalker {
 
     public void disconnect() {
         if (level.isClientSide) {
-            NetworkHandler.sendToServer(NetworkHandler.STALKER_SYNC_PACKET, new StalkerSyncPacket(this.stalkerId, false));
+            NetworkHandler.sendToServer(new StalkerSyncPacket(this.stalkerId, false));
             ClientStalkerUtil.cancelRemoteConnect();
         }
 
@@ -49,7 +49,7 @@ public class Stalker {
         if (hasInstanceOf(player) || hasInstanceOf(stalker)) return null;
         if (player.level().isClientSide) {
             StalkerControl.connect(player, stalker);
-            NetworkHandler.sendToServer(NetworkHandler.STALKER_SYNC_PACKET, new StalkerSyncPacket(stalker.getId(), true));
+            NetworkHandler.sendToServer(new StalkerSyncPacket(stalker.getId(), true));
             ClientStalkerUtil.cancelRemoteConnect();
         }
 

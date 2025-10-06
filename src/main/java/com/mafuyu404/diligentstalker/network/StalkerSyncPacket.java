@@ -1,33 +1,38 @@
 package com.mafuyu404.diligentstalker.network;
 
+import com.mafuyu404.diligentstalker.DiligentStalker;
 import com.mafuyu404.diligentstalker.entity.ArrowStalkerEntity;
-import com.mafuyu404.diligentstalker.data.ModComponents;
+import com.mafuyu404.diligentstalker.component.ModComponents;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.registry.StalkerItems;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
-public class StalkerSyncPacket implements Packet {
-    private final int entityId;
-    private final boolean state;
+public record StalkerSyncPacket(int entityId, boolean state) implements Packet {
+    public static final Type<StalkerSyncPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(DiligentStalker.MODID, "stalker_sync"));
 
-    public StalkerSyncPacket(int entityId, boolean state) {
-        this.entityId = entityId;
-        this.state = state;
+    public static final StreamCodec<RegistryFriendlyByteBuf, StalkerSyncPacket> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.VAR_INT, StalkerSyncPacket::entityId,
+            ByteBufCodecs.BOOL, StalkerSyncPacket::state,
+            StalkerSyncPacket::new
+    );
+
+    @Override
+    public StreamCodec<RegistryFriendlyByteBuf, ? extends Packet> getStreamCodec() {
+        return STREAM_CODEC;
     }
 
     @Override
-    public void encode(FriendlyByteBuf buffer) {
-        buffer.writeInt(entityId);
-        buffer.writeBoolean(state);
-    }
-
-    public static StalkerSyncPacket decode(FriendlyByteBuf buffer) {
-        return new StalkerSyncPacket(buffer.readInt(), buffer.readBoolean());
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
     }
 
     public static void handle(MinecraftServer server, ServerPlayer player, StalkerSyncPacket msg) {

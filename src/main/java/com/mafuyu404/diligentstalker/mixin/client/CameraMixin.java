@@ -1,4 +1,4 @@
-package com.mafuyu404.diligentstalker.mixin;
+package com.mafuyu404.diligentstalker.mixin.client;
 
 import com.mafuyu404.diligentstalker.event.handler.StalkerControl;
 import com.mafuyu404.diligentstalker.init.Stalker;
@@ -47,10 +47,17 @@ public abstract class CameraMixin {
     private void modifyRotate(float p_90573_, float p_90574_, CallbackInfo ci) {
         Entity stalker = ClientStalkerUtil.getLocalStalker();
         if (stalker != null) {
-            if (!ControllableUtils.isCameraFollowing(stalker)) {
-                this.xRot = StalkerControl.xRot;
-                this.yRot = StalkerControl.yRot;
+            String cameraState = ControllableUtils.getCameraState(stalker);
+            if (cameraState.equals("free")) {
+                // 自由模式：使用固定的旋转角度
+                this.xRot = StalkerControl.fixedXRot;
+                this.yRot = StalkerControl.fixedYRot;
+            } else if (cameraState.equals("follow")) {
+                // 跟随模式：跟随实体的旋转
+                this.xRot = stalker.getXRot();
+                this.yRot = stalker.getYRot();
             }
+            // 控制模式：不设置相机旋转，让鼠标输入正常工作
         }
     }
 }

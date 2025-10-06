@@ -19,6 +19,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+//TODO 区块加载嫌疑二号，有待重构
 public final class DiligentChunkManager {
     private DiligentChunkManager() {}
 
@@ -35,7 +36,7 @@ public final class DiligentChunkManager {
     }
 
     public static boolean hasForcedChunks(ServerLevel level) {
-        DiligentForcedChunksData data = level.getDataStorage().get(DiligentForcedChunksData::load, DiligentForcedChunksData.SAVE_ID);
+        DiligentForcedChunksData data = level.getDataStorage().get(DiligentForcedChunksData.factory(), DiligentForcedChunksData.SAVE_ID);
         if (data == null) return false;
         return !data.getBlockForcedChunks().isEmpty() || !data.getEntityForcedChunks().isEmpty();
     }
@@ -68,8 +69,7 @@ public final class DiligentChunkManager {
         if (!FabricLoader.getInstance().isModLoaded(modId)) {
             return false;
         }
-        DiligentForcedChunksData saveData = level.getDataStorage()
-                .computeIfAbsent(DiligentForcedChunksData::load, DiligentForcedChunksData::new, DiligentForcedChunksData.SAVE_ID);
+        DiligentForcedChunksData saveData = level.getDataStorage().computeIfAbsent(DiligentForcedChunksData.factory(), DiligentForcedChunksData.SAVE_ID);
 
         ChunkPos pos = new ChunkPos(chunkX, chunkZ);
         long chunk = pos.toLong();

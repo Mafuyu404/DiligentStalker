@@ -1,6 +1,7 @@
 package com.mafuyu404.diligentstalker.event.handler;
 
 import com.mafuyu404.diligentstalker.DiligentStalker;
+import com.mafuyu404.diligentstalker.data.StalkerDataComponents;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.item.StalkerMasterItem;
 import com.mafuyu404.diligentstalker.utils.ClientStalkerUtil;
@@ -10,12 +11,13 @@ import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
@@ -32,13 +34,16 @@ public class DroneStalkerHUD {
         HudRenderCallback.EVENT.register(DroneStalkerHUD::onRenderGameOverlay);
     }
 
-    public static void onRenderGameOverlay(GuiGraphics guiGraphics, float tickDelta) {
+    public static void onRenderGameOverlay(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return;
-        ResourceLocation icon = player.getSkinTextureLocation();
-        ResourceLocation item = new ResourceLocation(DiligentStalker.MODID, "textures/entity/drone_stalker_forward.png");
+        ResourceLocation icon = player.getSkin().texture();
+        ResourceLocation item = ResourceLocation.fromNamespaceAndPath(DiligentStalker.MODID, "textures/entity/drone_stalker_forward.png");
         if (Stalker.hasInstanceOf(player)) {
             Entity stalker = Stalker.getInstanceOf(player).getStalker();
+
+            if (stalker == null) return; //TODO 连接传null，可能是区块加载问题
+
             Vec3 direction = stalker.position().subtract(player.position());
             float yRot = StalkerUtil.getYRotFromVec3(direction);
             int distance = (int) direction.length();
@@ -66,16 +71,17 @@ public class DroneStalkerHUD {
         } else {
             ItemStack itemStack = player.getMainHandItem();
             if (itemStack.getItem() instanceof StalkerMasterItem) {
-                CompoundTag tag = itemStack.getOrCreateTag();
-                if (tag.contains("StalkerPosition")) {
-                    int[] pos = tag.getIntArray("StalkerPosition");
-                    Vec3 direction = new Vec3(pos[0], pos[1], pos[2]).subtract(player.position());
+                BlockPos pos = itemStack.get(StalkerDataComponents.STALKER_POSITION);
+                if (pos != null) {
+                    Vec3 direction = new Vec3(pos.getX(), pos.getY(), pos.getZ()).subtract(player.position());
                     float yRot = StalkerUtil.getYRotFromVec3(direction);
                     int distance = (int) direction.length();
+                    if (SIGNAL_RADIUS == 0) SIGNAL_RADIUS = 100; 
                     float signal_percent = 1 - (1f * distance / SIGNAL_RADIUS);
                     List<ArcSection> sections = List.of(
                             new ArcSection(-157.5f, 0.375f, 0.7f, 0.7f, 0.7f, 0.4f),
-                            new ArcSection(-157.5f - 0.375f * 180 * (1 - signal_percent), signal_percent * 0.375f, 0.8f, 0.8f, 0.8f, 1f)
+                            new ArcSection(-157.5f - 0.375f * 180 * (1 - signal_percent),
+                                    signal_percent * 0.375f, 0.8f, 0.8f, 0.8f, 1f)
                     );
                     drawHud(guiGraphics, sections);
                     drawPlayerPosition(guiGraphics, yRot - player.getYRot(), distance, item);
@@ -101,8 +107,6 @@ public class DroneStalkerHUD {
         RenderSystem.defaultBlendFunc();
         RenderSystem.setShader(GameRenderer::getPositionShader);
 
-        Tesselator tessellator = Tesselator.getInstance();
-
         // 总可用角度（360度 - 3个间隙）
         final float GAP = 2f;
         final float TOTAL_AVAILABLE = 360f - 3 * GAP;
@@ -116,8 +120,7 @@ public class DroneStalkerHUD {
             float end = section.centerAngle + sectionAngle / 2 - GAP / 2;
 
             // 生成顶点
-            BufferBuilder buffer = tessellator.getBuilder();
-            buffer.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION);
+            BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION);
 
             RenderSystem.setShaderColor(section.r, section.g, section.b, section.a);
 
@@ -134,11 +137,11 @@ public class DroneStalkerHUD {
                 double ix = centerX + (radius - thickness) * Math.cos(angle);
                 double iy = centerY + (radius - thickness) * Math.sin(angle);
 
-                buffer.vertex(ox, oy, 0).endVertex();
-                buffer.vertex(ix, iy, 0).endVertex();
+                buffer.addVertex((float) ox, (float)oy, 0);
+                buffer.addVertex((float)ix, (float)iy, 0);
             }
 
-            tessellator.end();
+            BufferUploader.drawWithShader(buffer.buildOrThrow());
         }
         RenderSystem.disableBlend();
         poseStack.popPose();

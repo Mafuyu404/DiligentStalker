@@ -1,8 +1,9 @@
-package com.mafuyu404.diligentstalker.data;
+package com.mafuyu404.diligentstalker.component;
 
-import dev.onyxstudios.cca.api.v3.component.Component;
-import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import org.ladysnake.cca.api.v3.component.Component;
+import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
 
 public class StalkerDataComponent implements Component, AutoSyncedComponent {
     private final CompoundTag data = new CompoundTag();
@@ -12,7 +13,7 @@ public class StalkerDataComponent implements Component, AutoSyncedComponent {
     }
 
     @Override
-    public void readFromNbt(CompoundTag tag) {
+    public void readFromNbt(CompoundTag tag, HolderLookup.Provider provider) {
         for (String key : data.getAllKeys()) {
             data.remove(key);
         }
@@ -20,7 +21,7 @@ public class StalkerDataComponent implements Component, AutoSyncedComponent {
     }
 
     @Override
-    public void writeToNbt(CompoundTag tag) {
+    public void writeToNbt(CompoundTag tag, HolderLookup.Provider provider) {
         tag.merge(data);
     }
 }

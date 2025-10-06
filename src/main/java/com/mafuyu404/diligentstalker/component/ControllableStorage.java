@@ -1,4 +1,4 @@
-package com.mafuyu404.diligentstalker.data;
+package com.mafuyu404.diligentstalker.component;
 
 import com.mafuyu404.diligentstalker.api.IControllableStorage;
 import net.minecraft.nbt.CompoundTag;

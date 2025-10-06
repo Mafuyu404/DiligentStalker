@@ -1,5 +1,6 @@
 package com.mafuyu404.diligentstalker;
 
+import com.mafuyu404.diligentstalker.data.StalkerDataComponents;
 import com.mafuyu404.diligentstalker.event.handler.ModSetup;
 import com.mafuyu404.diligentstalker.event.handler.StalkerManage;
 import com.mafuyu404.diligentstalker.init.NetworkHandler;
@@ -17,6 +18,7 @@ public class DiligentStalker implements ModInitializer {
     public void onInitialize() {
         ModConfig.register();
         NetworkHandler.register();
+        StalkerDataComponents.register();
         StalkerBlocks.register();
         StalkerItems.register();
         StalkerCreativeModeTab.register();

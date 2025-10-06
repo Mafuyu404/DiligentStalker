@@ -16,7 +16,7 @@ public class MinecraftServerMixin {
     private void diligent$reinstateForcedChunks(ChunkProgressListener chunkProgressListener, CallbackInfo ci) {
         MinecraftServer self = (MinecraftServer) (Object) this;
         for (ServerLevel level : self.getAllLevels()) {
-            DiligentForcedChunksData data = level.getDataStorage().get(DiligentForcedChunksData::load, DiligentForcedChunksData.SAVE_ID);
+            DiligentForcedChunksData data = level.getDataStorage().get(DiligentForcedChunksData.factory(), DiligentForcedChunksData.SAVE_ID);
             if (data != null) {
                 DiligentChunkManager.reinstatePersistentChunks(level, data);
             }

@@ -1,4 +1,4 @@
-package com.mafuyu404.diligentstalker.mixin;
+package com.mafuyu404.diligentstalker.mixin.client;
 
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.utils.ClientStalkerUtil;

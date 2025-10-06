@@ -9,6 +9,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.item.ArrowItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
@@ -19,12 +20,17 @@ public class ArrowStalkerEntity extends AbstractArrow {
         super(type, level);
     }
 
-    public ArrowStalkerEntity(LivingEntity shooter, Level level) {
-        super(StalkerEntities.ARROW_STALKER, shooter, level);
+    public ArrowStalkerEntity(LivingEntity shooter, Level level, ItemStack itemStack1, ItemStack itemStack2) {
+        super(StalkerEntities.ARROW_STALKER, shooter, level, itemStack1, itemStack2);
     }
 
     @Override
     protected ItemStack getPickupItem() {
+        return new ItemStack(StalkerItems.ARROW_STALKER);
+    }
+
+    @Override
+    protected ItemStack getDefaultPickupItem() {
         return new ItemStack(StalkerItems.ARROW_STALKER);
     }
 
@@ -45,25 +51,6 @@ public class ArrowStalkerEntity extends AbstractArrow {
         }
     }
 
-    @Override
-    public void setSecondsOnFire(int seconds) {
-
-    }
-
-    @Override
-    public void setCritArrow(boolean critical) {
-
-    }
-
-    @Override
-    public void setKnockback(int knockbackStrengthIn) {
-
-    }
-
-    @Override
-    public void setPierceLevel(byte level) {
-
-    }
 
     @Override
     public void tick() {

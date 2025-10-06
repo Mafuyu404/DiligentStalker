@@ -82,7 +82,7 @@ public class DroneStalkerModel extends EntityModel<DroneStalkerEntity> {
     }
 
     @Override
-    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
+    public void renderToBuffer(PoseStack poseStack, VertexConsumer vertexConsumer, int i, int j, int k) {
         // 各部分的渲染将在渲染器中单独处理
     }
 }

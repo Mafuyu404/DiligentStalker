@@ -1,6 +1,6 @@
 package com.mafuyu404.diligentstalker.utils;
 
-import com.mafuyu404.diligentstalker.data.ModComponents;
+import com.mafuyu404.diligentstalker.component.ModComponents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 

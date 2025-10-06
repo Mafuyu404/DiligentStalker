@@ -20,7 +20,7 @@
       "com.mafuyu404.diligentstalker.DiligentStalker"
     ],
     "cardinal-components-entity": [
-      "com.mafuyu404.diligentstalker.data.ModComponents"
+      "com.mafuyu404.diligentstalker.component.ModComponents"
     ]
   },
   "custom": {

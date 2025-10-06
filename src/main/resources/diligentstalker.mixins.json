@@ -17,14 +17,14 @@
     "ServerLevelMixin"
   ],
   "client": [
-    "CameraMixin",
-    "ClientChunkCache$StorageMixin",
-    "ClientChunkCacheMixin",
-    "ClientPacketListenerMixin",
-    "GameRendererMixin",
-    "LevelRendererMixin",
-    "MinecraftMixin",
-    "PlayerRendererMixin",
+    "client.CameraMixin",
+    "client.ClientChunkCache$StorageMixin",
+    "client.ClientChunkCacheMixin",
+    "client.ClientPacketListenerMixin",
+    "client.GameRendererMixin",
+    "client.LevelRendererMixin",
+    "client.MinecraftMixin",
+    "client.PlayerRendererMixin",
     "client.GuiMixin",
     "client.MouseHandlerMixin"
   ],

@@ -20,34 +20,34 @@ public class StalkerEntities {
     public static void register() {
         DRONE_STALKER = Registry.register(
                 BuiltInRegistries.ENTITY_TYPE,
-                new ResourceLocation(DiligentStalker.MODID, "drone_stalker"),
+                ResourceLocation.fromNamespaceAndPath(DiligentStalker.MODID, "drone_stalker"),
                 EntityType.Builder.<DroneStalkerEntity>of(DroneStalkerEntity::new, MobCategory.MISC)
                         .sized(0.8f, 0.4f)
-                        .build(new ResourceLocation(DiligentStalker.MODID, "drone_stalker").toString())
+                        .build(ResourceLocation.fromNamespaceAndPath(DiligentStalker.MODID, "drone_stalker").toString())
         );
 
         ARROW_STALKER = Registry.register(
                 BuiltInRegistries.ENTITY_TYPE,
-                new ResourceLocation(DiligentStalker.MODID, "arrow_stalker"),
+                ResourceLocation.fromNamespaceAndPath(DiligentStalker.MODID, "arrow_stalker"),
                 EntityType.Builder.<ArrowStalkerEntity>of(ArrowStalkerEntity::new, MobCategory.MISC)
                         .sized(0.5F, 0.5F)
-                        .build(new ResourceLocation(DiligentStalker.MODID, "arrow_stalker").toString())
+                        .build(ResourceLocation.fromNamespaceAndPath(DiligentStalker.MODID, "arrow_stalker").toString())
         );
 
         VOID_STALKER = Registry.register(
                 BuiltInRegistries.ENTITY_TYPE,
-                new ResourceLocation(DiligentStalker.MODID, "void_stalker"),
+                ResourceLocation.fromNamespaceAndPath(DiligentStalker.MODID, "void_stalker"),
                 EntityType.Builder.<VoidStalkerEntity>of(VoidStalkerEntity::new, MobCategory.MISC)
                         .sized(0.5F, 0.5F)
-                        .build(new ResourceLocation(DiligentStalker.MODID, "void_stalker").toString())
+                        .build(ResourceLocation.fromNamespaceAndPath(DiligentStalker.MODID, "void_stalker").toString())
         );
 
         CAMERA_STALKER = Registry.register(
                 BuiltInRegistries.ENTITY_TYPE,
-                new ResourceLocation(DiligentStalker.MODID, "camera_stalker"),
+                ResourceLocation.fromNamespaceAndPath(DiligentStalker.MODID, "camera_stalker"),
                 EntityType.Builder.of(CameraStalkerEntity::new, MobCategory.MISC)
                         .sized(0.1F, 0.1F)
-                        .build(new ResourceLocation(DiligentStalker.MODID, "camera_stalker").toString())
+                        .build(ResourceLocation.fromNamespaceAndPath(DiligentStalker.MODID, "camera_stalker").toString())
         );
     }
 }

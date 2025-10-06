@@ -1,6 +1,7 @@
 package com.mafuyu404.diligentstalker.entity;
 
 import com.mafuyu404.diligentstalker.api.IControllable;
+import com.mafuyu404.diligentstalker.data.StalkerDataComponents;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.registry.StalkerItems;
 import com.mafuyu404.diligentstalker.storage.ContainerStorageAdapter;
@@ -8,10 +9,11 @@ import com.mafuyu404.diligentstalker.utils.ControllableUtils;
 import com.mafuyu404.diligentstalker.utils.StalkerUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
@@ -35,6 +37,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
@@ -43,6 +46,7 @@ import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.UUID;
 
 import static com.mafuyu404.diligentstalker.utils.StalkerUtil.limitSpeed;
 
@@ -50,7 +54,7 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
     private static final int CONTAINER_SIZE = 27;
     private NonNullList<ItemStack> itemStacks = NonNullList.withSize(CONTAINER_SIZE, ItemStack.EMPTY);
     @Nullable
-    private ResourceLocation lootTable;
+    private ResourceKey<LootTable> lootTable;
     private long lootTableSeed;
     private static final int SIGNAL_RADIUS = 1024;
     private static final int MAX_FUEL = 100;
@@ -166,12 +170,14 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
                 }
                 return InteractionResult.FAIL;
             } else if (itemStack.is(StalkerItems.STALKER_MASTER)) {
-                CompoundTag tag = itemStack.getOrCreateTag();
-                if (!tag.contains("StalkerId") || tag.getUUID("StalkerId") != this.uuid) {
-                    tag.putUUID("StalkerId", this.uuid);
-                    BlockPos pos = this.blockPosition();
-                    tag.putIntArray("StalkerPosition", new int[]{pos.getX(), pos.getY(), pos.getZ()});
-                    player.displayClientMessage(Component.translatable("message.diligentstalker.record_success").withStyle(ChatFormatting.GREEN), true);
+                UUID stalkerId = itemStack.get(StalkerDataComponents.STALKER_ID);
+                if (stalkerId == null || !stalkerId.equals(this.uuid)) {
+                    itemStack.set(StalkerDataComponents.STALKER_ID, this.uuid);
+                    player.displayClientMessage(
+                            Component.translatable("message.diligentstalker.record_success")
+                                    .withStyle(ChatFormatting.GREEN),
+                            true
+                    );
                 }
             } else {
                 if (!level().isClientSide) {
@@ -259,14 +265,19 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
         return 0;
     }
 
-    protected void addAdditionalSaveData(CompoundTag p_219908_) {
-        super.addAdditionalSaveData(p_219908_);
-        this.addChestVehicleSaveData(p_219908_);
+    @Override
+    protected void addAdditionalSaveData(CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
+
+        HolderLookup.Provider provider = this.level().registryAccess();
+
+        this.addChestVehicleSaveData(tag, provider);
     }
 
-    protected void readAdditionalSaveData(CompoundTag p_219901_) {
-        super.readAdditionalSaveData(p_219901_);
-        this.readChestVehicleSaveData(p_219901_);
+    @Override
+    protected void readAdditionalSaveData(CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+        this.readChestVehicleSaveData(tag, this.level().registryAccess());
     }
 
     public void destroy(DamageSource p_219892_) {
@@ -337,12 +348,13 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
     }
 
     @Nullable
-    public ResourceLocation getLootTable() {
+    public ResourceKey<LootTable> getLootTable() {
         return this.lootTable;
     }
 
-    public void setLootTable(@Nullable ResourceLocation p_219890_) {
-        this.lootTable = p_219890_;
+    @Override
+    public void setLootTable(@Nullable ResourceKey<LootTable> resourceKey) {
+        this.lootTable = resourceKey;
     }
 
     public long getLootTableSeed() {

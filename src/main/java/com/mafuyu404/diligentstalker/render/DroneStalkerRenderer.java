@@ -14,12 +14,12 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 
 public class DroneStalkerRenderer extends EntityRenderer<DroneStalkerEntity> {
-    private static final ResourceLocation TOP_TEXTURE = new ResourceLocation(DiligentStalker.MODID, "textures/entity/drone_stalker_top.png");
-    private static final ResourceLocation BOTTOM_TEXTURE = new ResourceLocation(DiligentStalker.MODID, "textures/entity/drone_stalker_bottom.png");
-    private static final ResourceLocation FORWARD_TEXTURE = new ResourceLocation(DiligentStalker.MODID, "textures/entity/drone_stalker_forward.png");
-    private static final ResourceLocation SIDE_TEXTURE = new ResourceLocation(DiligentStalker.MODID, "textures/entity/drone_stalker_side.png");
+    private static final ResourceLocation TOP_TEXTURE = ResourceLocation.fromNamespaceAndPath(DiligentStalker.MODID, "textures/entity/drone_stalker_top.png");
+    private static final ResourceLocation BOTTOM_TEXTURE = ResourceLocation.fromNamespaceAndPath(DiligentStalker.MODID, "textures/entity/drone_stalker_bottom.png");
+    private static final ResourceLocation FORWARD_TEXTURE = ResourceLocation.fromNamespaceAndPath(DiligentStalker.MODID, "textures/entity/drone_stalker_forward.png");
+    private static final ResourceLocation SIDE_TEXTURE = ResourceLocation.fromNamespaceAndPath(DiligentStalker.MODID, "textures/entity/drone_stalker_side.png");
 
-    public static final ModelLayerLocation LAYER = new ModelLayerLocation(new ResourceLocation(DiligentStalker.MODID, "drone_stalker"), "main");
+    public static final ModelLayerLocation LAYER = new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(DiligentStalker.MODID, "drone_stalker"), "main");
     private final DroneStalkerModel model;
 
     public DroneStalkerRenderer(EntityRendererProvider.Context context) {
@@ -34,29 +34,30 @@ public class DroneStalkerRenderer extends EntityRenderer<DroneStalkerEntity> {
         poseStack.scale(0.8f, 0.8f, 0.8f);
         poseStack.translate(-0.5, 0, -0.5);
 
-        // 渲染顶面
+        // 顶面
         VertexConsumer consumer = buffer.getBuffer(RenderType.entityCutout(TOP_TEXTURE));
-        this.model.top.render(poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
+        this.model.top.render(poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY);
 
-        // 渲染底面
+        // 底面
         consumer = buffer.getBuffer(RenderType.entityCutout(BOTTOM_TEXTURE));
-        this.model.bottom.render(poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
+        this.model.bottom.render(poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY);
 
-        // 渲染北面（前）
+        // 北面（前）
         consumer = buffer.getBuffer(RenderType.entityCutout(FORWARD_TEXTURE));
-        this.model.north.render(poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
+        this.model.north.render(poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY);
 
-        // 渲染南面（后）
+        // 南面（后）
         consumer = buffer.getBuffer(RenderType.entityCutout(SIDE_TEXTURE));
-        this.model.south.render(poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
+        this.model.south.render(poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY);
 
-        // 渲染东面和西面（侧边）
+        // 东西两侧
         consumer = buffer.getBuffer(RenderType.entityCutout(SIDE_TEXTURE));
-        this.model.east.render(poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
-        this.model.west.render(poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
+        this.model.east.render(poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY);
+        this.model.west.render(poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY);
 
         poseStack.popPose();
     }
+
 
     @Override
     public ResourceLocation getTextureLocation(DroneStalkerEntity entity) {

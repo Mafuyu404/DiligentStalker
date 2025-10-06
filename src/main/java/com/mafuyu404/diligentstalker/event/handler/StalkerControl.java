@@ -5,7 +5,7 @@ import com.mafuyu404.diligentstalker.entity.ArrowStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.VoidStalkerEntity;
 import com.mafuyu404.diligentstalker.event.client.MouseCallbacks;
-import com.mafuyu404.diligentstalker.data.ModComponents;
+import com.mafuyu404.diligentstalker.component.ModComponents;
 import com.mafuyu404.diligentstalker.init.NetworkHandler;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.item.StalkerCoreItem;
@@ -59,7 +59,10 @@ public class StalkerControl {
         if (screen) return;
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return;
-
+    
+        // 检查待连接的实体
+        ClientStalkerUtil.checkPendingConnect();
+    
         ClientLevel level = player.clientLevel;
         for (Entity entity : level.entitiesForRendering()) {
             if (ClientStalkerUtil.matchConnectingTarget(entity)) {
@@ -68,7 +71,7 @@ public class StalkerControl {
                 break;
             }
         }
-
+    
         Entity stalker = ClientStalkerUtil.getLocalStalker();
         if (stalker != null) {
             ClientStalkerUtil.setVisualCenter(null);
@@ -84,16 +87,16 @@ public class StalkerControl {
             }
         }
 
-        if (KeyBindings.DISCONNECT.isDown()) {
+        if (KeyBindings.DISCONNECT.consumeClick()) {
             Player p = Minecraft.getInstance().player;
             if (Stalker.hasInstanceOf(p))
                 Stalker.getInstanceOf(p).disconnect();
         }
-        if (KeyBindings.VIEW.isDown()) {
+        if (KeyBindings.VIEW.consumeClick()) {
             Entity s = ClientStalkerUtil.getLocalStalker();
             if (s != null) ControllableUtils.switchCameraState(s);
         }
-        if (KeyBindings.CONTROL.isDown()) {
+        if (KeyBindings.CONTROL.consumeClick()) {
             Entity s = ClientStalkerUtil.getLocalStalker();
             if (s != null) ControllableUtils.turnActionControlling(s);
         }
@@ -148,7 +151,7 @@ public class StalkerControl {
             Vec3 viewVector = StalkerUtil.calculateViewVector(xRot, yRot);
             BlockHitResult traceResult = StalkerUtil.rayTraceBlocks(player.level(), player, getCameraPosition(), viewVector, 4);
             if (traceResult.getType() == HitResult.Type.BLOCK) {
-                NetworkHandler.sendToServer(NetworkHandler.RCLICK_BLOCK_PACKET, new RClickBlockPacket(getCameraPosition(), viewVector));
+                NetworkHandler.sendToServer(new RClickBlockPacket(getCameraPosition(), viewVector));
                 RightClickBlock(player, getCameraPosition(), viewVector);
             }
         }
@@ -190,7 +193,7 @@ public class StalkerControl {
             }
         }
         ModComponents.STALKER_DATA.get(player).getStalkerData().put(ControllableUtils.CONTROL_INPUT_KEY, input);
-        NetworkHandler.sendToServer(NetworkHandler.ENTITY_DATA_PACKET, new EntityDataPacket(player.getId(), ModComponents.STALKER_DATA.get(player).getStalkerData()));
+        NetworkHandler.sendToServer(new EntityDataPacket(player.getId(), ModComponents.STALKER_DATA.get(player).getStalkerData()));
     }
 
     public static void RightClickBlock(Player player, Vec3 position, Vec3 viewVec) {

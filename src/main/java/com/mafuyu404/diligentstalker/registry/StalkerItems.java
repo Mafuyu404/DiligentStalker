@@ -2,7 +2,6 @@ package com.mafuyu404.diligentstalker.registry;
 
 import com.mafuyu404.diligentstalker.DiligentStalker;
 import com.mafuyu404.diligentstalker.item.*;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -21,37 +20,37 @@ public class StalkerItems {
     public static void register() {
         CAMERA_STALKER = Registry.register(
                 BuiltInRegistries.ITEM,
-                new ResourceLocation(DiligentStalker.MODID, "camera_stalker"),
-                new BlockItem(StalkerBlocks.CAMERA_STALKER, new FabricItemSettings())
+                ResourceLocation.fromNamespaceAndPath(DiligentStalker.MODID, "camera_stalker"),
+                new BlockItem(StalkerBlocks.CAMERA_STALKER, new Item.Properties())
         );
 
         DRONE_STALKER = Registry.register(
                 BuiltInRegistries.ITEM,
-                new ResourceLocation(DiligentStalker.MODID, "drone_stalker"),
+                ResourceLocation.fromNamespaceAndPath(DiligentStalker.MODID, "drone_stalker"),
                 new DroneStalkerItem()
         );
 
         STALKER_MASTER = Registry.register(
                 BuiltInRegistries.ITEM,
-                new ResourceLocation(DiligentStalker.MODID, "stalker_master"),
+                ResourceLocation.fromNamespaceAndPath(DiligentStalker.MODID, "stalker_master"),
                 new StalkerMasterItem()
         );
 
         ARROW_STALKER = Registry.register(
                 BuiltInRegistries.ITEM,
-                new ResourceLocation(DiligentStalker.MODID, "arrow_stalker"),
+                ResourceLocation.fromNamespaceAndPath(DiligentStalker.MODID, "arrow_stalker"),
                 new ArrowStalkerItem()
         );
 
         VOID_STALKER = Registry.register(
                 BuiltInRegistries.ITEM,
-                new ResourceLocation(DiligentStalker.MODID, "void_stalker"),
+                ResourceLocation.fromNamespaceAndPath(DiligentStalker.MODID, "void_stalker"),
                 new VoidStalkerItem()
         );
 
         STALKER_CORE = Registry.register(
                 BuiltInRegistries.ITEM,
-                new ResourceLocation(DiligentStalker.MODID, "stalker_core"),
+                ResourceLocation.fromNamespaceAndPath(DiligentStalker.MODID, "stalker_core"),
                 new StalkerCoreItem()
         );
     }

@@ -8,7 +8,7 @@ import net.minecraft.world.entity.projectile.AbstractArrow;
 
 public class ArrowStalkerRender extends ArrowRenderer<AbstractArrow> {
 
-    public static final ResourceLocation TEXTURE = new ResourceLocation(DiligentStalker.MODID, "textures/entity/arrow_stalker.png");
+    public static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(DiligentStalker.MODID, "textures/entity/arrow_stalker.png");
 
     public ArrowStalkerRender(EntityRendererProvider.Context ctx) {
 

@@ -1,4 +1,4 @@
-package com.mafuyu404.diligentstalker.mixin;
+package com.mafuyu404.diligentstalker.mixin.client;
 
 import com.mafuyu404.diligentstalker.init.Stalker;
 import net.minecraft.client.Minecraft;
@@ -15,7 +15,12 @@ public class MinecraftMixin {
     private void modifyCameraEntity(CallbackInfoReturnable<Entity> cir) {
         Player player = Minecraft.getInstance().player;
         if (Stalker.hasInstanceOf(player)) {
-            cir.setReturnValue(Stalker.getInstanceOf(player).getStalker());
+            Entity stalker = Stalker.getInstanceOf(player).getStalker();
+            // 只有当 stalker 不为 null 时才设置返回值
+            if (stalker != null) {
+                cir.setReturnValue(stalker);
+            }
+            // 如果 stalker 为 null，让原方法继续执行，返回默认的相机实体（通常是玩家）
         }
     }
 }

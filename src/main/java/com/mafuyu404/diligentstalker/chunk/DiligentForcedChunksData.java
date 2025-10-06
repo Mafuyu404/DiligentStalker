@@ -5,18 +5,20 @@ import com.mafuyu404.diligentstalker.chunk.DiligentChunkManager.TicketTracker;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.util.datafix.DataFixTypes;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 
+//TODO 区块加载嫌疑3号，有待重构
 public final class DiligentForcedChunksData extends SavedData {
     public static final String SAVE_ID = "diligent_forced";
 
@@ -26,7 +28,11 @@ public final class DiligentForcedChunksData extends SavedData {
     public DiligentChunkManager.TicketTracker<BlockPos> getBlockForcedChunks() { return blockForcedChunks; }
     public DiligentChunkManager.TicketTracker<UUID> getEntityForcedChunks() { return entityForcedChunks; }
 
-    public static DiligentForcedChunksData load(CompoundTag nbt) {
+    public static SavedData.Factory<DiligentForcedChunksData> factory() {
+        return new SavedData.Factory<>(DiligentForcedChunksData::new, DiligentForcedChunksData::load, DataFixTypes.SAVED_DATA_FORCED_CHUNKS);
+    }
+
+    public static DiligentForcedChunksData load(CompoundTag nbt, HolderLookup.Provider provider) {
         DiligentForcedChunksData data = new DiligentForcedChunksData();
         readForced(nbt, data.blockForcedChunks, true);
         readForced(nbt, data.entityForcedChunks, false);
@@ -34,7 +40,7 @@ public final class DiligentForcedChunksData extends SavedData {
     }
 
     @Override
-    public CompoundTag save(CompoundTag nbt) {
+    public CompoundTag save(CompoundTag nbt, HolderLookup.Provider provider) {
         writeForced(nbt, blockForcedChunks, true);
         writeForced(nbt, entityForcedChunks, false);
         return nbt;
@@ -115,10 +121,11 @@ public final class DiligentForcedChunksData extends SavedData {
                                    Map<TicketOwner<BlockPos>, LongSet> out) {
         ListTag forcedBlocks = modEntry.getList(key, Tag.TAG_COMPOUND);
         for (int k = 0; k < forcedBlocks.size(); k++) {
-            BlockPos pos = NbtUtils.readBlockPos(forcedBlocks.getCompound(k));
+            BlockPos pos = readBlockPos(forcedBlocks.getCompound(k));
             out.computeIfAbsent(new TicketOwner<>(modId, pos), o -> new LongOpenHashSet()).add(chunkPos);
         }
     }
+
     private static void readEntities(String modId,
                                      long chunkPos,
                                      CompoundTag modEntry,
@@ -129,5 +136,9 @@ public final class DiligentForcedChunksData extends SavedData {
             UUID uuid = NbtUtils.loadUUID(uuidTag);
             out.computeIfAbsent(new TicketOwner<>(modId, uuid), o -> new LongOpenHashSet()).add(chunkPos);
         }
+    }
+
+    private static BlockPos readBlockPos(CompoundTag tag) {
+        return new BlockPos(tag.getInt("X"), tag.getInt("Y"), tag.getInt("Z"));
     }
 }

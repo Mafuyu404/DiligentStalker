@@ -1,12 +1,13 @@
 package com.mafuyu404.diligentstalker.event.handler;
 
 import com.mafuyu404.diligentstalker.DiligentStalker;
+import com.mafuyu404.diligentstalker.data.StalkerDataComponents;
 import com.mafuyu404.diligentstalker.entity.ArrowStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.CameraStalkerBlockEntity;
 import com.mafuyu404.diligentstalker.entity.VoidStalkerEntity;
 import com.mafuyu404.diligentstalker.event.EntityDeathCallback;
 import com.mafuyu404.diligentstalker.init.ChunkLoader;
-import com.mafuyu404.diligentstalker.data.ModComponents;
+import com.mafuyu404.diligentstalker.component.ModComponents;
 import com.mafuyu404.diligentstalker.init.NetworkHandler;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.item.StalkerMasterItem;
@@ -21,6 +22,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -37,6 +39,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -76,7 +79,7 @@ public class StalkerManage {
     }
 
     private static void onPlayerTick(ServerPlayer player) {
-        if (player.tickCount % 20 == 0) syncMasterTag(player);
+        if (player.tickCount % 20 == 0) syncMasterComponent(player);
         if (!Stalker.hasInstanceOf(player)) {
             return;
         }
@@ -136,61 +139,59 @@ public class StalkerManage {
         ChunkLoader.init();
     }
 
-    private static void syncMasterTag(ServerPlayer player) {
-        String levelKey = player.level().dimension().toString();
+    private static void syncMasterComponent(ServerPlayer player) {
+        String levelKey = player.serverLevel().dimension().location().toString();
+
         player.getInventory().items.forEach(itemStack -> {
             if (itemStack.getItem() instanceof StalkerMasterItem) {
-                CompoundTag tag = itemStack.getOrCreateTag();
-                if (!tag.contains("StalkerId")) return;
-                UUID entityUUID = tag.getUUID("StalkerId");
+                UUID entityUUID = itemStack.get(StalkerDataComponents.STALKER_ID);
+                if (entityUUID == null) return;
+
                 if (DronePosition.containsKey(entityUUID)) {
                     BlockPos pos = DronePosition.get(entityUUID).getValue();
-                    tag.putIntArray("StalkerPosition", new int[]{pos.getX(), pos.getY(), pos.getZ()});
-                } else if (tag.contains("StalkerPosition")) {
-                    int[] pos = tag.getIntArray("StalkerPosition");
-                    DronePosition.put(entityUUID, new Map.Entry<>() {
-                        @Override
-                        public String getKey() {
-                            return levelKey;
-                        }
-
-                        @Override
-                        public BlockPos getValue() {
-                            return new BlockPos(pos[0], pos[1], pos[2]);
-                        }
-
-                        @Override
-                        public BlockPos setValue(BlockPos value) {
-                            return null;
-                        }
-                    });
+                    itemStack.set(StalkerDataComponents.STALKER_POSITION, pos);
+                } else {
+                    BlockPos pos = itemStack.get(StalkerDataComponents.STALKER_POSITION);
+                    if (pos != null) {
+                        DronePosition.put(entityUUID, new AbstractMap.SimpleEntry<>(levelKey, pos));
+                    }
                 }
             }
         });
     }
 
+
     public static InteractionResult onUseBlock(Player player, Level level, InteractionHand hand, BlockHitResult hit) {
         BlockPos pos = hit.getBlockPos();
+
         if (!level.isClientSide && level.getBlockEntity(pos) instanceof CameraStalkerBlockEntity be) {
             UUID entityUUID = be.getCameraStalkerUUID();
             if (entityUUID != null && hand == InteractionHand.MAIN_HAND) {
                 Entity entity = ((ServerLevel) level).getEntity(entityUUID);
                 ItemStack itemStack = player.getMainHandItem();
+
                 if (player.isShiftKeyDown() && itemStack.is(StalkerItems.STALKER_MASTER)) {
-                    CompoundTag tag = itemStack.getOrCreateTag();
-                    if (!tag.contains("StalkerId") || !tag.getUUID("StalkerId").equals(entityUUID)) {
-                        tag.putUUID("StalkerId", entityUUID);
-                        tag.putIntArray("StalkerPosition", new int[]{pos.getX(), pos.getY(), pos.getZ()});
+                    UUID oldId = itemStack.get(StalkerDataComponents.STALKER_ID);
+
+                    if (oldId == null || !oldId.equals(entityUUID)) {
+                        itemStack.set(StalkerDataComponents.STALKER_ID, entityUUID);
+                        itemStack.set(StalkerDataComponents.STALKER_POSITION, pos);
+
                         if (player instanceof ServerPlayer sp) {
-                            sp.displayClientMessage(Component.translatable("item.diligentstalker.stalker_master.record_success").withStyle(net.minecraft.ChatFormatting.GREEN), true);
+                            sp.displayClientMessage(
+                                    Component.translatable("item.diligentstalker.stalker_master.record_success")
+                                            .withStyle(ChatFormatting.GREEN),
+                                    true
+                            );
                         }
                     }
-                } else if (player instanceof ServerPlayer sp) {
-                    NetworkHandler.sendToClient(sp, NetworkHandler.CLIENT_STALKER_PACKET, new ClientStalkerPacket(entity.getId()));
+                } else if (player instanceof ServerPlayer sp && entity != null) {
+                    NetworkHandler.sendToClient(sp, new ClientStalkerPacket(entity.getId()));
                 }
             }
             return InteractionResult.SUCCESS;
         }
+
         return InteractionResult.PASS;
     }
 

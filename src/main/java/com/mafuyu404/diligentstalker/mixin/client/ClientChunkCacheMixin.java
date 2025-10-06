@@ -1,4 +1,4 @@
-package com.mafuyu404.diligentstalker.mixin;
+package com.mafuyu404.diligentstalker.mixin.client;
 
 import net.minecraft.client.multiplayer.ClientChunkCache;
 import org.slf4j.Logger;

@@ -15,7 +15,7 @@ public class StalkerCreativeModeTab {
     public static void register() {
         STALKER_GROUP = Registry.register(
                 BuiltInRegistries.CREATIVE_MODE_TAB,
-                new ResourceLocation(DiligentStalker.MODID, "diligentstalker"),
+                ResourceLocation.fromNamespaceAndPath(DiligentStalker.MODID, "diligentstalker"),
                 FabricItemGroup.builder()
                         .title(Component.translatable("itemGroup.tab.diligentstalker"))
                         .icon(() -> new ItemStack(StalkerItems.STALKER_MASTER))

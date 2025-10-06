@@ -15,7 +15,8 @@ public class StalkerCoreItem extends Item {
         super(new Properties());
     }
 
-    public void appendHoverText(ItemStack itemStack, @Nullable Level level, List<Component> result, TooltipFlag p_41214_) {
-        result.add(Component.translatable("item.diligentstalker.stalker_core.intro").withStyle(ChatFormatting.GOLD));
+    @Override
+    public void appendHoverText(ItemStack itemStack, TooltipContext tooltipContext, List<Component> list, TooltipFlag tooltipFlag) {
+        list.add(Component.translatable("item.diligentstalker.stalker_core.intro").withStyle(ChatFormatting.GOLD));
     }
 }
