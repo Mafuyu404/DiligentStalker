@@ -6,8 +6,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 
 public class CameraStalkerEntity extends Entity {
-    public CameraStalkerEntity(EntityType<?> type, Level level) {
-        super(type, level);
+    public CameraStalkerEntity(EntityType<?> p_19870_, Level p_19871_) {
+        super(p_19870_, p_19871_);
         this.noPhysics = true;
         this.setInvisible(true);
     }
@@ -28,12 +28,12 @@ public class CameraStalkerEntity extends Entity {
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundTag compoundTag) {
+    protected void readAdditionalSaveData(CompoundTag p_20052_) {
 
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundTag compoundTag) {
+    protected void addAdditionalSaveData(CompoundTag p_20139_) {
 
     }
 }

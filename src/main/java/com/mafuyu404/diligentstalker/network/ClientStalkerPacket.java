@@ -1,40 +1,27 @@
 package com.mafuyu404.diligentstalker.network;
 
-import com.mafuyu404.diligentstalker.init.Stalker;
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import com.mafuyu404.diligentstalker.utils.ClientStalkerUtil;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.entity.Entity;
 
-public class ClientStalkerPacket {
+public class ClientStalkerPacket implements Packet {
     private final int entityId;
 
     public ClientStalkerPacket(int entityId) {
         this.entityId = entityId;
     }
 
-    public static void encode(ClientStalkerPacket msg, FriendlyByteBuf buffer) {
-        buffer.writeInt(msg.entityId);
+    @Override
+    public void encode(FriendlyByteBuf buf) {
+        buf.writeInt(entityId);
     }
 
-    public static ClientStalkerPacket decode(FriendlyByteBuf buffer) {
-        return new ClientStalkerPacket(buffer.readInt());
+    public static ClientStalkerPacket decode(FriendlyByteBuf buf) {
+        return new ClientStalkerPacket(buf.readInt());
     }
 
-    public static void handle(Minecraft client, ClientPacketListener handler, FriendlyByteBuf buf, PacketSender responseSender) {
-        ClientStalkerPacket msg = decode(buf);
-        client.execute(() -> {
-            ClientLevel level = client.level;
-            LocalPlayer player = client.player;
-            if (level == null || player == null) return;
 
-            Entity entity = level.getEntity(msg.entityId);
-            if (entity != null) {
-                Stalker.connect(player, entity);
-            }
-        });
+    public static void handle(ClientStalkerPacket msg, Minecraft client) {
+        client.execute(() -> ClientStalkerUtil.clientConnect(msg.entityId));
     }
 }

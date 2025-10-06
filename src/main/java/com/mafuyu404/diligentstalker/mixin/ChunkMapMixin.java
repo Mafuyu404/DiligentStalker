@@ -1,11 +1,10 @@
 package com.mafuyu404.diligentstalker.mixin;
 
 import com.mafuyu404.diligentstalker.api.IChunkMap;
-import com.mafuyu404.diligentstalker.api.PersistentDataHolder;
+import com.mafuyu404.diligentstalker.data.ModComponents;
 import com.mafuyu404.diligentstalker.init.Stalker;
-import com.mafuyu404.diligentstalker.init.Tools;
 import com.mafuyu404.diligentstalker.registry.ModConfig;
-import net.minecraft.core.BlockPos;
+import com.mafuyu404.diligentstalker.utils.ServerStalkerUtil;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
 import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.ChunkMap;
@@ -20,7 +19,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import javax.annotation.Nullable;
-import java.util.Map;
 
 @Mixin(value = ChunkMap.class)
 public abstract class ChunkMapMixin implements IChunkMap {
@@ -29,22 +27,20 @@ public abstract class ChunkMapMixin implements IChunkMap {
     protected abstract ChunkHolder getVisibleChunkIfPresent(long p_140328_);
 
     @Shadow
-    protected abstract void playerLoadedChunk(ServerPlayer player, MutableObject<ClientboundLevelChunkWithLightPacket> object, LevelChunk chunk);
+    protected abstract void playerLoadedChunk(ServerPlayer p_183761_, MutableObject<ClientboundLevelChunkWithLightPacket> p_183762_, LevelChunk p_183763_);
 
     @Inject(method = "move", at = @At("HEAD"), cancellable = true)
     private void wwaaa(ServerPlayer player, CallbackInfo ci) {
-        Map.Entry<String, BlockPos> entry = Tools.entryOfUsingStalkerMaster(player);
-        if (entry != null) {
-            loadLevelChunk(player, new ChunkPos(entry.getValue()));
+        if (ServerStalkerUtil.hasVisualCenter(player)) {
+            loadLevelChunk(player, new ChunkPos(ServerStalkerUtil.getVisualCenter(player)));
         }
         ChunkPos center = null;
         if (Stalker.hasInstanceOf(player)) {
             center = Stalker.getInstanceOf(player).getStalker().chunkPosition();
         }
-        PersistentDataHolder holder = (PersistentDataHolder) player;
-        if (holder.getPersistentData().getBoolean("LoadingCacheChunk")) {
+        if (ModComponents.STALKER_DATA.get(player).getStalkerData().getBoolean("LoadingCacheChunk")) {
             center = player.chunkPosition();
-            holder.getPersistentData().putBoolean("LoadingCacheChunk", false);
+            ModComponents.STALKER_DATA.get(player).getStalkerData().putBoolean("LoadingCacheChunk", false);
         }
         if (center == null) return;
         int radius = ModConfig.getRenderRadiusNormal();

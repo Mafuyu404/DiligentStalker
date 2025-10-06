@@ -1,7 +1,9 @@
 package com.mafuyu404.diligentstalker.init;
 
-import com.mafuyu404.diligentstalker.event.StalkerControl;
+import com.mafuyu404.diligentstalker.event.StalkerEvents;
+import com.mafuyu404.diligentstalker.event.handler.StalkerControl;
 import com.mafuyu404.diligentstalker.network.StalkerSyncPacket;
+import com.mafuyu404.diligentstalker.utils.ClientStalkerUtil;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -32,8 +34,12 @@ public class Stalker {
 
     public void disconnect() {
         if (level.isClientSide) {
-            NetworkHandler.sendToServer(new StalkerSyncPacket(this.stalkerId, false));
+            NetworkHandler.sendToServer(NetworkHandler.STALKER_SYNC_PACKET, new StalkerSyncPacket(this.stalkerId, false));
+            ClientStalkerUtil.cancelRemoteConnect();
         }
+
+        StalkerEvents.DISCONNECT.invoker().onDisconnect(getPlayer(), getStalker());
+
         InstanceMap.remove(playerUUID);
         StalkerToPlayerMap.remove(stalkerId);
     }
@@ -43,8 +49,12 @@ public class Stalker {
         if (hasInstanceOf(player) || hasInstanceOf(stalker)) return null;
         if (player.level().isClientSide) {
             StalkerControl.connect(player, stalker);
-            NetworkHandler.sendToServer(new StalkerSyncPacket(stalker.getId(), true));
+            NetworkHandler.sendToServer(NetworkHandler.STALKER_SYNC_PACKET, new StalkerSyncPacket(stalker.getId(), true));
+            ClientStalkerUtil.cancelRemoteConnect();
         }
+
+        StalkerEvents.CONNECT.invoker().onConnect(player, stalker);
+
         InstanceMap.put(player.getUUID(), stalker.getId());
         StalkerToPlayerMap.put(stalker.getId(), player.getUUID());
         return new Stalker(player.getUUID(), stalker.getId(), player.level());

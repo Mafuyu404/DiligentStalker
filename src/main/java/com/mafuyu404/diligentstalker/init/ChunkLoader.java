@@ -1,34 +1,55 @@
 package com.mafuyu404.diligentstalker.init;
 
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.world.level.ChunkPos;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ChunkLoader {
-    // 存储每个维度中加载的区块
-    private static final HashMap<String, ArrayList<ChunkPos>> loaders = new HashMap<>();
+    private static HashMap<ResourceLocation, ChunkLoader> dimension = new HashMap<>();
 
-    public static void add(ServerLevel level, ChunkPos center) {
-        String key = level.dimension().toString();
-        if (!loaders.containsKey(key)) loaders.put(key, new ArrayList<>());
-        if (!loaders.get(key).contains(center)) {
-            loaders.get(key).add(center);
-            level.setChunkForced(center.x, center.z, true);
+    public static ChunkLoader of(ServerLevel serverLevel) {
+        ResourceLocation id = serverLevel.dimension().location();
+        if (!dimension.containsKey(id)) dimension.put(id, new ChunkLoader(serverLevel));
+        return dimension.get(id);
+    }
+
+    public static void init() {
+        dimension = new HashMap<>();
+    }
+
+    private final ServerLevel level;
+    private final Set<ChunkPos> forcedChunks = new HashSet<>();
+
+    public ChunkLoader(ServerLevel level) {
+        this.level = level;
+    }
+
+    public void addChunk(ChunkPos chunkPos) {
+        if (!forcedChunks.contains(chunkPos)) {
+            level.getChunkSource().addRegionTicket(
+                    TicketType.FORCED,
+                    chunkPos,
+                    2, // 加载半径（0=单区块），不然会动不了
+                    chunkPos // 标识
+            );
+            forcedChunks.add(chunkPos);
         }
     }
 
-    public static void removeAll(ServerLevel level) {
-        String key = level.dimension().toString();
-        if (!loaders.containsKey(key)) return;
-        if (loaders.get(key).isEmpty()) return;
-        Iterator<ChunkPos> iterator = loaders.get(key).iterator();
-        while (iterator.hasNext()) {
-            ChunkPos center = iterator.next();
-            iterator.remove();
-            level.setChunkForced(center.x, center.z, false);
+    public void removeAll() {
+        for (ChunkPos chunkPos : forcedChunks) {
+            level.getChunkSource().removeRegionTicket(
+                    TicketType.FORCED,
+                    chunkPos,
+                    2,
+                    chunkPos
+            );
         }
+        forcedChunks.clear();
     }
 }

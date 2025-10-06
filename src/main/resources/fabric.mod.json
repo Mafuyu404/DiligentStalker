@@ -14,10 +14,19 @@
   "environment": "*",
   "entrypoints": {
     "client": [
-      "com.mafuyu404.diligentstalker.event.ClientSetup"
+      "com.mafuyu404.diligentstalker.event.handler.ClientSetup"
     ],
     "main": [
       "com.mafuyu404.diligentstalker.DiligentStalker"
+    ],
+    "cardinal-components-entity": [
+      "com.mafuyu404.diligentstalker.data.ModComponents"
+    ]
+  },
+  "custom": {
+    "cardinal-components": [
+      "diligentstalker:controllable_storage",
+      "diligentstalker:stalker_data"
     ]
   },
   "mixins": [

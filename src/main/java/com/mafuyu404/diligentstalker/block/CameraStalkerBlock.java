@@ -24,8 +24,8 @@ import java.util.UUID;
 
 public class CameraStalkerBlock extends BaseEntityBlock {
 
-    public CameraStalkerBlock(Properties properties) {
-        super(properties.strength(1f));
+    public CameraStalkerBlock(Properties p_49795_) {
+        super(p_49795_.strength(1f));
     }
 
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult p_49727_) {
@@ -65,8 +65,8 @@ public class CameraStalkerBlock extends BaseEntityBlock {
     }
 
     @Override
-    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new CameraStalkerBlockEntity(pos, state);
+    public @Nullable BlockEntity newBlockEntity(BlockPos p_153215_, BlockState p_153216_) {
+        return new CameraStalkerBlockEntity(p_153215_, p_153216_);
     }
 
     @Override

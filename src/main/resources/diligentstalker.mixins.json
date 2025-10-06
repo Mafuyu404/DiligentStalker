@@ -10,19 +10,23 @@
     "ChunkMapMixin",
     "ClientboundLevelChunkWithLightPacketMixin",
     "EntityMixin",
-    "ExperienceBarMixin",
     "InventoryAccessor",
-    "PlayerMixin"
+    "LivingEntityMixin",
+    "MinecraftServerMixin",
+    "PlayerMixin",
+    "ServerLevelMixin"
   ],
   "client": [
     "CameraMixin",
     "ClientChunkCache$StorageMixin",
+    "ClientChunkCacheMixin",
     "ClientPacketListenerMixin",
     "GameRendererMixin",
     "LevelRendererMixin",
     "MinecraftMixin",
-    "MouseMixin",
-    "PlayerRendererMixin"
+    "PlayerRendererMixin",
+    "client.GuiMixin",
+    "client.MouseHandlerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

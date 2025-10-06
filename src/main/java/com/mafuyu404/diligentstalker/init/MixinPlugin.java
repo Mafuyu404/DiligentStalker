@@ -33,6 +33,7 @@ public class MixinPlugin implements IMixinConfigPlugin {
 
     }
 
+    // 其他方法留空或默认实现
     @Override
     public void onLoad(String mixinPackage) {
     }

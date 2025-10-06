@@ -1,104 +1,185 @@
 package com.mafuyu404.diligentstalker.entity;
 
+import com.mafuyu404.diligentstalker.api.IControllable;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.registry.StalkerItems;
-import net.minecraft.advancements.CriteriaTriggers;
+import com.mafuyu404.diligentstalker.storage.ContainerStorageAdapter;
+import com.mafuyu404.diligentstalker.utils.ControllableUtils;
+import com.mafuyu404.diligentstalker.utils.StalkerUtil;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
-import net.minecraft.world.*;
+import net.minecraft.world.Containers;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.HasCustomInventoryScreen;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.monster.piglin.PiglinAi;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.Boat;
+import net.minecraft.world.entity.vehicle.ContainerEntity;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.level.storage.loot.LootParams;
-import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.world.phys.Vec3;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
-public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen, Container {
+import static com.mafuyu404.diligentstalker.utils.StalkerUtil.limitSpeed;
+
+public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen, ContainerEntity, IControllable {
     private static final int CONTAINER_SIZE = 27;
     private NonNullList<ItemStack> itemStacks = NonNullList.withSize(CONTAINER_SIZE, ItemStack.EMPTY);
     @Nullable
     private ResourceLocation lootTable;
     private long lootTableSeed;
-    private int fuel = 0;
+    private static final int SIGNAL_RADIUS = 1024;
     private static final int MAX_FUEL = 100;
-    private static final String FUEL_TAG = "DroneFuel";
     private static final int MAX_FUEL_TICK = 720;
     private int fuel_tick = MAX_FUEL_TICK;
     private static final int ITEM_PICKUP_RANGE = 2;
     private int interact_cooldown = 0;
 
-    public DroneStalkerEntity(EntityType<? extends Boat> entityType, Level level) {
-        super(entityType, level);
+    public DroneStalkerEntity(EntityType<? extends Boat> p_219869_, Level level) {
+        super(p_219869_, level);
+        ControllableUtils.setMaxFuel(this, MAX_FUEL);
+        ControllableUtils.setSignalRadius(this, SIGNAL_RADIUS);
     }
 
-    public DroneStalkerEntity(Level level, double x, double y, double z) {
-        this(EntityType.CHEST_BOAT, level);
-        this.setPos(x, y, z);
-        this.xo = x;
-        this.yo = y;
-        this.zo = z;
+    public DroneStalkerEntity(Level p_219872_, double p_219873_, double p_219874_, double p_219875_) {
+        this(EntityType.CHEST_BOAT, p_219872_);
+        this.setPos(p_219873_, p_219874_, p_219875_);
+        this.xo = p_219873_;
+        this.yo = p_219874_;
+        this.zo = p_219875_;
+    }
+
+    @Override
+    public void pushAdditionalControl(CompoundTag input) {
+
+    }
+
+    @Override
+    public Vec3 tickServerControl(CompoundTag input, Vec3 motion) {
+        float xRot = input.getFloat("xRot");
+        float yRot = input.getFloat("yRot");
+        float speed = 0.45f;
+        Vec3 forward = Vec3.ZERO;
+        Vec3 right = Vec3.ZERO;
+        Vec3 top = Vec3.ZERO;
+        Vec3 result = Vec3.ZERO;
+        if (input.getBoolean("Up") || input.getBoolean("Down")) {
+            float x = 0;
+            float z = 0;
+            Vec3 lookAngle = calculateViewVector(xRot, yRot);
+            double xz = Math.sqrt(lookAngle.x * lookAngle.x + lookAngle.z * lookAngle.z);
+            float forwardX = (float) (lookAngle.x / xz);
+            float forwardZ = (float) (lookAngle.z / xz);
+            if (input.getBoolean("Up")) {
+                x += forwardX * speed;
+                z += forwardZ * speed;
+            }
+            if (input.getBoolean("Down")) {
+                x -= forwardX * speed;
+                z -= forwardZ * speed;
+            }
+            forward = limitSpeed(new Vec3(x, 0, z), speed);
+        }
+        if (input.getBoolean("Left") || input.getBoolean("Right")) {
+            float x = 0;
+            float z = 0;
+            Vec3 subAngle = StalkerUtil.calculateViewVector(xRot, yRot - 90);
+            double xz = Math.sqrt(subAngle.x * subAngle.x + subAngle.z * subAngle.z);
+            float forwardX = (float) (subAngle.x / xz);
+            float forwardZ = (float) (subAngle.z / xz);
+            if (input.getBoolean("Left")) {
+                x += forwardX * speed;
+                z += forwardZ * speed;
+            }
+            if (input.getBoolean("Right")) {
+                x -= forwardX * speed;
+                z -= forwardZ * speed;
+            }
+            right = limitSpeed(new Vec3(x, 0, z), speed);
+        }
+        if (input.getBoolean("Jump") || input.getBoolean("Shift")) {
+            float y = 0;
+            if (input.getBoolean("Jump")) {
+                y = speed;
+            }
+            if (input.getBoolean("Shift")) {
+                y = -speed;
+            }
+            top = limitSpeed(new Vec3(0, y, 0), speed);
+        }
+
+        result = result.add(forward).add(right).add(top);
+
+        result = new Vec3(
+                Mth.lerp(0.3f, motion.x, motion.x + result.x),
+                Mth.lerp(0.3f, motion.y, motion.y + result.y),
+                Mth.lerp(0.3f, motion.z, motion.z + result.z)
+        );
+
+        result = limitSpeed(new Vec3(result.x, 0, result.z), speed).add(limitSpeed(new Vec3(0, result.y, 0), speed));
+
+        result = result.scale(0.8);
+
+        return result;
     }
 
     public InteractionResult interact(Player player, InteractionHand hand) {
         if (interact_cooldown > 0) return InteractionResult.FAIL;
         interact_cooldown = 20;
         if (player.isShiftKeyDown()) {
-            ItemStack itemStack = player.getItemInHand(hand);
+            ItemStack itemStack = player.getMainHandItem();
             if (itemStack.is(Items.SUGAR)) {
                 if (!level().isClientSide) {
-                    int needed = MAX_FUEL - this.fuel;
+                    int needed = MAX_FUEL - ControllableUtils.getFuel(this);
                     if (needed > 0) {
                         int toAdd = Math.min(itemStack.getCount(), needed);
-                        setFuel(this.fuel + toAdd);
+                        ControllableUtils.setFuel(this, ControllableUtils.getFuel(this) + toAdd);
                         itemStack.shrink(toAdd);
-                        player.displayClientMessage(Component.translatable("entity.diligentstalker.drone_stalker.fuel_added", toAdd).withStyle(net.minecraft.ChatFormatting.GREEN), true);
+                        player.displayClientMessage(Component.translatable("message.diligentstalker.fuel_added", toAdd).withStyle(ChatFormatting.GREEN), true);
                     } else {
-                        player.displayClientMessage(Component.translatable("entity.diligentstalker.drone_stalker.fuel_full").withStyle(net.minecraft.ChatFormatting.RED), true);
+                        player.displayClientMessage(Component.translatable("message.diligentstalker.fuel_full").withStyle(ChatFormatting.RED), true);
                     }
                 }
                 return InteractionResult.FAIL;
             } else if (itemStack.is(StalkerItems.STALKER_MASTER)) {
                 CompoundTag tag = itemStack.getOrCreateTag();
-                if (!tag.contains("StalkerId") || tag.getUUID("StalkerId") != this.getUUID()) {
-                    tag.putUUID("StalkerId", this.getUUID());
+                if (!tag.contains("StalkerId") || tag.getUUID("StalkerId") != this.uuid) {
+                    tag.putUUID("StalkerId", this.uuid);
                     BlockPos pos = this.blockPosition();
                     tag.putIntArray("StalkerPosition", new int[]{pos.getX(), pos.getY(), pos.getZ()});
-                    player.displayClientMessage(Component.translatable("item.diligentstalker.stalker_master.record_success").withStyle(net.minecraft.ChatFormatting.GREEN), true);
+                    player.displayClientMessage(Component.translatable("message.diligentstalker.record_success").withStyle(ChatFormatting.GREEN), true);
                 }
             } else {
                 if (!level().isClientSide) {
-                    // 在Fabric中实现容器交互
-                    player.openMenu(new SimpleMenuProvider(
-                            (id, inventory, p) -> ChestMenu.threeRows(id, inventory, this),
-                            Component.translatable("container.chest")
-                    ));
-                    this.gameEvent(GameEvent.CONTAINER_OPEN, player);
-                    return InteractionResult.SUCCESS;
+                    InteractionResult interactionresult = this.interactWithContainerVehicle(player);
+                    if (interactionresult.consumesAction()) {
+                        this.gameEvent(GameEvent.CONTAINER_OPEN, player);
+                    }
+                    return interactionresult;
                 }
             }
         }
@@ -115,7 +196,7 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
         } else {
             if (!this.level().isClientSide && this.getDeltaMovement().length() > 0.1) {
                 if (fuel_tick <= 0) {
-                    consumeFuel(1);
+                    ControllableUtils.consumeFuel(this, 1);
                     fuel_tick = MAX_FUEL_TICK;
                 } else fuel_tick -= 1;
             }
@@ -129,30 +210,22 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
                     e -> e.isAlive() && !e.getItem().isEmpty()
             );
             if (!items.isEmpty()) {
+                Storage<ItemVariant> storage = new ContainerStorageAdapter(this);
                 for (ItemEntity item : items) {
-                    ItemStack itemStack = item.getItem();
-                    // 尝试将物品放入容器
-                    boolean added = false;
-                    for (int i = 0; i < this.getContainerSize(); i++) {
-                        ItemStack slotStack = this.getItem(i);
-                        if (slotStack.isEmpty()) {
-                            this.setItem(i, itemStack.copy());
-                            item.discard();
-                            added = true;
-                            break;
-                        } else if (ItemStack.isSameItemSameTags(slotStack, itemStack) && slotStack.getCount() < slotStack.getMaxStackSize()) {
-                            int toAdd = Math.min(itemStack.getCount(), slotStack.getMaxStackSize() - slotStack.getCount());
-                            slotStack.grow(toAdd);
-                            itemStack.shrink(toAdd);
-                            if (itemStack.isEmpty()) {
+                    ItemStack stack = item.getItem();
+                    try (Transaction tx = Transaction.openOuter()) {
+                        long inserted = storage.insert(ItemVariant.of(stack), stack.getCount(), tx);
+                        if (inserted > 0) {
+                            if (inserted >= stack.getCount()) {
                                 item.discard();
-                                added = true;
-                                break;
+                                this.gameEvent(GameEvent.ENTITY_INTERACT, this);
+                            } else {
+                                stack.shrink((int) inserted);
+                                item.setItem(stack);
+                                this.gameEvent(GameEvent.ENTITY_INTERACT, this);
                             }
+                            tx.commit();
                         }
-                    }
-                    if (added) {
-                        this.gameEvent(GameEvent.ENTITY_INTERACT, this);
                     }
                 }
             }
@@ -160,14 +233,15 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
     }
 
     @Override
-    protected void checkFallDamage(double y, boolean onGround, BlockState state, BlockPos pos) {
-        // 不处理掉落伤害
+    protected void checkFallDamage(double p_38307_, boolean p_38308_, BlockState p_38309_, BlockPos p_38310_) {
+
     }
 
     @Override
     public void remove(RemovalReason reason) {
         if (!this.level().isClientSide && reason.shouldDestroy()) {
             Containers.dropContents(this.level(), this, this);
+            int fuel = ControllableUtils.getFuel(this);
             if (fuel > 0) {
                 ItemEntity itementity = new ItemEntity(level(), getX(), getY(), getZ(), new ItemStack(Items.SUGAR, fuel));
                 level().addFreshEntity(itementity);
@@ -176,23 +250,6 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
         super.remove(reason);
     }
 
-    public int getFuel() {
-        return this.fuel;
-    }
-
-    public void setFuel(int amount) {
-        this.fuel = Mth.clamp(amount, 0, MAX_FUEL);
-    }
-
-    public boolean consumeFuel(int amount) {
-        if (this.fuel >= amount) {
-            if (Stalker.hasInstanceOf(this)) {
-                setFuel(this.fuel - amount);
-                return true;
-            }
-        }
-        return false;
-    }
 
     protected float getSinglePassengerXOffset() {
         return 0.15F;
@@ -202,162 +259,81 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
         return 0;
     }
 
-    protected void addAdditionalSaveData(CompoundTag tag) {
-        super.addAdditionalSaveData(tag);
-        tag.putInt(FUEL_TAG, this.fuel);
-        tag.putInt("FuelTick", this.fuel_tick);
-
-        // 保存容器内容
-        if (this.lootTable != null) {
-            tag.putString("LootTable", this.lootTable.toString());
-            if (this.lootTableSeed != 0L) {
-                tag.putLong("LootTableSeed", this.lootTableSeed);
-            }
-        } else {
-            ContainerHelper.saveAllItems(tag, this.itemStacks);
-        }
+    protected void addAdditionalSaveData(CompoundTag p_219908_) {
+        super.addAdditionalSaveData(p_219908_);
+        this.addChestVehicleSaveData(p_219908_);
     }
 
-    protected void readAdditionalSaveData(CompoundTag tag) {
-        super.readAdditionalSaveData(tag);
-        this.fuel = tag.getInt(FUEL_TAG);
-        this.fuel_tick = tag.getInt("FuelTick");
-
-        // 读取容器内容
-        this.itemStacks = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
-        if (tag.contains("LootTable", 8)) {
-            this.lootTable = new ResourceLocation(tag.getString("LootTable"));
-            this.lootTableSeed = tag.getLong("LootTableSeed");
-        } else {
-            ContainerHelper.loadAllItems(tag, this.itemStacks);
-        }
+    protected void readAdditionalSaveData(CompoundTag p_219901_) {
+        super.readAdditionalSaveData(p_219901_);
+        this.readChestVehicleSaveData(p_219901_);
     }
 
-    public void destroy(DamageSource source) {
-        super.kill();
-        if (this.level().getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
-            Containers.dropContents(this.level(), this, this);
-            if (fuel > 0) {
-                this.spawnAtLocation(new ItemStack(Items.SUGAR, fuel));
-            }
-            this.spawnAtLocation(this.getDropItem());
-        }
+    public void destroy(DamageSource p_219892_) {
+        super.destroy(p_219892_);
+        this.chestVehicleDestroyed(p_219892_, this.level(), this);
     }
 
-    public void openCustomInventoryScreen(Player player) {
-        player.openMenu(new SimpleMenuProvider(
-                (id, inventory, p) -> ChestMenu.threeRows(id, inventory, this),
-                Component.translatable("container.chest")
-        ));
-        if (!player.level().isClientSide) {
-            this.gameEvent(GameEvent.CONTAINER_OPEN, player);
-            // Fabric中没有直接的PiglinAi.angerNearbyPiglins方法，需要自行实现或使用其他方式
+    public void openCustomInventoryScreen(Player p_219906_) {
+        p_219906_.openMenu(this);
+        if (!p_219906_.level().isClientSide) {
+            this.gameEvent(GameEvent.CONTAINER_OPEN, p_219906_);
+            PiglinAi.angerNearbyPiglins(p_219906_, true);
         }
+
     }
 
     public Item getDropItem() {
         return StalkerItems.DRONE_STALKER;
     }
 
-    // Container接口实现
-    @Override
     public void clearContent() {
-        this.itemStacks.clear();
+        this.clearChestVehicleContent();
     }
 
-    @Override
     public int getContainerSize() {
         return CONTAINER_SIZE;
     }
 
-    @Override
-    public boolean isEmpty() {
-        for (ItemStack itemstack : this.itemStacks) {
-            if (!itemstack.isEmpty()) {
-                return false;
-            }
-        }
-        return true;
+    public ItemStack getItem(int p_219880_) {
+        return this.getChestVehicleItem(p_219880_);
     }
 
-    @Override
-    public ItemStack getItem(int slot) {
-        this.unpackLootTable(null);
-        return this.itemStacks.get(slot);
+    public ItemStack removeItem(int p_219882_, int p_219883_) {
+        return this.removeChestVehicleItem(p_219882_, p_219883_);
     }
 
-    @Override
-    public ItemStack removeItem(int slot, int amount) {
-        this.unpackLootTable(null);
-        ItemStack itemstack = ContainerHelper.removeItem(this.itemStacks, slot, amount);
-        if (!itemstack.isEmpty()) {
-            this.setChanged();
-        }
-        return itemstack;
+    public ItemStack removeItemNoUpdate(int p_219904_) {
+        return this.removeChestVehicleItemNoUpdate(p_219904_);
     }
 
-    @Override
-    public ItemStack removeItemNoUpdate(int slot) {
-        this.unpackLootTable(null);
-        ItemStack itemstack = this.itemStacks.get(slot);
-        if (itemstack.isEmpty()) {
-            return ItemStack.EMPTY;
-        } else {
-            this.itemStacks.set(slot, ItemStack.EMPTY);
-            return itemstack;
-        }
+    public void setItem(int p_219885_, ItemStack p_219886_) {
+        this.setChestVehicleItem(p_219885_, p_219886_);
     }
 
-    @Override
-    public void setItem(int slot, ItemStack stack) {
-        this.unpackLootTable(null);
-        this.itemStacks.set(slot, stack);
-        if (!stack.isEmpty() && stack.getCount() > this.getMaxStackSize()) {
-            stack.setCount(this.getMaxStackSize());
-        }
-        this.setChanged();
+    public SlotAccess getSlot(int p_219918_) {
+        return this.getChestVehicleSlot(p_219918_);
     }
 
-    @Override
-    public SlotAccess getSlot(int slot) {
-        return slot >= 0 && slot < this.getContainerSize() ?
-                new SlotAccess() {
-                    public ItemStack get() {
-                        return DroneStalkerEntity.this.getItem(slot);
-                    }
-
-                    public boolean set(ItemStack stack) {
-                        DroneStalkerEntity.this.setItem(slot, stack);
-                        return true;
-                    }
-                } : SlotAccess.NULL;
-    }
-
-    @Override
     public void setChanged() {
-        // 在Fabric中实现容器变更通知
     }
 
-    @Override
-    public boolean stillValid(Player player) {
-        return this.isAlive() && player.distanceToSqr(this) <= 64.0D;
+    public boolean stillValid(Player p_219896_) {
+        return this.isChestVehicleStillValid(p_219896_);
     }
 
-    public void unpackLootTable(@Nullable Player player) {
-        MinecraftServer minecraftserver = this.level().getServer();
-        if (this.getLootTable() != null && minecraftserver != null) {
-            LootTable loottable = minecraftserver.getLootData().getLootTable(this.getLootTable());
-            if (player != null) {
-                CriteriaTriggers.GENERATE_LOOT.trigger((ServerPlayer) player, this.getLootTable());
-            }
-            this.setLootTable(null);
-            LootParams.Builder builder = (new LootParams.Builder((ServerLevel) this.level()))
-                    .withParameter(LootContextParams.ORIGIN, this.position());
-            if (player != null) {
-                builder.withLuck(player.getLuck()).withParameter(LootContextParams.THIS_ENTITY, player);
-            }
-            loottable.fill(this, builder.create(LootContextParamSets.CHEST), this.getLootTableSeed());
+    @Nullable
+    public AbstractContainerMenu createMenu(int p_219910_, Inventory inventory, Player player) {
+        if (this.lootTable != null && player.isSpectator()) {
+            return null;
+        } else {
+            this.unpackLootTable(inventory.player);
+            return ChestMenu.threeRows(p_219910_, inventory, this);
         }
+    }
+
+    public void unpackLootTable(@Nullable Player p_219914_) {
+        this.unpackChestVehicleLootTable(p_219914_);
     }
 
     @Nullable
@@ -365,16 +341,16 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
         return this.lootTable;
     }
 
-    public void setLootTable(ResourceLocation lootTable) {
-        this.lootTable = lootTable;
+    public void setLootTable(@Nullable ResourceLocation p_219890_) {
+        this.lootTable = p_219890_;
     }
 
     public long getLootTableSeed() {
         return this.lootTableSeed;
     }
 
-    public void setLootTableSeed(long seed) {
-        this.lootTableSeed = seed;
+    public void setLootTableSeed(long p_219888_) {
+        this.lootTableSeed = p_219888_;
     }
 
     public NonNullList<ItemStack> getItemStacks() {
@@ -385,7 +361,7 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
         this.itemStacks = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
     }
 
-    public void stopOpen(Player player) {
-        this.level().gameEvent(GameEvent.CONTAINER_CLOSE, this.position(), GameEvent.Context.of(player));
+    public void stopOpen(Player p_270286_) {
+        this.level().gameEvent(GameEvent.CONTAINER_CLOSE, this.position(), GameEvent.Context.of(p_270286_));
     }
 }

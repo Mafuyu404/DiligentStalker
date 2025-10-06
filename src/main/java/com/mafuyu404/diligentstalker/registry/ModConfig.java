@@ -3,12 +3,11 @@ package com.mafuyu404.diligentstalker.registry;
 import com.mafuyu404.diligentstalker.DiligentStalker;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.ConfigData;
-import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
 import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.Comment;
 
-@Config(name = DiligentStalker.MODID)
+@me.shedaniel.autoconfig.annotation.Config(name = DiligentStalker.MODID)
 public class ModConfig implements ConfigData {
     @ConfigEntry.Gui.CollapsibleObject
     public RenderRadius renderRadius = new RenderRadius();

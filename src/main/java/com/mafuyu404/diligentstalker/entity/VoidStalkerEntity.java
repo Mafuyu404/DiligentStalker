@@ -13,8 +13,8 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 
 public class VoidStalkerEntity extends ThrowableItemProjectile {
-    public VoidStalkerEntity(EntityType<? extends VoidStalkerEntity> type, Level level) {
-        super(type, level);
+    public VoidStalkerEntity(EntityType<? extends VoidStalkerEntity> p_37391_, Level p_37392_) {
+        super(p_37391_, p_37392_);
     }
 
     public VoidStalkerEntity(LivingEntity owner, Level level) {
@@ -35,15 +35,15 @@ public class VoidStalkerEntity extends ThrowableItemProjectile {
         return StalkerItems.VOID_STALKER;
     }
 
-    public void handleEntityEvent(byte b) {
+    public void handleEntityEvent(byte p_37402_) {
 
     }
 
-    protected void onHitEntity(EntityHitResult entityHitResult) {
+    protected void onHitEntity(EntityHitResult p_37404_) {
 
     }
 
-    protected void onHit(HitResult hitResult) {
+    protected void onHit(HitResult p_37406_) {
 
     }
 }

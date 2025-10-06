@@ -11,11 +11,13 @@ public class ArrowStalkerRender extends ArrowRenderer<AbstractArrow> {
     public static final ResourceLocation TEXTURE = new ResourceLocation(DiligentStalker.MODID, "textures/entity/arrow_stalker.png");
 
     public ArrowStalkerRender(EntityRendererProvider.Context ctx) {
+
         super(ctx);
     }
 
     @Override
     public ResourceLocation getTextureLocation(AbstractArrow entity) {
+
         return TEXTURE;
     }
 

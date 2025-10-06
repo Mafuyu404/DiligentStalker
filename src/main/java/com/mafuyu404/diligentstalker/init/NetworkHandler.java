@@ -10,51 +10,51 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
 public class NetworkHandler {
-    // 定义数据包ID
     public static final ResourceLocation RCLICK_BLOCK_PACKET = new ResourceLocation(DiligentStalker.MODID, "rclick_block");
     public static final ResourceLocation ENTITY_DATA_PACKET = new ResourceLocation(DiligentStalker.MODID, "entity_data");
     public static final ResourceLocation STALKER_SYNC_PACKET = new ResourceLocation(DiligentStalker.MODID, "stalker_sync");
     public static final ResourceLocation CLIENT_FUEL_PACKET = new ResourceLocation(DiligentStalker.MODID, "client_fuel");
     public static final ResourceLocation CLIENT_STALKER_PACKET = new ResourceLocation(DiligentStalker.MODID, "client_stalker");
+    public static final ResourceLocation SERVER_REMOTE_CONNECT_PACKET = new ResourceLocation(DiligentStalker.MODID, "server_remote_connect");
 
-    // 注册数据包
     public static void register() {
-        // 服务器端接收的数据包
-        ServerPlayNetworking.registerGlobalReceiver(RCLICK_BLOCK_PACKET, RClickBlockPacket::handle);
-        ServerPlayNetworking.registerGlobalReceiver(ENTITY_DATA_PACKET, EntityDataPacket::handle);
-        ServerPlayNetworking.registerGlobalReceiver(STALKER_SYNC_PACKET, StalkerSyncPacket::handle);
+        ServerPlayNetworking.registerGlobalReceiver(RCLICK_BLOCK_PACKET, (server, player, handler, buf, responseSender) -> {
+            var msg = RClickBlockPacket.decode(buf);
+            RClickBlockPacket.handle(server, player, msg);
+        });
+        ServerPlayNetworking.registerGlobalReceiver(ENTITY_DATA_PACKET, (server, player, handler, buf, responseSender) -> {
+            var msg = EntityDataPacket.decode(buf);
+            EntityDataPacket.handle(server, player, msg);
+        });
+        ServerPlayNetworking.registerGlobalReceiver(STALKER_SYNC_PACKET, (server, player, handler, buf, responseSender) -> {
+            var msg = StalkerSyncPacket.decode(buf);
+            StalkerSyncPacket.handle(server, player, msg);
+        });
+        ServerPlayNetworking.registerGlobalReceiver(SERVER_REMOTE_CONNECT_PACKET, (server, player, handler, buf, responseSender) -> {
+            var msg = ServerRemoteConnectPacket.decode(buf);
+            ServerRemoteConnectPacket.handle(server, player, msg);
+        });
 
-        // 客户端接收的数据包
-        ClientPlayNetworking.registerGlobalReceiver(CLIENT_FUEL_PACKET, ClientFuelPacket::handle);
-        ClientPlayNetworking.registerGlobalReceiver(CLIENT_STALKER_PACKET, ClientStalkerPacket::handle);
+        ClientPlayNetworking.registerGlobalReceiver(CLIENT_FUEL_PACKET, (client, handler, buf, responseSender) -> {
+            var msg = ClientFuelPacket.decode(buf);
+            ClientFuelPacket.handle(msg, client);
+        });
+        ClientPlayNetworking.registerGlobalReceiver(CLIENT_STALKER_PACKET, (client, handler, buf, responseSender) -> {
+            var msg = ClientStalkerPacket.decode(buf);
+            ClientStalkerPacket.handle(msg, client);
+        });
+
     }
 
-    // 发送数据包到客户端
-    public static void sendToClient(ServerPlayer player, Object packet) {
-        FriendlyByteBuf buf = PacketByteBufs.create();
-
-        if (packet instanceof ClientFuelPacket clientFuelPacket) {
-            ClientFuelPacket.encode(clientFuelPacket, buf);
-            ServerPlayNetworking.send(player, CLIENT_FUEL_PACKET, buf);
-        } else if (packet instanceof ClientStalkerPacket clientStalkerPacket) {
-            ClientStalkerPacket.encode(clientStalkerPacket, buf);
-            ServerPlayNetworking.send(player, CLIENT_STALKER_PACKET, buf);
-        }
+    public static void sendToClient(ServerPlayer player, ResourceLocation id, Packet msg) {
+        FriendlyByteBuf buf = new FriendlyByteBuf(PacketByteBufs.create());
+        msg.encode(buf);
+        ServerPlayNetworking.send(player, id, buf);
     }
 
-    // 发送数据包到服务器
-    public static void sendToServer(Object packet) {
-        FriendlyByteBuf buf = PacketByteBufs.create();
-
-        if (packet instanceof StalkerSyncPacket stalkerSyncPacket) {
-            StalkerSyncPacket.encode(stalkerSyncPacket, buf);
-            ClientPlayNetworking.send(STALKER_SYNC_PACKET, buf);
-        } else if (packet instanceof RClickBlockPacket rClickBlockPacket) {
-            RClickBlockPacket.encode(rClickBlockPacket, buf);
-            ClientPlayNetworking.send(RCLICK_BLOCK_PACKET, buf);
-        } else if (packet instanceof EntityDataPacket entityDataPacket) {
-            EntityDataPacket.encode(entityDataPacket, buf);
-            ClientPlayNetworking.send(ENTITY_DATA_PACKET, buf);
-        }
+    public static void sendToServer(ResourceLocation id, Packet msg) {
+        FriendlyByteBuf buf = new FriendlyByteBuf(PacketByteBufs.create());
+        msg.encode(buf);
+        ClientPlayNetworking.send(id, buf);
     }
 }

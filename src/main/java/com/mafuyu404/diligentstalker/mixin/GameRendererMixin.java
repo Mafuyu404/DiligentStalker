@@ -14,17 +14,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(value = GameRenderer.class)
 public class GameRendererMixin {
     @Inject(method = "renderItemInHand", at = @At("HEAD"), cancellable = true)
-    private void avoidRenderHandItem(PoseStack poseStack, Camera camera, float partialTicks, CallbackInfo ci) {
-        if (Stalker.hasInstanceOf(camera.getEntity())) {
+    private void avoidRenderHandItem(PoseStack p_109121_, Camera p_109122_, float p_109123_, CallbackInfo ci) {
+        if (Stalker.hasInstanceOf(p_109122_.getEntity())) {
             ci.cancel();
         }
     }
 
     @Inject(method = "getNightVisionScale", at = @At("HEAD"), cancellable = true)
-    private static void getNightVisionScale(LivingEntity entity, float effectScale, CallbackInfoReturnable<Float> cir) {
+    private static void getNightVisionScale(LivingEntity entity, float p_109110_, CallbackInfoReturnable<Float> cir) {
         if (Stalker.hasInstanceOf(entity)) {
             cir.setReturnValue(1f);
         }
     }
-
 }

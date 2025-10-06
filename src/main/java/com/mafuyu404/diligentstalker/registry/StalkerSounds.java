@@ -1,16 +1,15 @@
 package com.mafuyu404.diligentstalker.registry;
 
-import com.mafuyu404.diligentstalker.DiligentStalker;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvent;
 
 public class StalkerSounds {
-    public static final ResourceLocation DRONE_INTERACT_ID = new ResourceLocation(DiligentStalker.MODID, "drone_stalker_interact");
-    public static final SoundEvent DRONE_INTERACT = SoundEvent.createVariableRangeEvent(DRONE_INTERACT_ID);
-
-    public static void register() {
-        Registry.register(BuiltInRegistries.SOUND_EVENT, DRONE_INTERACT_ID, DRONE_INTERACT);
-    }
+//    public static final SoundEvent DRONE_INTERACT = SoundEvent.createVariableRangeEvent(
+//            new ResourceLocation(DiligentStalker.MODID, "drone_stalker_interact"));
+//
+//    @SubscribeEvent
+//    public static void registerSounds(RegisterEvent event) {
+//        event.register(ForgeRegistries.Keys.SOUND_EVENTS, helper -> {
+//            helper.register(new ResourceLocation(DiligentStalker.MODID, "drone_stalker_interact"),
+//                    DRONE_INTERACT);
+//        });
+//    }
 }
