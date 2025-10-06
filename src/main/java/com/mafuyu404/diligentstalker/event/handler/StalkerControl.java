@@ -84,16 +84,16 @@ public class StalkerControl {
             }
         }
 
-        if (KeyBindings.DISCONNECT.isDown()) {
+        if (KeyBindings.DISCONNECT.consumeClick()) {
             Player p = Minecraft.getInstance().player;
             if (Stalker.hasInstanceOf(p))
                 Stalker.getInstanceOf(p).disconnect();
         }
-        if (KeyBindings.VIEW.isDown()) {
+        if (KeyBindings.VIEW.consumeClick()) {
             Entity s = ClientStalkerUtil.getLocalStalker();
             if (s != null) ControllableUtils.switchCameraState(s);
         }
-        if (KeyBindings.CONTROL.isDown()) {
+        if (KeyBindings.CONTROL.consumeClick()) {
             Entity s = ClientStalkerUtil.getLocalStalker();
             if (s != null) ControllableUtils.turnActionControlling(s);
         }
