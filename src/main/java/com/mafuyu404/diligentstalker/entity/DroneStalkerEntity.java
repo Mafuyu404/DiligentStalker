@@ -264,6 +264,7 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
         this.readChestVehicleSaveData(p_219901_);
     }
 
+
     public void destroy(DamageSource p_219892_) {
         super.destroy(p_219892_);
         this.chestVehicleDestroyed(p_219892_, this.level(), this);

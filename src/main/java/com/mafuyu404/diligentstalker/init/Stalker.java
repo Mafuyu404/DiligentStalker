@@ -3,6 +3,8 @@ package com.mafuyu404.diligentstalker.init;
 import com.mafuyu404.diligentstalker.event.StalkerControl;
 import com.mafuyu404.diligentstalker.network.StalkerSyncPacket;
 import com.mafuyu404.diligentstalker.utils.ClientStalkerUtil;
+import com.mafuyu404.diligentstalker.utils.ServerStalkerUtil;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -42,6 +44,14 @@ public class Stalker {
 
         DisconnectEvent event = new DisconnectEvent(getPlayer(), getStalker());
         MinecraftForge.EVENT_BUS.post(event);
+
+        if (!level.isClientSide) {
+            Player player = getPlayer();
+            if (player != null) {
+                ServerStalkerUtil.setVisualCenter(player, BlockPos.ZERO);
+                player.getPersistentData().putBoolean("LoadingCacheChunk", true);
+            }
+        }
 
         InstanceMap.remove(playerUUID);
         StalkerToPlayerMap.remove(stalkerId);
