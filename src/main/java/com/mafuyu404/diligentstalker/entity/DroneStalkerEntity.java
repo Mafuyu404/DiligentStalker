@@ -1,11 +1,16 @@
 package com.mafuyu404.diligentstalker.entity;
 
-import com.mafuyu404.diligentstalker.api.IControllable;
+import com.mafuyu404.diligentstalker.api.*;
+import com.mafuyu404.diligentstalker.data.ControllableStorage;
+import com.mafuyu404.diligentstalker.data.StalkerDataComponent;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.registry.StalkerItems;
 import com.mafuyu404.diligentstalker.storage.ContainerStorageAdapter;
 import com.mafuyu404.diligentstalker.utils.ControllableUtils;
 import com.mafuyu404.diligentstalker.utils.StalkerUtil;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
@@ -37,26 +42,25 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
-import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
 import static com.mafuyu404.diligentstalker.utils.StalkerUtil.limitSpeed;
 
-public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen, ContainerEntity, IControllable {
+public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen, ContainerEntity, IControllable, HasControllableStorage, HasStalkerData {
     private static final int CONTAINER_SIZE = 27;
+    private static final int SIGNAL_RADIUS = 1024;
+    private static final int MAX_FUEL = 100;
+    private static final int MAX_FUEL_TICK = 720;
+    private static final int ITEM_PICKUP_RANGE = 2;
+    private final ControllableStorage diligentstalker$storage = new ControllableStorage();
+    private final IStalkerData diligentstalker$stalkerData = new StalkerDataComponent();
     private NonNullList<ItemStack> itemStacks = NonNullList.withSize(CONTAINER_SIZE, ItemStack.EMPTY);
     @Nullable
     private ResourceLocation lootTable;
     private long lootTableSeed;
-    private static final int SIGNAL_RADIUS = 1024;
-    private static final int MAX_FUEL = 100;
-    private static final int MAX_FUEL_TICK = 720;
     private int fuel_tick = MAX_FUEL_TICK;
-    private static final int ITEM_PICKUP_RANGE = 2;
     private int interact_cooldown = 0;
 
     public DroneStalkerEntity(EntityType<? extends Boat> p_219869_, Level level) {
@@ -71,6 +75,16 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
         this.xo = p_219873_;
         this.yo = p_219874_;
         this.zo = p_219875_;
+    }
+
+    @Override
+    public IControllableStorage diligentstalker$getControllableStorage() {
+        return diligentstalker$storage;
+    }
+
+    @Override
+    public IStalkerData diligentstalker$getStalkerData() {
+        return diligentstalker$stalkerData;
     }
 
     @Override
@@ -259,14 +273,24 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
         return 0;
     }
 
-    protected void addAdditionalSaveData(CompoundTag p_219908_) {
-        super.addAdditionalSaveData(p_219908_);
-        this.addChestVehicleSaveData(p_219908_);
+    protected void addAdditionalSaveData(CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
+        this.addChestVehicleSaveData(tag);
+        tag.put("DiligentControllableStorage", diligentstalker$storage.serializeNBT());
+        CompoundTag stalkerTag = new CompoundTag();
+        diligentstalker$stalkerData.writeToNbt(stalkerTag);
+        tag.put("DiligentStalkerData", stalkerTag);
     }
 
-    protected void readAdditionalSaveData(CompoundTag p_219901_) {
-        super.readAdditionalSaveData(p_219901_);
-        this.readChestVehicleSaveData(p_219901_);
+    protected void readAdditionalSaveData(CompoundTag tag) {
+        if (tag.contains("DiligentControllableStorage")) {
+            diligentstalker$storage.deserializeNBT(tag.getCompound("DiligentControllableStorage"));
+        }
+        if (tag.contains("DiligentStalkerData")) {
+            diligentstalker$stalkerData.readFromNbt(tag.getCompound("DiligentStalkerData"));
+        }
+        super.readAdditionalSaveData(tag);
+        this.readChestVehicleSaveData(tag);
     }
 
     public void destroy(DamageSource p_219892_) {

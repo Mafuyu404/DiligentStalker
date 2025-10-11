@@ -19,6 +19,9 @@ import org.lwjgl.glfw.GLFW;
 import java.util.function.Predicate;
 
 public class ClientStalkerUtil {
+    private static Predicate<Entity> ConnectingTarget;
+    private static BlockPos VisualCenter;
+
     public static boolean isKeyPressed(int glfwKeyCode) {
         Minecraft minecraft = Minecraft.getInstance();
         long windowHandle = minecraft.getWindow().getWindow();
@@ -57,8 +60,6 @@ public class ClientStalkerUtil {
         return false;
     }
 
-    private static Predicate<Entity> ConnectingTarget;
-
     public static void setConnectingTarget(Predicate<Entity> predicate) {
         ConnectingTarget = predicate;
     }
@@ -70,16 +71,14 @@ public class ClientStalkerUtil {
         return false;
     }
 
-    private static BlockPos VisualCenter;
+    public static BlockPos getVisualCenter() {
+        if (VisualCenter == null) return null;
+        return VisualCenter.equals(BlockPos.ZERO) ? null : VisualCenter;
+    }
 
     public static void setVisualCenter(BlockPos blockPos) {
         if (Stalker.hasInstanceOf(Minecraft.getInstance().player)) return;
         VisualCenter = blockPos;
-    }
-
-    public static BlockPos getVisualCenter() {
-        if (VisualCenter == null) return null;
-        return VisualCenter.equals(BlockPos.ZERO) ? null : VisualCenter;
     }
 
     public static void tryRemoteConnect(BlockPos center, Predicate<Entity> predicate) {

@@ -1,14 +1,19 @@
 package com.mafuyu404.diligentstalker.data;
 
-import dev.onyxstudios.cca.api.v3.component.Component;
-import dev.onyxstudios.cca.api.v3.component.sync.AutoSyncedComponent;
+import com.mafuyu404.diligentstalker.api.IStalkerData;
 import net.minecraft.nbt.CompoundTag;
 
-public class StalkerDataComponent implements Component, AutoSyncedComponent {
+public class StalkerDataComponent implements IStalkerData {
     private final CompoundTag data = new CompoundTag();
 
-    public CompoundTag getStalkerData() {
+    @Override
+    public CompoundTag getData() {
         return data;
+    }
+
+    @Override
+    public void merge(CompoundTag tag) {
+        data.merge(tag);
     }
 
     @Override

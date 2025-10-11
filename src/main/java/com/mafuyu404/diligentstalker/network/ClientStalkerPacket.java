@@ -11,17 +11,16 @@ public class ClientStalkerPacket implements Packet {
         this.entityId = entityId;
     }
 
-    @Override
-    public void encode(FriendlyByteBuf buf) {
-        buf.writeInt(entityId);
-    }
-
     public static ClientStalkerPacket decode(FriendlyByteBuf buf) {
         return new ClientStalkerPacket(buf.readInt());
     }
 
-
     public static void handle(ClientStalkerPacket msg, Minecraft client) {
         client.execute(() -> ClientStalkerUtil.clientConnect(msg.entityId));
+    }
+
+    @Override
+    public void encode(FriendlyByteBuf buf) {
+        buf.writeInt(entityId);
     }
 }

@@ -1,7 +1,7 @@
 package com.mafuyu404.diligentstalker.mixin;
 
 import com.mafuyu404.diligentstalker.api.IChunkMap;
-import com.mafuyu404.diligentstalker.data.ModComponents;
+import com.mafuyu404.diligentstalker.data.ModLookupApi;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.registry.ModConfig;
 import com.mafuyu404.diligentstalker.utils.ServerStalkerUtil;
@@ -38,9 +38,10 @@ public abstract class ChunkMapMixin implements IChunkMap {
         if (Stalker.hasInstanceOf(player)) {
             center = Stalker.getInstanceOf(player).getStalker().chunkPosition();
         }
-        if (ModComponents.STALKER_DATA.get(player).getStalkerData().getBoolean("LoadingCacheChunk")) {
+        var data = ModLookupApi.STALKER_DATA.find(player, null);
+        if (data != null && data.getData().getBoolean("LoadingCacheChunk")) {
             center = player.chunkPosition();
-            ModComponents.STALKER_DATA.get(player).getStalkerData().putBoolean("LoadingCacheChunk", false);
+            data.getData().putBoolean("LoadingCacheChunk", false);
         }
         if (center == null) return;
         int radius = ModConfig.getRenderRadiusNormal();

@@ -7,13 +7,13 @@ public interface IControllableStorage {
 
     boolean consumeFuel(int amount);
 
-    void setMaxFuel(int amount);
-
     int getMaxFuel();
 
-    void setCameraState(String value);
+    void setMaxFuel(int amount);
 
     String getCameraState();
+
+    void setCameraState(String value);
 
     void switchCameraState();
 

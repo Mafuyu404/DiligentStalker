@@ -4,6 +4,9 @@ import com.mafuyu404.diligentstalker.event.StalkerEvents;
 import com.mafuyu404.diligentstalker.event.handler.StalkerControl;
 import com.mafuyu404.diligentstalker.network.StalkerSyncPacket;
 import com.mafuyu404.diligentstalker.utils.ClientStalkerUtil;
+import com.mafuyu404.diligentstalker.data.ModLookupApi;
+import com.mafuyu404.diligentstalker.utils.ServerStalkerUtil;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -12,36 +15,16 @@ import java.util.HashMap;
 import java.util.UUID;
 
 public class Stalker {
-    private final UUID playerUUID;
-    private final int stalkerId;
-    public final Level level;
     public static final HashMap<UUID, Integer> InstanceMap = new HashMap<>();
     private static final HashMap<Integer, UUID> StalkerToPlayerMap = new HashMap<>();
+    public final Level level;
+    private final UUID playerUUID;
+    private final int stalkerId;
 
     public Stalker(UUID playerUUID, int stalkerId, Level level) {
         this.playerUUID = playerUUID;
         this.stalkerId = stalkerId;
         this.level = level;
-    }
-
-    public Player getPlayer() {
-        return level.getPlayerByUUID(playerUUID);
-    }
-
-    public Entity getStalker() {
-        return level.getEntity(stalkerId);
-    }
-
-    public void disconnect() {
-        if (level.isClientSide) {
-            NetworkHandler.sendToServer(NetworkHandler.STALKER_SYNC_PACKET, new StalkerSyncPacket(this.stalkerId, false));
-            ClientStalkerUtil.cancelRemoteConnect();
-        }
-
-        StalkerEvents.DISCONNECT.invoker().onDisconnect(getPlayer(), getStalker());
-
-        InstanceMap.remove(playerUUID);
-        StalkerToPlayerMap.remove(stalkerId);
     }
 
     public static Stalker connect(Player player, Entity stalker) {
@@ -135,5 +118,37 @@ public class Stalker {
 
     public static int getMappingCount() {
         return InstanceMap.size();
+    }
+
+    public Player getPlayer() {
+        return level.getPlayerByUUID(playerUUID);
+    }
+
+    public Entity getStalker() {
+        return level.getEntity(stalkerId);
+    }
+
+    public void disconnect() {
+        if (level.isClientSide) {
+            NetworkHandler.sendToServer(NetworkHandler.STALKER_SYNC_PACKET, new StalkerSyncPacket(this.stalkerId, false));
+            ClientStalkerUtil.cancelRemoteConnect();
+        }
+
+        StalkerEvents.DISCONNECT.invoker().onDisconnect(getPlayer(), getStalker());
+
+        // 服务端：重置可视中心 + 触发下一帧按玩家为中心的区块补发
+        if (!level.isClientSide) {
+            Player player = getPlayer();
+            if (player != null) {
+                ServerStalkerUtil.setVisualCenter(player, BlockPos.ZERO);
+                var data = ModLookupApi.STALKER_DATA.find(player, null);
+                if (data != null) {
+                    data.getData().putBoolean("LoadingCacheChunk", true);
+                }
+            }
+        }
+
+        InstanceMap.remove(playerUUID);
+        StalkerToPlayerMap.remove(stalkerId);
     }
 }

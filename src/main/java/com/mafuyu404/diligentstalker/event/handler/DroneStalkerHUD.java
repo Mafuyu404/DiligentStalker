@@ -24,9 +24,9 @@ import net.minecraft.world.phys.Vec3;
 import java.util.List;
 
 public class DroneStalkerHUD {
-    private static int SIGNAL_RADIUS = 0;
     public static boolean LPress = false;
     public static boolean RPress = false;
+    private static int SIGNAL_RADIUS = 0;
 
     public static void initHud() {
         HudRenderCallback.EVENT.register(DroneStalkerHUD::onRenderGameOverlay);

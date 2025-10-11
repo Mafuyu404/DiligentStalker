@@ -22,8 +22,7 @@ import java.util.UUID;
 @Mixin(value = Entity.class)
 public abstract class EntityMixin {
     @Shadow
-    public abstract Level level();
-
+    protected UUID uuid;
     @Shadow
     private Level level;
 
@@ -31,10 +30,10 @@ public abstract class EntityMixin {
     private ChunkPos chunkPosition;
 
     @Shadow
-    public abstract BlockPos blockPosition();
+    public abstract Level level();
 
     @Shadow
-    protected UUID uuid;
+    public abstract BlockPos blockPosition();
 
     @Inject(method = "setXRot", at = @At("HEAD"), cancellable = true)
     private void redirectXRot(float xRot, CallbackInfo ci) {

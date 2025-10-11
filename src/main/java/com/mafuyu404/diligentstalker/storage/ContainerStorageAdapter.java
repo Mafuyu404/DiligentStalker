@@ -35,7 +35,8 @@ public class ContainerStorageAdapter implements Storage<ItemVariant> {
         }
 
         @Override
-        protected void onFinalCommit() {}
+        protected void onFinalCommit() {
+        }
     };
 
     public ContainerStorageAdapter(Container container) {
@@ -108,7 +109,11 @@ public class ContainerStorageAdapter implements Storage<ItemVariant> {
 
     private final class SlotView implements StorageView<ItemVariant> {
         private final int slot;
-        SlotView(int slot) { this.slot = slot; }
+
+        SlotView(int slot) {
+            this.slot = slot;
+        }
+
         @Override
         public long extract(ItemVariant resource, long maxAmount, TransactionContext transaction) {
             ItemStack stack = container.getItem(slot);
@@ -121,24 +126,29 @@ public class ContainerStorageAdapter implements Storage<ItemVariant> {
             container.setChanged();
             return canRemove;
         }
+
         @Override
         public boolean isResourceBlank() {
             return container.getItem(slot).isEmpty();
         }
+
         @Override
         public ItemVariant getResource() {
             ItemStack stack = container.getItem(slot);
             return stack.isEmpty() ? ItemVariant.blank() : ItemVariant.of(stack);
         }
+
         @Override
         public long getAmount() {
             return container.getItem(slot).getCount();
         }
+
         @Override
         public long getCapacity() {
             ItemStack stack = container.getItem(slot);
             return stack.isEmpty() ? resourceMaxStack() : stack.getMaxStackSize();
         }
+
         private int resourceMaxStack() {
             return 64;
         }

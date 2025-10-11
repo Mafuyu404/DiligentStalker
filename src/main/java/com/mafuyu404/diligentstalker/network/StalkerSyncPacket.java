@@ -1,7 +1,7 @@
 package com.mafuyu404.diligentstalker.network;
 
+import com.mafuyu404.diligentstalker.data.ModLookupApi;
 import com.mafuyu404.diligentstalker.entity.ArrowStalkerEntity;
-import com.mafuyu404.diligentstalker.data.ModComponents;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.registry.StalkerItems;
 import net.minecraft.network.FriendlyByteBuf;
@@ -18,12 +18,6 @@ public class StalkerSyncPacket implements Packet {
     public StalkerSyncPacket(int entityId, boolean state) {
         this.entityId = entityId;
         this.state = state;
-    }
-
-    @Override
-    public void encode(FriendlyByteBuf buffer) {
-        buffer.writeInt(entityId);
-        buffer.writeBoolean(state);
     }
 
     public static StalkerSyncPacket decode(FriendlyByteBuf buffer) {
@@ -47,12 +41,21 @@ public class StalkerSyncPacket implements Packet {
                     Stalker.getInstanceOf(player).disconnect();
                 }
                 player.inventoryMenu.sendAllDataToRemote();
-                ModComponents.STALKER_DATA.get(player).getStalkerData().putBoolean("LoadingCacheChunk", true);
+                var data = ModLookupApi.STALKER_DATA.find(player, null);
+                if (data != null) {
+                    data.getData().putBoolean("LoadingCacheChunk", true);
+                }
                 if (stalker instanceof ArrowStalkerEntity arrowStalker) {
                     arrowStalker.spawnAtLocation(new ItemStack(StalkerItems.ARROW_STALKER));
                     arrowStalker.discard();
                 }
             }
         });
+    }
+
+    @Override
+    public void encode(FriendlyByteBuf buffer) {
+        buffer.writeInt(entityId);
+        buffer.writeBoolean(state);
     }
 }

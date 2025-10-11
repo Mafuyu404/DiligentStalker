@@ -13,11 +13,6 @@ public class ServerRemoteConnectPacket implements Packet {
         this.blockPos = blockPos == null ? BlockPos.ZERO : blockPos;
     }
 
-    @Override
-    public void encode(FriendlyByteBuf buffer) {
-        buffer.writeBlockPos(blockPos);
-    }
-
     public static ServerRemoteConnectPacket decode(FriendlyByteBuf buffer) {
         return new ServerRemoteConnectPacket(buffer.readBlockPos());
     }
@@ -26,5 +21,10 @@ public class ServerRemoteConnectPacket implements Packet {
         server.execute(() -> {
             ServerStalkerUtil.setVisualCenter(player, msg.blockPos);
         });
+    }
+
+    @Override
+    public void encode(FriendlyByteBuf buffer) {
+        buffer.writeBlockPos(blockPos);
     }
 }

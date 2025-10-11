@@ -4,6 +4,7 @@ import com.mafuyu404.diligentstalker.chunk.DiligentChunkManager;
 import net.minecraft.server.level.ServerLevel;
 
 import static com.mafuyu404.diligentstalker.DiligentStalker.MODID;
+
 public class ModSetup {
     public static void init() {
         DiligentChunkManager.setForcedChunkLoadingCallback(MODID, ModSetup::validateChunkTickets);

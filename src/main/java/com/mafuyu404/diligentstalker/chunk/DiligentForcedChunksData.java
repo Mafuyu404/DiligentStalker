@@ -9,7 +9,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.saveddata.SavedData;
 
 import java.util.HashMap;
@@ -20,24 +19,14 @@ import java.util.function.BiConsumer;
 public final class DiligentForcedChunksData extends SavedData {
     public static final String SAVE_ID = "diligent_forced";
 
-    private DiligentChunkManager.TicketTracker<BlockPos> blockForcedChunks = new DiligentChunkManager.TicketTracker<>();
-    private DiligentChunkManager.TicketTracker<UUID> entityForcedChunks = new DiligentChunkManager.TicketTracker<>();
-
-    public DiligentChunkManager.TicketTracker<BlockPos> getBlockForcedChunks() { return blockForcedChunks; }
-    public DiligentChunkManager.TicketTracker<UUID> getEntityForcedChunks() { return entityForcedChunks; }
+    private final DiligentChunkManager.TicketTracker<BlockPos> blockForcedChunks = new DiligentChunkManager.TicketTracker<>();
+    private final DiligentChunkManager.TicketTracker<UUID> entityForcedChunks = new DiligentChunkManager.TicketTracker<>();
 
     public static DiligentForcedChunksData load(CompoundTag nbt) {
         DiligentForcedChunksData data = new DiligentForcedChunksData();
-        readForced(nbt, data.blockForcedChunks, true);
-        readForced(nbt, data.entityForcedChunks, false);
+        readForcedBlocks(nbt, data.blockForcedChunks);
+        readForcedEntities(nbt, data.entityForcedChunks);
         return data;
-    }
-
-    @Override
-    public CompoundTag save(CompoundTag nbt) {
-        writeForced(nbt, blockForcedChunks, true);
-        writeForced(nbt, entityForcedChunks, false);
-        return nbt;
     }
 
     private static <T extends Comparable<? super T>> void writeForced(CompoundTag nbt,
@@ -86,9 +75,7 @@ public final class DiligentForcedChunksData extends SavedData {
         }
     }
 
-    private static void readForced(CompoundTag nbt,
-                                   TicketTracker<?> tracker,
-                                   boolean block) {
+    private static void readForcedBlocks(CompoundTag nbt, TicketTracker<BlockPos> tracker) {
         ListTag forced = nbt.getList("DiligentForced", Tag.TAG_COMPOUND);
         for (int i = 0; i < forced.size(); i++) {
             CompoundTag forcedEntry = forced.getCompound(i);
@@ -97,13 +84,23 @@ public final class DiligentForcedChunksData extends SavedData {
             for (int j = 0; j < modForced.size(); j++) {
                 CompoundTag modEntry = modForced.getCompound(j);
                 long chunkPos = modEntry.getLong("Chunk");
-                if (block) {
-                    readBlocks(modId, chunkPos, modEntry, "Blocks", ((TicketTracker<BlockPos>) tracker).chunks);
-                    readBlocks(modId, chunkPos, modEntry, "TickingBlocks", ((TicketTracker<BlockPos>) tracker).tickingChunks);
-                } else {
-                    readEntities(modId, chunkPos, modEntry, "Entities", ((TicketTracker<UUID>) tracker).chunks);
-                    readEntities(modId, chunkPos, modEntry, "TickingEntities", ((TicketTracker<UUID>) tracker).tickingChunks);
-                }
+                readBlocks(modId, chunkPos, modEntry, "Blocks", tracker.chunks);
+                readBlocks(modId, chunkPos, modEntry, "TickingBlocks", tracker.tickingChunks);
+            }
+        }
+    }
+
+    private static void readForcedEntities(CompoundTag nbt, TicketTracker<UUID> tracker) {
+        ListTag forced = nbt.getList("DiligentForced", Tag.TAG_COMPOUND);
+        for (int i = 0; i < forced.size(); i++) {
+            CompoundTag forcedEntry = forced.getCompound(i);
+            String modId = forcedEntry.getString("Mod");
+            ListTag modForced = forcedEntry.getList("ModForced", Tag.TAG_COMPOUND);
+            for (int j = 0; j < modForced.size(); j++) {
+                CompoundTag modEntry = modForced.getCompound(j);
+                long chunkPos = modEntry.getLong("Chunk");
+                readEntities(modId, chunkPos, modEntry, "Entities", tracker.chunks);
+                readEntities(modId, chunkPos, modEntry, "TickingEntities", tracker.tickingChunks);
             }
         }
     }
@@ -119,6 +116,7 @@ public final class DiligentForcedChunksData extends SavedData {
             out.computeIfAbsent(new TicketOwner<>(modId, pos), o -> new LongOpenHashSet()).add(chunkPos);
         }
     }
+
     private static void readEntities(String modId,
                                      long chunkPos,
                                      CompoundTag modEntry,
@@ -129,5 +127,20 @@ public final class DiligentForcedChunksData extends SavedData {
             UUID uuid = NbtUtils.loadUUID(uuidTag);
             out.computeIfAbsent(new TicketOwner<>(modId, uuid), o -> new LongOpenHashSet()).add(chunkPos);
         }
+    }
+
+    public DiligentChunkManager.TicketTracker<BlockPos> getBlockForcedChunks() {
+        return blockForcedChunks;
+    }
+
+    public DiligentChunkManager.TicketTracker<UUID> getEntityForcedChunks() {
+        return entityForcedChunks;
+    }
+
+    @Override
+    public CompoundTag save(CompoundTag nbt) {
+        writeForced(nbt, blockForcedChunks, true);
+        writeForced(nbt, entityForcedChunks, false);
+        return nbt;
     }
 }

@@ -13,7 +13,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
-import java.util.function.Function;
+import java.util.function.ToDoubleFunction;
 
 public class ChunkLoadTask {
     public static final List<ClientboundLevelChunkWithLightPacket> TASK_LIST = Collections.synchronizedList(new ArrayList<>());
@@ -70,6 +70,7 @@ public class ChunkLoadTask {
             count++;
         }
     }
+
     public static List<ClientboundLevelChunkWithLightPacket> createChunksLoadTask(Entity stalker, List<ClientboundLevelChunkWithLightPacket> toLoadChunks) {
         List<ClientboundLevelChunkWithLightPacket> safeList = new ArrayList<>(toLoadChunks);
         safeList.removeIf(Objects::isNull);
@@ -96,10 +97,10 @@ public class ChunkLoadTask {
         return result;
     }
 
-    public static void sortChunks(List<ClientboundLevelChunkWithLightPacket> chunks, Function<ClientboundLevelChunkWithLightPacket, Double> handler) {
+    public static void sortChunks(List<ClientboundLevelChunkWithLightPacket> chunks, ToDoubleFunction<ClientboundLevelChunkWithLightPacket> keyExtractor) {
         if (chunks == null || chunks.size() <= 1) return;
         chunks.removeIf(Objects::isNull);
-
-        chunks.sort(Comparator.comparingDouble(handler::apply));
+        chunks.sort(Comparator.comparingDouble(keyExtractor));
     }
+
 }

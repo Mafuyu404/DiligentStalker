@@ -1,8 +1,8 @@
 package com.mafuyu404.diligentstalker.utils;
 
 import com.mafuyu404.diligentstalker.api.IControllable;
-import com.mafuyu404.diligentstalker.data.ControllableStorage;
-import com.mafuyu404.diligentstalker.data.ModComponents;
+import com.mafuyu404.diligentstalker.api.IControllableStorage;
+import com.mafuyu404.diligentstalker.data.ModLookupApi;
 import com.mafuyu404.diligentstalker.init.NetworkHandler;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.network.ClientFuelPacket;
@@ -17,8 +17,8 @@ import net.minecraft.world.phys.Vec3;
 public class ControllableUtils {
     public static final String CONTROL_INPUT_KEY = "StalkerControlInput";
 
-    private static ControllableStorage getStorage(Entity entity) {
-        return ModComponents.CONTROLLABLE_STORAGE.get(entity).getStorage();
+    private static IControllableStorage getStorage(Entity entity) {
+        return ModLookupApi.CONTROLLABLE_STORAGE.find(entity, null);
     }
 
     public static boolean isControllable(Entity entity) {
@@ -30,13 +30,13 @@ public class ControllableUtils {
     }
 
     public static void setFuel(Entity entity, int amount) {
-        ControllableStorage controllable = getStorage(entity);
+        IControllableStorage controllable = getStorage(entity);
         controllable.setFuel(amount);
         syncFuel(entity, controllable.getFuel());
     }
 
     public static void consumeFuel(Entity entity, int amount) {
-        ControllableStorage controllable = getStorage(entity);
+        IControllableStorage controllable = getStorage(entity);
         controllable.consumeFuel(amount);
         syncFuel(entity, controllable.getFuel());
     }
@@ -46,7 +46,7 @@ public class ControllableUtils {
     }
 
     public static float getFuelPercent(Entity entity) {
-        ControllableStorage controllable = getStorage(entity);
+        IControllableStorage controllable = getStorage(entity);
         return (float) controllable.getFuel() / controllable.getMaxFuel();
     }
 
@@ -57,26 +57,28 @@ public class ControllableUtils {
         Stalker instance = Stalker.getInstanceOf(entity);
         if (instance != null) {
             Player player = instance.getPlayer();
-            NetworkHandler.sendToClient((ServerPlayer) player, NetworkHandler.CLIENT_FUEL_PACKET, new ClientFuelPacket(entity.getId(), fuel));
+            NetworkHandler.sendToClient((ServerPlayer) player, NetworkHandler.CLIENT_FUEL_PACKET,
+                    new ClientFuelPacket(entity.getId(), fuel));
         }
-
-        ModComponents.CONTROLLABLE_STORAGE.sync(entity);
     }
 
     public static boolean isCameraFollowing(Entity entity) {
-        return getStorage(entity).getCameraState().equals("follow");
+        IControllableStorage storage = ModLookupApi.CONTROLLABLE_STORAGE.find(entity, null);
+        return storage != null && "follow".equals(storage.getCameraState());
     }
 
     public static boolean isCameraControlling(Entity entity) {
-        return getStorage(entity).getCameraState().equals("control");
+        IControllableStorage storage = ModLookupApi.CONTROLLABLE_STORAGE.find(entity, null);
+        return storage != null && "control".equals(storage.getCameraState());
     }
 
     public static String getCameraState(Entity entity) {
-        return getStorage(entity).getCameraState();
+        IControllableStorage storage = ModLookupApi.CONTROLLABLE_STORAGE.find(entity, null);
+        return storage != null ? storage.getCameraState() : "free";
     }
 
     public static void switchCameraState(Entity entity) {
-        ControllableStorage controllable = getStorage(entity);
+        IControllableStorage controllable = getStorage(entity);
         controllable.switchCameraState();
 
         if (!isControllable(entity) && controllable.getCameraState().equals("control")) {
@@ -89,12 +91,10 @@ public class ControllableUtils {
                     Component.translatable("message.diligentstalker." + controllable.getCameraState() + "_camera")
                             .withStyle(ChatFormatting.BOLD), true);
         }
-
-        ModComponents.CONTROLLABLE_STORAGE.sync(entity);
     }
 
     public static void setCameraControlling(Entity entity) {
-        ControllableStorage controllable = getStorage(entity);
+        IControllableStorage controllable = getStorage(entity);
         controllable.setCameraState("control");
 
         Stalker instance = Stalker.getInstanceOf(entity);
@@ -103,8 +103,6 @@ public class ControllableUtils {
                     Component.translatable("message.diligentstalker." + controllable.getCameraState() + "_camera")
                             .withStyle(ChatFormatting.BOLD), true);
         }
-
-        ModComponents.CONTROLLABLE_STORAGE.sync(entity);
     }
 
     public static int getSignalRadius(Entity entity) {
@@ -113,7 +111,6 @@ public class ControllableUtils {
 
     public static void setSignalRadius(Entity entity, int value) {
         getStorage(entity).setSignalRadius(value);
-        ModComponents.CONTROLLABLE_STORAGE.sync(entity);
     }
 
     public static Vec3 tickServerControl(Entity entity, CompoundTag input, Vec3 motion) {
@@ -126,7 +123,10 @@ public class ControllableUtils {
     public static boolean isActionControlling(Entity entity) {
         if (!entity.level().isClientSide) {
             Stalker instance = Stalker.getInstanceOf(entity);
-            CompoundTag input = ModComponents.STALKER_DATA.get(instance.getStalker()).getStalkerData().getCompound(CONTROL_INPUT_KEY);
+            if (instance == null || instance.getStalker() == null) return false;
+            var data = ModLookupApi.STALKER_DATA.find(instance.getStalker(), null);
+            if (data == null) return false;
+            CompoundTag input = data.getData().getCompound(CONTROL_INPUT_KEY);
             return !input.isEmpty();
         } else {
             return getStorage(entity).isActionControlling();
@@ -134,7 +134,7 @@ public class ControllableUtils {
     }
 
     public static void turnActionControlling(Entity entity) {
-        ControllableStorage controllable = getStorage(entity);
+        IControllableStorage controllable = getStorage(entity);
         controllable.turnActionControlling();
 
         if (!isControllable(entity) && controllable.isActionControlling()) {
@@ -148,7 +148,5 @@ public class ControllableUtils {
                                     (controllable.isActionControlling() ? "on" : "off"))
                             .withStyle(ChatFormatting.BOLD), true);
         }
-
-        ModComponents.CONTROLLABLE_STORAGE.sync(entity);
     }
 }

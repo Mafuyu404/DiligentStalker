@@ -10,15 +10,6 @@ import java.util.Set;
 import static com.ibm.icu.impl.ClassLoaderUtil.getClassLoader;
 
 public class MixinPlugin implements IMixinConfigPlugin {
-    @Override
-    public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-        // 检查是否是目标Mixin且Embeddium已加载
-        if (mixinClassName.equals("com.mafuyu404.diligentstalker.mixin.LevelRendererMixin")) {
-            return !isClassLoaded("me.jellysquid.mods.sodium.client.SodiumClientMod"); // Sodium/Embeddium核心类
-        }
-        return true;
-    }
-
     private static boolean isClassLoaded(String className) {
         try {
             Class.forName(className, false, getClassLoader());
@@ -26,6 +17,15 @@ public class MixinPlugin implements IMixinConfigPlugin {
         } catch (ClassNotFoundException e) {
             return false;
         }
+    }
+
+    @Override
+    public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
+        // 检查是否是目标Mixin且Embeddium已加载
+        if (mixinClassName.equals("com.mafuyu404.diligentstalker.mixin.LevelRendererMixin")) {
+            return !isClassLoaded("me.jellysquid.mods.sodium.client.SodiumClientMod"); // Sodium/Embeddium核心类
+        }
+        return true;
     }
 
     @Override

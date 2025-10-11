@@ -28,6 +28,30 @@ public class StalkerMasterItem extends Item {
         super(new Properties());
     }
 
+    public static Map.Entry<String, BlockPos> entryOfUsingStalkerMaster(Player player) {
+        if (player != null && player.isUsingItem()) {
+            if (player.getMainHandItem().getItem() instanceof StalkerMasterItem) {
+                CompoundTag tag = player.getMainHandItem().getOrCreateTag();
+                if (tag.contains("StalkerId") && StalkerManage.DronePosition.containsKey(tag.getUUID("StalkerId"))) {
+                    return StalkerManage.DronePosition.get(tag.getUUID("StalkerId"));
+                }
+            }
+        }
+        return null;
+    }
+
+    public static UUID uuidOfUsingStalkerMaster(Player player) {
+        if (player != null && player.isUsingItem()) {
+            if (player.getMainHandItem().getItem() instanceof StalkerMasterItem) {
+                CompoundTag tag = player.getMainHandItem().getOrCreateTag();
+                if (tag.contains("StalkerId")) {
+                    return tag.getUUID("StalkerId");
+                }
+            }
+        }
+        return null;
+    }
+
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack itemStack = player.getItemInHand(hand);
         if (!player.isShiftKeyDown()) {
@@ -56,7 +80,6 @@ public class StalkerMasterItem extends Item {
         return UseAnim.BOW;
     }
 
-
     @Override
     public void releaseUsing(ItemStack stack, Level level, LivingEntity entity, int timeLeft) {
         if (entity instanceof Player player) {
@@ -71,29 +94,5 @@ public class StalkerMasterItem extends Item {
         }
         result.add(Component.translatable("item.diligentstalker.stalker_master.intro1").withStyle(ChatFormatting.GOLD));
         result.add(Component.translatable("item.diligentstalker.stalker_master.intro2").withStyle(ChatFormatting.GOLD));
-    }
-
-    public static Map.Entry<String, BlockPos> entryOfUsingStalkerMaster(Player player) {
-        if (player != null && player.isUsingItem()) {
-            if (player.getMainHandItem().getItem() instanceof StalkerMasterItem) {
-                CompoundTag tag = player.getMainHandItem().getOrCreateTag();
-                if (tag.contains("StalkerId") && StalkerManage.DronePosition.containsKey(tag.getUUID("StalkerId"))) {
-                    return StalkerManage.DronePosition.get(tag.getUUID("StalkerId"));
-                }
-            }
-        }
-        return null;
-    }
-
-    public static UUID uuidOfUsingStalkerMaster(Player player) {
-        if (player != null && player.isUsingItem()) {
-            if (player.getMainHandItem().getItem() instanceof StalkerMasterItem) {
-                CompoundTag tag = player.getMainHandItem().getOrCreateTag();
-                if (tag.contains("StalkerId")) {
-                    return tag.getUUID("StalkerId");
-                }
-            }
-        }
-        return null;
     }
 }

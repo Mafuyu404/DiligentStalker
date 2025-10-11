@@ -1,11 +1,11 @@
 package com.mafuyu404.diligentstalker.event.handler;
 
 import com.mafuyu404.diligentstalker.api.IControllable;
+import com.mafuyu404.diligentstalker.data.ModLookupApi;
 import com.mafuyu404.diligentstalker.entity.ArrowStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.DroneStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.VoidStalkerEntity;
-import com.mafuyu404.diligentstalker.event.client.MouseCallbacks;
-import com.mafuyu404.diligentstalker.data.ModComponents;
+import com.mafuyu404.diligentstalker.event.client.MouseCallback;
 import com.mafuyu404.diligentstalker.init.NetworkHandler;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.item.StalkerCoreItem;
@@ -49,8 +49,8 @@ public class StalkerControl {
         UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> onInteract(player, hand, entity));
         UseBlockCallback.EVENT.register((player, world, hand, hit) -> onUseBlock(player));
         AttackBlockCallback.EVENT.register((player, world, hand, pos, direction) -> onAttackBlock(player));
-        MouseCallbacks.MOUSE_BUTTON_EVENT.register(StalkerControl::onAction);
-        MouseCallbacks.MOUSE_SCROLL_EVENT.register(StalkerControl::onMouseScrolling);
+        MouseCallback.MOUSE_BUTTON_EVENT.register(StalkerControl::onAction);
+        MouseCallback.MOUSE_SCROLL_EVENT.register(StalkerControl::onMouseScrolling);
         ClientEntityEvents.ENTITY_LOAD.register((entity, world) -> onClientEnter(entity));
     }
 
@@ -72,7 +72,7 @@ public class StalkerControl {
         Entity stalker = ClientStalkerUtil.getLocalStalker();
         if (stalker != null) {
             ClientStalkerUtil.setVisualCenter(null);
-    
+
             if (ControllableUtils.isControllable(stalker)) {
                 if (ControllableUtils.isCameraControlling(stalker)) {
                     xRot = ClientStalkerUtil.getCameraXRot();
@@ -189,8 +189,10 @@ public class StalkerControl {
                 input = minimal;
             }
         }
-        ModComponents.STALKER_DATA.get(player).getStalkerData().put(ControllableUtils.CONTROL_INPUT_KEY, input);
-        NetworkHandler.sendToServer(NetworkHandler.ENTITY_DATA_PACKET, new EntityDataPacket(player.getId(), ModComponents.STALKER_DATA.get(player).getStalkerData()));
+        var data = ModLookupApi.STALKER_DATA.find(player, null);
+        if (data == null) return;
+        data.getData().put(ControllableUtils.CONTROL_INPUT_KEY, input);
+        NetworkHandler.sendToServer(NetworkHandler.ENTITY_DATA_PACKET, new EntityDataPacket(player.getId(), data.getData().copy()));
     }
 
     public static void RightClickBlock(Player player, Vec3 position, Vec3 viewVec) {

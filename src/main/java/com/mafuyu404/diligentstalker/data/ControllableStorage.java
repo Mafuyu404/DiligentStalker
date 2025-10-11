@@ -7,14 +7,12 @@ import net.minecraft.util.Mth;
 import java.util.List;
 
 public class ControllableStorage implements IControllableStorage {
+    public static final List<String> CAMERA_STATE_TYPE = List.of("free", "follow", "control");
     private static final String FUEL_KEY = "ControllableFuel";
     private static final String MAX_FUEL_KEY = "ControllableMaxFuel";
     private static final String CAMERA_STATE_KEY = "CameraState";
     private static final String SIGNAL_RADIUS_KEY = "SignalRadius";
     private static final String ACTION_CONTROL_KEY = "ActionControl";
-
-    public static final List<String> CAMERA_STATE_TYPE = List.of("free", "follow", "control");
-
     private int fuel = 0;
     private int maxFuel = 100;
     private String cameraState = CAMERA_STATE_TYPE.get(0);
@@ -60,24 +58,24 @@ public class ControllableStorage implements IControllableStorage {
     }
 
     @Override
+    public int getMaxFuel() {
+        return maxFuel;
+    }
+
+    @Override
     public void setMaxFuel(int amount) {
         maxFuel = amount;
     }
 
     @Override
-    public int getMaxFuel() {
-        return maxFuel;
+    public String getCameraState() {
+        return cameraState;
     }
 
     @Override
     public void setCameraState(String value) {
         if (!CAMERA_STATE_TYPE.contains(value)) return;
         cameraState = value;
-    }
-
-    @Override
-    public String getCameraState() {
-        return cameraState;
     }
 
     @Override

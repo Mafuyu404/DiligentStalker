@@ -16,12 +16,6 @@ public class RClickBlockPacket implements Packet {
         this.viewVec = viewVec;
     }
 
-    @Override
-    public void encode(FriendlyByteBuf buffer) {
-        buffer.writeVector3f(position.toVector3f());
-        buffer.writeVector3f(viewVec.toVector3f());
-    }
-
     public static RClickBlockPacket decode(FriendlyByteBuf buffer) {
         return new RClickBlockPacket(new Vec3(buffer.readVector3f()), new Vec3(buffer.readVector3f()));
     }
@@ -32,5 +26,11 @@ public class RClickBlockPacket implements Packet {
 
             StalkerControl.RightClickBlock(player, msg.position, msg.viewVec);
         });
+    }
+
+    @Override
+    public void encode(FriendlyByteBuf buffer) {
+        buffer.writeVector3f(position.toVector3f());
+        buffer.writeVector3f(viewVec.toVector3f());
     }
 }

@@ -13,12 +13,6 @@ public class ClientFuelPacket implements Packet {
         this.fuel = fuel;
     }
 
-    @Override
-    public void encode(FriendlyByteBuf buffer) {
-        buffer.writeInt(entityId);
-        buffer.writeInt(fuel);
-    }
-
     public static ClientFuelPacket decode(FriendlyByteBuf buffer) {
         return new ClientFuelPacket(buffer.readInt(), buffer.readInt());
     }
@@ -27,5 +21,11 @@ public class ClientFuelPacket implements Packet {
         client.execute(() -> {
             ClientStalkerUtil.updateFuel(msg.entityId, msg.fuel);
         });
+    }
+
+    @Override
+    public void encode(FriendlyByteBuf buffer) {
+        buffer.writeInt(entityId);
+        buffer.writeInt(fuel);
     }
 }

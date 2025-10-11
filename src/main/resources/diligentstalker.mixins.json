@@ -12,6 +12,7 @@
     "EntityMixin",
     "InventoryAccessor",
     "LivingEntityMixin",
+    "LivingEntityStorageMixin",
     "MinecraftServerMixin",
     "PlayerMixin",
     "ServerLevelMixin"

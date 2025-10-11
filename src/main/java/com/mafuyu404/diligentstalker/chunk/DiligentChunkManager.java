@@ -5,10 +5,6 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtUtils;
-import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.TicketType;
@@ -16,17 +12,16 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 
 import java.util.*;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 public final class DiligentChunkManager {
-    private DiligentChunkManager() {}
-
     private static final TicketType<TicketOwner<BlockPos>> BLOCK_TICKING = TicketType.create("diligent:block_ticking", Comparator.comparing(TicketOwner::stableKey));
     private static final TicketType<TicketOwner<UUID>> ENTITY = TicketType.create("diligent:entity", Comparator.comparing(TicketOwner::stableKey));
     private static final TicketType<TicketOwner<UUID>> ENTITY_TICKING = TicketType.create("diligent:entity_ticking", Comparator.comparing(TicketOwner::stableKey));
-
     private static final Map<String, LoadingValidationCallback> callbacks = new HashMap<>();
+
+    private DiligentChunkManager() {
+    }
 
     public static void setForcedChunkLoadingCallback(String modId, LoadingValidationCallback callback) {
         if (FabricLoader.getInstance().isModLoaded(modId)) {
@@ -183,15 +178,22 @@ public final class DiligentChunkManager {
             this.entityTickets = entityTickets;
         }
 
-        public Map<BlockPos, Pair<LongSet, LongSet>> getBlockTickets() { return blockTickets; }
-        public Map<UUID, Pair<LongSet, LongSet>> getEntityTickets() { return entityTickets; }
+        public Map<BlockPos, Pair<LongSet, LongSet>> getBlockTickets() {
+            return blockTickets;
+        }
+
+        public Map<UUID, Pair<LongSet, LongSet>> getEntityTickets() {
+            return entityTickets;
+        }
 
         public void removeTicket(BlockPos owner, long chunk, boolean ticking) {
             remove(saveData.getBlockForcedChunks(), owner, chunk, ticking);
         }
+
         public void removeTicket(UUID owner, long chunk, boolean ticking) {
             remove(saveData.getEntityForcedChunks(), owner, chunk, ticking);
         }
+
         public void removeAllTickets(UUID owner) {
             TicketTracker<UUID> t = saveData.getEntityForcedChunks();
             TicketOwner<UUID> key = new TicketOwner<>(modId, owner);
@@ -201,6 +203,7 @@ public final class DiligentChunkManager {
                 saveData.setDirty(true);
             }
         }
+
         private <T extends Comparable<? super T>> void remove(TicketTracker<T> tickets, T owner, long chunk, boolean ticking) {
             if (tickets.remove(new TicketOwner<>(modId, owner), chunk, ticking)) {
                 saveData.setDirty(true);
@@ -211,24 +214,46 @@ public final class DiligentChunkManager {
     public static final class TicketOwner<T> implements Comparable<TicketOwner<T>> {
         final String modId;
         final T owner;
-        public TicketOwner(String modId, T owner) { this.modId = modId; this.owner = owner; }
-        String stableKey() { return modId + "|" + owner; }
-        @Override public int compareTo(TicketOwner<T> o) { return this.stableKey().compareTo(o.stableKey()); }
-        @Override public boolean equals(Object o) {
+
+        public TicketOwner(String modId, T owner) {
+            this.modId = modId;
+            this.owner = owner;
+        }
+
+        String stableKey() {
+            return modId + "|" + owner;
+        }
+
+        @Override
+        public int compareTo(TicketOwner<T> o) {
+            return this.stableKey().compareTo(o.stableKey());
+        }
+
+        @Override
+        public boolean equals(Object o) {
             if (this == o) return true;
             if (!(o instanceof TicketOwner<?> other)) return false;
             return Objects.equals(modId, other.modId) && Objects.equals(owner, other.owner);
         }
-        @Override public int hashCode() { return Objects.hash(modId, owner); }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(modId, owner);
+        }
     }
 
     public static final class TicketTracker<T> {
         final Map<TicketOwner<T>, LongSet> chunks = new HashMap<>();
         final Map<TicketOwner<T>, LongSet> tickingChunks = new HashMap<>();
-        boolean isEmpty() { return chunks.isEmpty() && tickingChunks.isEmpty(); }
+
+        boolean isEmpty() {
+            return chunks.isEmpty() && tickingChunks.isEmpty();
+        }
+
         boolean add(TicketOwner<T> owner, long chunk, boolean ticking) {
             return (ticking ? tickingChunks : chunks).computeIfAbsent(owner, k -> new LongOpenHashSet()).add(chunk);
         }
+
         boolean remove(TicketOwner<T> owner, long chunk, boolean ticking) {
             LongSet set = (ticking ? tickingChunks : chunks).get(owner);
             return set != null && set.remove(chunk);

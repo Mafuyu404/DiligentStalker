@@ -1,12 +1,12 @@
 package com.mafuyu404.diligentstalker.event.handler;
 
 import com.mafuyu404.diligentstalker.DiligentStalker;
+import com.mafuyu404.diligentstalker.data.ModLookupApi;
 import com.mafuyu404.diligentstalker.entity.ArrowStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.CameraStalkerBlockEntity;
 import com.mafuyu404.diligentstalker.entity.VoidStalkerEntity;
 import com.mafuyu404.diligentstalker.event.EntityDeathCallback;
 import com.mafuyu404.diligentstalker.init.ChunkLoader;
-import com.mafuyu404.diligentstalker.data.ModComponents;
 import com.mafuyu404.diligentstalker.init.NetworkHandler;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.item.StalkerMasterItem;
@@ -83,11 +83,12 @@ public class StalkerManage {
         Entity stalker = Stalker.getInstanceOf(player).getStalker();
         int timer = 10;
         if (ControllableUtils.isControllable(stalker)) {
-            CompoundTag input = (CompoundTag) ModComponents.STALKER_DATA.get(player).getStalkerData().get(ControllableUtils.CONTROL_INPUT_KEY);
-            if (input != null && !input.isEmpty()) {
+            var data = ModLookupApi.STALKER_DATA.find(player, null);
+            CompoundTag input = data != null ? data.getData().getCompound(ControllableUtils.CONTROL_INPUT_KEY) : new CompoundTag();
+            if (!input.isEmpty()) {
                 if (input.contains("xRot")) stalker.setXRot(input.getFloat("xRot"));
                 if (input.contains("yRot")) stalker.setYRot(input.getFloat("yRot"));
-    
+
                 Vec3 direction = stalker.position().subtract(player.position());
                 int distance = (int) direction.length();
                 boolean checkFuel = ControllableUtils.getFuel(stalker) > 0;
@@ -207,12 +208,10 @@ public class StalkerManage {
 
     private static void onEntityRemove(Entity entity) {
         if (Stalker.hasInstanceOf(entity)) {
-            if (entity instanceof Player) {
-                Stalker.cleanupPlayer(entity.getUUID());
-            } else {
-                Stalker.cleanupStalker(entity.getId());
+            Stalker stalkerInstance = Stalker.getInstanceOf(entity);
+            if (stalkerInstance != null) {
+                stalkerInstance.disconnect();
             }
-            Stalker.getInstanceOf(entity).disconnect();
         }
     }
 
@@ -235,11 +234,15 @@ public class StalkerManage {
     private static void performLightweightCleanup(MinecraftServer server) {
         server.getPlayerList().getPlayers().forEach(player -> {
             if (Stalker.hasInstanceOf(player)) {
-                Stalker stalkerInstance = Stalker.getInstanceOf(player);
+                var stalkerInstance = Stalker.getInstanceOf(player);
                 if (stalkerInstance != null) {
                     Entity stalker = stalkerInstance.getStalker();
                     if (stalker == null || !stalker.isAlive()) {
                         stalkerInstance.disconnect();
+                        var data = ModLookupApi.STALKER_DATA.find(player, null);
+                        if (data != null) {
+                            data.getData().putBoolean("LoadingCacheChunk", true);
+                        }
                     }
                 }
             }

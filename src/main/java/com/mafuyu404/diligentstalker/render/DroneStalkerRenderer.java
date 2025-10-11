@@ -14,12 +14,11 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 
 public class DroneStalkerRenderer extends EntityRenderer<DroneStalkerEntity> {
+    public static final ModelLayerLocation LAYER = new ModelLayerLocation(new ResourceLocation(DiligentStalker.MODID, "drone_stalker"), "main");
     private static final ResourceLocation TOP_TEXTURE = new ResourceLocation(DiligentStalker.MODID, "textures/entity/drone_stalker_top.png");
     private static final ResourceLocation BOTTOM_TEXTURE = new ResourceLocation(DiligentStalker.MODID, "textures/entity/drone_stalker_bottom.png");
     private static final ResourceLocation FORWARD_TEXTURE = new ResourceLocation(DiligentStalker.MODID, "textures/entity/drone_stalker_forward.png");
     private static final ResourceLocation SIDE_TEXTURE = new ResourceLocation(DiligentStalker.MODID, "textures/entity/drone_stalker_side.png");
-
-    public static final ModelLayerLocation LAYER = new ModelLayerLocation(new ResourceLocation(DiligentStalker.MODID, "drone_stalker"), "main");
     private final DroneStalkerModel model;
 
     public DroneStalkerRenderer(EntityRendererProvider.Context context) {

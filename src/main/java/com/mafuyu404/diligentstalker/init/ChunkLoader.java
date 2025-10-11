@@ -11,6 +11,12 @@ import java.util.Set;
 
 public class ChunkLoader {
     private static HashMap<ResourceLocation, ChunkLoader> dimension = new HashMap<>();
+    private final ServerLevel level;
+    private final Set<ChunkPos> forcedChunks = new HashSet<>();
+
+    public ChunkLoader(ServerLevel level) {
+        this.level = level;
+    }
 
     public static ChunkLoader of(ServerLevel serverLevel) {
         ResourceLocation id = serverLevel.dimension().location();
@@ -20,13 +26,6 @@ public class ChunkLoader {
 
     public static void init() {
         dimension = new HashMap<>();
-    }
-
-    private final ServerLevel level;
-    private final Set<ChunkPos> forcedChunks = new HashSet<>();
-
-    public ChunkLoader(ServerLevel level) {
-        this.level = level;
     }
 
     public void addChunk(ChunkPos chunkPos) {

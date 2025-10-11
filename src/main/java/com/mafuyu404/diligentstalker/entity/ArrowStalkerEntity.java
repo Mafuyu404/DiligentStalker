@@ -1,5 +1,11 @@
 package com.mafuyu404.diligentstalker.entity;
 
+import com.mafuyu404.diligentstalker.api.HasControllableStorage;
+import com.mafuyu404.diligentstalker.api.HasStalkerData;
+import com.mafuyu404.diligentstalker.api.IControllableStorage;
+import com.mafuyu404.diligentstalker.api.IStalkerData;
+import com.mafuyu404.diligentstalker.data.ControllableStorage;
+import com.mafuyu404.diligentstalker.data.StalkerDataComponent;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.registry.StalkerEntities;
 import com.mafuyu404.diligentstalker.registry.StalkerItems;
@@ -14,13 +20,25 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 
-public class ArrowStalkerEntity extends AbstractArrow {
+public class ArrowStalkerEntity extends AbstractArrow implements HasControllableStorage, HasStalkerData {
+    private final ControllableStorage diligentstalker$storage = new ControllableStorage();
+    private final IStalkerData diligentstalker$stalkerData = new StalkerDataComponent();
+
     public ArrowStalkerEntity(EntityType<? extends AbstractArrow> type, Level level) {
         super(type, level);
     }
-
     public ArrowStalkerEntity(LivingEntity shooter, Level level) {
         super(StalkerEntities.ARROW_STALKER, shooter, level);
+    }
+
+    @Override
+    public IControllableStorage diligentstalker$getControllableStorage() {
+        return diligentstalker$storage;
+    }
+
+    @Override
+    public IStalkerData diligentstalker$getStalkerData() {
+        return diligentstalker$stalkerData;
     }
 
     @Override
@@ -71,13 +89,21 @@ public class ArrowStalkerEntity extends AbstractArrow {
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag compound) {
-        super.addAdditionalSaveData(compound);
+    public void addAdditionalSaveData(CompoundTag tag) {
+        tag.put("DiligentControllableStorage", diligentstalker$storage.serializeNBT());
+        CompoundTag stalkerTag = new CompoundTag();
+        diligentstalker$stalkerData.writeToNbt(stalkerTag);
+        tag.put("DiligentStalkerData", stalkerTag);
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag compound) {
-        super.readAdditionalSaveData(compound);
+    public void readAdditionalSaveData(CompoundTag tag) {
+        if (tag.contains("DiligentControllableStorage")) {
+            diligentstalker$storage.deserializeNBT(tag.getCompound("DiligentControllableStorage"));
+        }
+        if (tag.contains("DiligentStalkerData")) {
+            diligentstalker$stalkerData.readFromNbt(tag.getCompound("DiligentStalkerData"));
+        }
     }
 
     @Override
