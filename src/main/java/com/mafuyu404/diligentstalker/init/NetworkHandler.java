@@ -34,7 +34,9 @@ public class NetworkHandler {
             var msg = ServerRemoteConnectPacket.decode(buf);
             ServerRemoteConnectPacket.handle(server, player, msg);
         });
+    }
 
+    public static void registerClient() {
         ClientPlayNetworking.registerGlobalReceiver(CLIENT_FUEL_PACKET, (client, handler, buf, responseSender) -> {
             var msg = ClientFuelPacket.decode(buf);
             ClientFuelPacket.handle(msg, client);
@@ -43,7 +45,6 @@ public class NetworkHandler {
             var msg = ClientStalkerPacket.decode(buf);
             ClientStalkerPacket.handle(msg, client);
         });
-
     }
 
     public static void sendToClient(ServerPlayer player, ResourceLocation id, Packet msg) {

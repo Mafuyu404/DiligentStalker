@@ -47,7 +47,7 @@ public final class DiligentForcedChunksData extends SavedData {
             CompoundTag forcedEntry = new CompoundTag();
             forcedEntry.putString("Mod", entry.getKey());
             ListTag modForced = new ListTag();
-            for (CompoundTag tag : entry.getValue().values()) modForced.add(tag);
+            modForced.addAll(entry.getValue().values());
             forcedEntry.put("ModForced", modForced);
             forced.add(forcedEntry);
         }

@@ -1,5 +1,6 @@
 package com.mafuyu404.diligentstalker.event.handler;
 
+import com.mafuyu404.diligentstalker.init.NetworkHandler;
 import com.mafuyu404.diligentstalker.registry.KeyBindings;
 import com.mafuyu404.diligentstalker.registry.StalkerBlockEntities;
 import com.mafuyu404.diligentstalker.registry.StalkerEntities;
@@ -51,6 +52,7 @@ public class ClientSetup implements ClientModInitializer {
     }
 
     private void setup() {
+        NetworkHandler.registerClient();
         ChunkLoadTask.initClientTick();
         DroneStalkerHUD.initHud();
         HideEXPBar.onRenderExperienceBar();
