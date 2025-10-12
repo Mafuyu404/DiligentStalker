@@ -1,0 +1,35 @@
+{
+  "itemGroup.tab.diligentstalker": "Diligent Stalker",
+  "item.diligentstalker.stalker_core": "Stalker Core",
+  "item.diligentstalker.stalker_core.intro": "RClick entity to be stalker",
+  "item.diligentstalker.drone_stalker": "Drone Stalker",
+  "item.diligentstalker.drone_stalker.intro1": "SHIFT RClick for Container",
+  "item.diligentstalker.drone_stalker.intro2": "Press RClick to connect",
+  "item.diligentstalker.arrow_stalker": "Arrow Stalker",
+  "item.diligentstalker.void_stalker": "Void Stalker",
+  "item.diligentstalker.stalker_master": "Stalker Master",
+  "item.diligentstalker.stalker_master.intro1": "SHIFT RClick to record",
+  "item.diligentstalker.stalker_master.intro2": "Hold RClick to connect",
+  "item.diligentstalker.camera_stalker": "Camera Stalker",
+
+  "entity.diligentstalker.drone_stalker": "Drone Stalker",
+  "entity.diligentstalker.arrow_stalker": "Arrow Stalker",
+  "entity.diligentstalker.void_stalker": "Void Stalker",
+
+  "block.diligentstalker.camera_stalker": "Camera Stalker",
+
+  "key.categories.diligentstalker": "Diligent Stalker",
+  "key.diligentstalker.disconnect.desc": "Disconnect",
+  "key.diligentstalker.view.desc": "Switch Camera State",
+  "key.diligentstalker.control.desc": "Turn Control State",
+
+  "message.diligentstalker.fuel_added": "Added fuel.",
+  "message.diligentstalker.fuel_full": "Fuel full.",
+  "message.diligentstalker.record_success": "Recorded",
+  "message.diligentstalker.free_camera": "Camera Mode: Free",
+  "message.diligentstalker.follow_camera": "Camera Mode: Follow",
+  "message.diligentstalker.control_camera": "Camera Mode: Control",
+  "message.diligentstalker.action_control_on": "Action Control: On",
+  "message.diligentstalker.action_control_off": "Action Control: OFF",
+  "message.diligentstalker.under_maintaining": "Under Maintaining"
+}

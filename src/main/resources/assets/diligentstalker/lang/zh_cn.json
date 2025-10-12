@@ -1,0 +1,35 @@
+{
+  "itemGroup.tab.diligentstalker": "勤劳跟踪狂",
+  "item.diligentstalker.stalker_core": "跟踪许可证",
+  "item.diligentstalker.stalker_core.intro": "右键实体开始跟踪",
+  "item.diligentstalker.drone_stalker": "善良跟踪狂",
+  "item.diligentstalker.drone_stalker.intro1": "SHIFT右键打开容器",
+  "item.diligentstalker.drone_stalker.intro2": "单击右键连接",
+  "item.diligentstalker.arrow_stalker": "头尖尖跟踪狂",
+  "item.diligentstalker.void_stalker": "头圆圆跟踪狂",
+  "item.diligentstalker.stalker_master": "勤劳跟踪狂",
+  "item.diligentstalker.stalker_master.intro1": "SHIFT右键绑定对象",
+  "item.diligentstalker.stalker_master.intro2": "长按右键连接对象",
+  "item.diligentstalker.camera_stalker": "害羞跟踪狂",
+
+  "entity.diligentstalker.drone_stalker": "善良跟踪狂",
+  "entity.diligentstalker.arrow_stalker": "头尖尖跟踪狂",
+  "entity.diligentstalker.void_stalker": "头圆圆跟踪狂",
+
+  "block.diligentstalker.camera_stalker": "害羞跟踪狂",
+
+  "key.categories.diligentstalker": "勤劳跟踪狂",
+  "key.diligentstalker.disconnect.desc": "断开连接",
+  "key.diligentstalker.view.desc": "切换视角模式",
+  "key.diligentstalker.control.desc": "开关操作输入",
+
+  "message.diligentstalker.fuel_added": "已补充能量",
+  "message.diligentstalker.fuel_full": "能量已满",
+  "message.diligentstalker.record_success": "绑定成功",
+  "message.diligentstalker.free_camera": "视角模式: 自由",
+  "message.diligentstalker.follow_camera": "视角模式: 跟随",
+  "message.diligentstalker.control_camera": "视角模式: 控制",
+  "message.diligentstalker.action_control_on": "操作输入: 开启",
+  "message.diligentstalker.action_control_off": "操作输入: 关闭",
+  "message.diligentstalker.under_maintaining": "功能维护中"
+}

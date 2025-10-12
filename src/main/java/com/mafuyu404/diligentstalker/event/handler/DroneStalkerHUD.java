@@ -1,0 +1,258 @@
+package com.mafuyu404.diligentstalker.event.handler;
+
+import com.mafuyu404.diligentstalker.DiligentStalker;
+import com.mafuyu404.diligentstalker.compat.KeyPrompts;
+import com.mafuyu404.diligentstalker.data.StalkerDataComponents;
+import com.mafuyu404.diligentstalker.init.Stalker;
+import com.mafuyu404.diligentstalker.item.StalkerMasterItem;
+import com.mafuyu404.diligentstalker.utils.ClientStalkerUtil;
+import com.mafuyu404.diligentstalker.utils.ControllableUtils;
+import com.mafuyu404.diligentstalker.utils.StalkerUtil;
+import com.mojang.blaze3d.platform.Window;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.*;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
+import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
+
+import java.util.List;
+
+@EventBusSubscriber(modid = DiligentStalker.MODID, value = Dist.CLIENT)
+public class DroneStalkerHUD {
+    @SubscribeEvent
+    public static void skp(ClientTickEvent.Post event) {
+        var mc = Minecraft.getInstance();
+        if (Stalker.hasInstanceOf(mc.player)) {
+            KeyPrompts.show("key.diligentstalker.view.desc");
+            KeyPrompts.show("key.diligentstalker.control.desc");
+        }
+    }
+
+    private static int SIGNAL_RADIUS = 0;
+    public static boolean LPress = false;
+    public static boolean RPress = false;
+
+    @SubscribeEvent
+    public static void onRenderGameOverlay(RenderGuiLayerEvent.Post event) {
+        if (event.getName().equals(VanillaGuiLayers.CROSSHAIR)) {
+            Minecraft mc = Minecraft.getInstance();
+            LocalPlayer player = mc.player;
+            if (player == null) return;
+
+            GuiGraphics guiGraphics = event.getGuiGraphics();
+            ResourceLocation icon = player.getSkin().texture();
+            ResourceLocation item = ResourceLocation.fromNamespaceAndPath(DiligentStalker.MODID, "textures/entity/drone_stalker_forward.png");
+
+            if (Stalker.hasInstanceOf(player)) {
+                Entity stalker = Stalker.getInstanceOf(player).getStalker();
+                Vec3 direction = stalker.position().subtract(player.position());
+                float yRot = StalkerUtil.getYRotFromVec3(direction);
+                int distance = (int) direction.length();
+
+                if (ControllableUtils.isControllable(stalker)) {
+                    if (SIGNAL_RADIUS == 0)
+                        SIGNAL_RADIUS = ControllableUtils.getSignalRadius(stalker);
+
+                    float signal_percent = 1 - (1f * distance / SIGNAL_RADIUS);
+                    float fuel_percent = ControllableUtils.getFuelPercent(stalker);
+                    List<ArcSection> sections = List.of(
+                            new ArcSection(-157.5f, 0.375f, 0.7f, 0.7f, 0.7f, 0.4f),
+                            new ArcSection(-157.5f - 0.375f * 180 * (1 - signal_percent), signal_percent * 0.375f, 0.8f, 0.8f, 0.8f, 1f),
+                            new ArcSection(-22.5f, 0.375f, 0.6f, 0.8f, 1.0f, 0.4f),
+                            new ArcSection(-22.5f + 0.375f * 180 * (1 - fuel_percent), fuel_percent * 0.375f, 0.6f, 0.8f, 1.0f, 1f),
+                            new ArcSection(112.5f, 0.125f, 1.0f, 0.6f, 0.6f, 0.4f),
+                            new ArcSection(112.5f, LPress ? 0.125f : 0, 1.0f, 0.6f, 0.6f, 1f),
+                            new ArcSection(67.5f, 0.125f, 0.6f, 1.0f, 0.6f, 0.4f),
+                            new ArcSection(67.5f, RPress ? 0.125f : 0, 0.6f, 1.0f, 0.6f, 1f)
+                    );
+
+                    drawHud(guiGraphics, sections);
+                }
+
+                drawPlayerPosition(guiGraphics, yRot - ClientStalkerUtil.getCameraYRot() + 180, distance, icon);
+            } else {
+                ItemStack itemStack = player.getMainHandItem();
+                if (itemStack.getItem() instanceof StalkerMasterItem) {
+                    BlockPos pos = itemStack.get(StalkerDataComponents.STALKER_POSITION.get());
+                    if (pos != null) {
+                        Vec3 direction = new Vec3(pos.getX(), pos.getY(), pos.getZ()).subtract(player.position());
+                        float yRot = StalkerUtil.getYRotFromVec3(direction);
+                        int distance = (int) direction.length();
+                        float signal_percent = 1 - (1f * distance / SIGNAL_RADIUS);
+                        List<ArcSection> sections = List.of(
+                                new ArcSection(-157.5f, 0.375f, 0.7f, 0.7f, 0.7f, 0.4f),
+                                new ArcSection(-157.5f - 0.375f * 180 * (1 - signal_percent), signal_percent * 0.375f, 0.8f, 0.8f, 0.8f, 1f)
+                        );
+                        drawHud(event.getGuiGraphics(), sections);
+                        drawPlayerPosition(event.getGuiGraphics(), yRot - player.getYRot(), distance, item);
+                    }
+                }
+            }
+        }
+    }
+
+    private static void drawHud(GuiGraphics guiGraphics, List<ArcSection> sections) {
+        PoseStack poseStack = guiGraphics.pose();
+        Window window = Minecraft.getInstance().getWindow();
+        int screenWidth = window.getGuiScaledWidth();
+        int screenHeight = window.getGuiScaledHeight();
+
+        // 圆环基础参数
+        int centerX = screenWidth / 2;
+        int centerY = screenHeight / 2;
+        float radius = 80.0f;
+        float thickness = 3.0f;
+
+        poseStack.pushPose();
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.setShader(GameRenderer::getPositionShader);
+
+        Tesselator tessellator = Tesselator.getInstance();
+
+        // 总可用角度（360度 - 3个间隙）
+        final float GAP = 2f;
+        final float TOTAL_AVAILABLE = 360f - 3 * GAP;
+
+        for (ArcSection section : sections) {
+            // 计算实际角度范围
+            float sectionAngle = TOTAL_AVAILABLE * section.percentage;
+
+            // 计算起止角度（中心向两侧扩展）
+            float start = section.centerAngle - sectionAngle / 2 + GAP / 2;
+            float end = section.centerAngle + sectionAngle / 2 - GAP / 2;
+
+            // 生成顶点
+            BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION);
+
+            RenderSystem.setShaderColor(section.r, section.g, section.b, section.a);
+
+            // 分段数根据角度比例动态计算
+            int segments = (int) (sectionAngle * 1.5f);
+            for (int i = 0; i <= segments; i++) {
+                double angle = Math.toRadians(start + (end - start) * i / segments);
+
+                // 外圈顶点
+                double ox = centerX + radius * Math.cos(angle);
+                double oy = centerY + radius * Math.sin(angle);
+
+                // 内圈顶点
+                double ix = centerX + (radius - thickness) * Math.cos(angle);
+                double iy = centerY + (radius - thickness) * Math.sin(angle);
+
+                buffer.addVertex((float) ox, (float) oy, 0);
+                buffer.addVertex((float) ix, (float) iy, 0);
+            }
+
+            BufferUploader.drawWithShader(buffer.buildOrThrow());
+        }
+        RenderSystem.disableBlend();
+        poseStack.popPose();
+    }
+
+    private static void drawPlayerPosition(GuiGraphics guiGraphics, float rotate, int distance, ResourceLocation icon) {
+        guiGraphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
+        Window window = Minecraft.getInstance().getWindow();
+        int screenWidth = window.getGuiScaledWidth();
+        int screenHeight = window.getGuiScaledHeight();
+
+        int centerX = screenWidth / 2;
+        int centerY = screenHeight / 2;
+        float radius = 90.0f; // 圆环半径
+
+        // 计算头像位置
+        double theta = Math.toRadians(90 - rotate);
+        double xPos = centerX + radius * Math.cos(theta);
+        double yPos = centerY - radius * Math.sin(theta);
+
+        // 设置头像尺寸并居中
+        int headSize = 12;
+        int x = (int) (xPos - (double) headSize / 2);
+        int y = (int) (yPos - (double) headSize / 2) - 2;
+
+        // 渲染图标
+        guiGraphics.blit(
+                icon,
+                x, y,
+                headSize, headSize,
+                8, 8,
+                8, 8,
+                64, 64
+        );
+
+        String text = distance + "m";
+        Font font = Minecraft.getInstance().font;
+        int textColor = 0xFFFFFFFF; // 白色
+        int outlineColor = 0xFF000000; // 黑色
+        int textWidth = font.width(text);
+        int textX = x + (headSize - textWidth) / 2; // 水平居中
+        int textY = y + headSize - 2;
+
+        // 渲染文字描边（四周偏移1像素）
+        guiGraphics.drawString(
+                font,
+                text,
+                textX - 1, textY,
+                outlineColor,
+                false // 不启用阴影
+        );
+        guiGraphics.drawString(
+                font,
+                text,
+                textX + 1, textY,
+                outlineColor,
+                false
+        );
+        guiGraphics.drawString(
+                font,
+                text,
+                textX, textY - 1,
+                outlineColor,
+                false
+        );
+        guiGraphics.drawString(
+                font,
+                text,
+                textX, textY + 1,
+                outlineColor,
+                false
+        );
+
+        // 渲染主体文字
+        guiGraphics.drawString(
+                font,
+                text,
+                textX, textY,
+                textColor,
+                false
+        );
+    }
+
+    private static class ArcSection {
+        final float centerAngle; // 中心角度（度）
+        final float percentage;  // 占比
+        final float r, g, b, a;
+
+        ArcSection(float center, float percent, float r, float g, float b, float a) {
+            this.centerAngle = center;
+            this.percentage = percent;
+            this.r = r;
+            this.g = g;
+            this.b = b;
+            this.a = a;
+        }
+    }
+}

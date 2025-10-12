@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " B ",
+    "EAE",
+    " C "
+  ],
+  "key": {
+    "A": {
+      "item": "diligentstalker:stalker_core"
+    },
+    "B": {
+      "item": "minecraft:ender_eye"
+    },
+    "C": {
+      "item": "minecraft:sugar"
+    },
+    "E": {
+      "item": "minecraft:glowstone_dust"
+    }
+  },
+  "result": {
+    "item": "diligentstalker:void_stalker",
+    "count": 8
+  }
+}

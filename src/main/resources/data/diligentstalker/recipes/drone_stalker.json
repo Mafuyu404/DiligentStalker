@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "DBD",
+    "EAE",
+    "DCD"
+  ],
+  "key": {
+    "A": {
+      "item": "diligentstalker:stalker_core"
+    },
+    "B": {
+      "item": "minecraft:shulker_shell"
+    },
+    "C": {
+      "item": "minecraft:redstone"
+    },
+    "D": {
+      "item": "minecraft:sugar"
+    },
+    "E": {
+      "item": "minecraft:phantom_membrane"
+    }
+  },
+  "result": {
+    "item": "diligentstalker:drone_stalker",
+    "count": 1
+  }
+}

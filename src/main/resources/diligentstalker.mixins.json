@@ -1,0 +1,29 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.mafuyu404.diligentstalker.mixin",
+  "plugin": "com.mafuyu404.diligentstalker.init.MixinPlugin",
+  "compatibilityLevel": "JAVA_21",
+  "refmap": "diligentstalker.refmap.json",
+  "mixins": [
+    "ChunkMap$TrackedEntityMixin",
+    "ChunkMapMixin",
+    "ClientboundLevelChunkWithLightPacketMixin",
+    "EntityMixin",
+    "InventoryAccessor",
+    "PlayerMixin"
+  ],
+  "client": [
+    "client.CameraMixin",
+    "client.ClientChunkCache$StorageMixin",
+    "client.ClientChunkCacheMixin",
+    "client.ClientPacketListenerMixin",
+    "client.GameRendererMixin",
+    "client.LevelRendererMixin",
+    "client.MinecraftMixin",
+    "client.PlayerRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
