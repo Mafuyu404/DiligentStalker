@@ -109,55 +109,65 @@ public class DroneStalkerHUD {
         Window window = Minecraft.getInstance().getWindow();
         int screenWidth = window.getGuiScaledWidth();
         int screenHeight = window.getGuiScaledHeight();
-
+    
         // 圆环基础参数
         int centerX = screenWidth / 2;
         int centerY = screenHeight / 2;
         float radius = 80.0f;
         float thickness = 3.0f;
-
+    
         poseStack.pushPose();
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         RenderSystem.setShader(GameRenderer::getPositionShader);
-
+    
         Tesselator tessellator = Tesselator.getInstance();
-
+    
         // 总可用角度（360度 - 3个间隙）
         final float GAP = 2f;
         final float TOTAL_AVAILABLE = 360f - 3 * GAP;
-
+    
         for (ArcSection section : sections) {
             // 计算实际角度范围
             float sectionAngle = TOTAL_AVAILABLE * section.percentage;
-
+    
+            // 跳过太小的扇形，避免空的 BufferBuilder
+            if (sectionAngle < 0.1f) {
+                continue;
+            }
+    
             // 计算起止角度（中心向两侧扩展）
             float start = section.centerAngle - sectionAngle / 2 + GAP / 2;
             float end = section.centerAngle + sectionAngle / 2 - GAP / 2;
-
+    
             // 生成顶点
-            BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION);
-
+            BufferBuilder buffer = tessellator.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION);
+    
             RenderSystem.setShaderColor(section.r, section.g, section.b, section.a);
-
-            // 分段数根据角度比例动态计算
-            int segments = (int) (sectionAngle * 1.5f);
+    
+            // 分段数根据角度比例动态计算，确保至少有2个分段
+            int segments = Math.max(2, (int) (sectionAngle * 1.5f));
+            
             for (int i = 0; i <= segments; i++) {
                 double angle = Math.toRadians(start + (end - start) * i / segments);
-
+    
                 // 外圈顶点
                 double ox = centerX + radius * Math.cos(angle);
                 double oy = centerY + radius * Math.sin(angle);
-
+    
                 // 内圈顶点
                 double ix = centerX + (radius - thickness) * Math.cos(angle);
                 double iy = centerY + (radius - thickness) * Math.sin(angle);
-
+    
                 buffer.addVertex((float) ox, (float) oy, 0);
                 buffer.addVertex((float) ix, (float) iy, 0);
             }
-
-            BufferUploader.drawWithShader(buffer.buildOrThrow());
+    
+            // 确保有顶点才绘制
+            MeshData meshData = buffer.build();
+            if (meshData != null) {
+                BufferUploader.drawWithShader(meshData);
+            }
         }
         RenderSystem.disableBlend();
         poseStack.popPose();

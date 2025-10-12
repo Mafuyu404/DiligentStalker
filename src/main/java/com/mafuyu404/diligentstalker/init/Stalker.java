@@ -4,6 +4,8 @@ import com.mafuyu404.diligentstalker.event.StalkerEvents;
 import com.mafuyu404.diligentstalker.event.handler.StalkerControl;
 import com.mafuyu404.diligentstalker.network.StalkerSyncPacket;
 import com.mafuyu404.diligentstalker.utils.ClientStalkerUtil;
+import com.mafuyu404.diligentstalker.utils.ServerStalkerUtil;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -42,6 +44,14 @@ public class Stalker {
         StalkerEvents.DisconnectEvent event = new StalkerEvents.DisconnectEvent(getPlayer(), getStalker());
         NeoForge.EVENT_BUS.post(event);
 
+        if (!level.isClientSide) {
+            Player player = getPlayer();
+            if (player != null) {
+                ServerStalkerUtil.setVisualCenter(player, BlockPos.ZERO);
+                player.getPersistentData().putBoolean("LoadingCacheChunk", true);
+            }
+        }
+
         InstanceMap.remove(playerUUID);
         StalkerToPlayerMap.remove(stalkerId);
     }
@@ -54,6 +64,7 @@ public class Stalker {
             NetworkHandler.sendToServer(new StalkerSyncPacket(stalker.getId(), true));
             ClientStalkerUtil.cancelRemoteConnect();
         }
+
 
         StalkerEvents.ConnectEvent event = new StalkerEvents.ConnectEvent(player, stalker);
         NeoForge.EVENT_BUS.post(event);

@@ -24,7 +24,9 @@ neoForge {
     }
 
     // This line is optional. Access Transformers are automatically detected
-    // accessTransformers.add('src/main/resources/META-INF/accesstransformer.cfg')
+    accessTransformers {
+        file('src/main/resources/META-INF/accesstransformer.cfg')
+    }
 
     // Default run configurations.
     // These can be tweaked, removed, or duplicated as needed.
@@ -101,6 +103,9 @@ repositories {
         }
     }
     maven { url "https://maven.architectury.dev/" }
+    maven {
+        url = "https://api.modrinth.com/maven"
+    }
 }
 
 dependencies {
@@ -119,6 +124,7 @@ dependencies {
     // implementation files("libs/coolmod-${mc_version}-${coolmod_version}.jar")
     implementation "dev.architectury:architectury-neoforge:13.0.8"
     implementation "curse.maven:smart-key-prompts-1300195:6911666"
+    implementation "maven.modrinth:AANobbMI:Pb3OXVqC"
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

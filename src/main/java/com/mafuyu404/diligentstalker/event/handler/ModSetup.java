@@ -4,18 +4,14 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent;
 import net.neoforged.neoforge.common.world.chunk.TicketController;
 import net.neoforged.neoforge.common.world.chunk.TicketHelper;
 
 import static com.mafuyu404.diligentstalker.DiligentStalker.MODID;
 
-@EventBusSubscriber
+@EventBusSubscriber(modid = MODID)
 public class ModSetup {
-    @SubscribeEvent
-    public static void onCommonSetup(FMLCommonSetupEvent event) {
-    }
 
     @SubscribeEvent
     public static void onRegisterTicketControllers(RegisterTicketControllersEvent event) {

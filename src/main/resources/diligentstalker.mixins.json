@@ -11,7 +11,8 @@
     "ClientboundLevelChunkWithLightPacketMixin",
     "EntityMixin",
     "InventoryAccessor",
-    "PlayerMixin"
+    "PlayerMixin",
+    "TrackedEntityMixin"
   ],
   "client": [
     "client.CameraMixin",

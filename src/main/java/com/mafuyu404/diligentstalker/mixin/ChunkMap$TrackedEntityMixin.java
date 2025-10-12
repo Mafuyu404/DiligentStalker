@@ -1,5 +1,6 @@
 package com.mafuyu404.diligentstalker.mixin;
 
+import com.mafuyu404.diligentstalker.DiligentStalker;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.utils.ServerStalkerUtil;
 import net.minecraft.server.level.ServerPlayer;
@@ -11,16 +12,28 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(targets = "net.minecraft.server.level.ChunkMap$TrackedEntity")
 public class ChunkMap$TrackedEntityMixin {
-    @Redirect(method = "updatePlayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;position()Lnet/minecraft/world/phys/Vec3;"))
-    private Vec3 wwa(ServerPlayer player) {
+
+    @Redirect(
+            method = "updatePlayer",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/server/level/ServerPlayer;position()Lnet/minecraft/world/phys/Vec3;"
+            )
+    )
+    private Vec3 redirectPosition(ServerPlayer player) {
+        Vec3 original = player.position();
+        Vec3 redirected;
+
         if (Stalker.hasInstanceOf(player)) {
             Entity stalker = Stalker.getInstanceOf(player).getStalker();
-            return stalker.position();
+            redirected = stalker.position();
+        } else if (ServerStalkerUtil.hasVisualCenter(player)) {
+            redirected = ServerStalkerUtil.getVisualCenter(player).getCenter();
         } else {
-            if (ServerStalkerUtil.hasVisualCenter(player)) {
-                return ServerStalkerUtil.getVisualCenter(player).getCenter();
-            }
+            redirected = original;
         }
-        return player.position();
+
+
+        return redirected;
     }
 }

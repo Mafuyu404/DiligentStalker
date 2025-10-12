@@ -17,96 +17,103 @@ import net.minecraft.world.phys.Vec3;
 public class ControllableUtils {
     public static final String CONTROL_INPUT_KEY = "StalkerControlInput";
 
-    private static ControllableStorage getStorage(Entity entity) {
-        return entity.getData(StalkerDataAttachments.CONTROLLABLE_STORAGE.get());
-    }
-
     public static boolean isControllable(Entity entity) {
         return entity instanceof IControllable;
     }
 
+    public static ControllableStorage getData(Entity entity) {
+        return entity.getData(StalkerDataAttachments.CONTROLLABLE_STORAGE);
+    }
+
     public static void setMaxFuel(Entity entity, int maxFuel) {
-        getStorage(entity).setMaxFuel(maxFuel);
+        getData(entity).setMaxFuel(maxFuel);
     }
 
     public static void setFuel(Entity entity, int amount) {
-        ControllableStorage controllable = getStorage(entity);
-        controllable.setFuel(amount);
-        syncFuel(entity, controllable.getFuel());
+        var data = getData(entity);
+        data.setFuel(amount);
+        syncFuel(entity, data.getFuel());
     }
 
     public static void consumeFuel(Entity entity, int amount) {
-        ControllableStorage controllable = getStorage(entity);
-        controllable.consumeFuel(amount);
-        syncFuel(entity, controllable.getFuel());
-    }
-
-    public static int getFuel(Entity entity) {
-        return getStorage(entity).getFuel();
-    }
-
-    public static float getFuelPercent(Entity entity) {
-        ControllableStorage controllable = getStorage(entity);
-        return (float) controllable.getFuel() / controllable.getMaxFuel();
-    }
-
-    public static void syncFuel(Entity entity, int fuel) {
-        if (entity.level().isClientSide) return;
-        if (!isControllable(entity)) return;
-
-        Stalker instance = Stalker.getInstanceOf(entity);
-        if (instance != null) {
-            Player player = instance.getPlayer();
-            NetworkHandler.sendToClient((ServerPlayer) player, new ClientFuelPacket(entity.getId(), fuel));
+        var data = getData(entity);
+        if (data.consumeFuel(amount)) {
+            syncFuel(entity, data.getFuel());
         }
     }
 
+    public static int getFuel(Entity entity) {
+        return getData(entity).getFuel();
+    }
+
+    public static float getFuelPercent(Entity entity) {
+        var data = getData(entity);
+        return data.getMaxFuel() == 0 ? 0f : (float) data.getFuel() / data.getMaxFuel();
+    }
+
+    public static void syncFuel(Entity controllable, int fuel) {
+        if (controllable.level().isClientSide) return;
+        if (!isControllable(controllable)) return;
+
+        Stalker instance = Stalker.getInstanceOf(controllable);
+        if (instance != null) {
+            Player player = instance.getPlayer();
+            NetworkHandler.sendToClient((ServerPlayer) player, new ClientFuelPacket(controllable.getId(), fuel));
+        }
+    }
+
+
     public static boolean isCameraFollowing(Entity entity) {
-        return getStorage(entity).getCameraState().equals("follow");
+        return getData(entity).getCameraState().equals("follow");
     }
 
     public static boolean isCameraControlling(Entity entity) {
-        return getStorage(entity).getCameraState().equals("control");
+        return getData(entity).getCameraState().equals("control");
     }
 
     public static String getCameraState(Entity entity) {
-        return getStorage(entity).getCameraState();
+        return getData(entity).getCameraState();
     }
 
     public static void switchCameraState(Entity entity) {
-        ControllableStorage controllable = getStorage(entity);
-        controllable.switchCameraState();
+        var data = getData(entity);
+        data.switchCameraState();
 
-        if (!isControllable(entity) && controllable.getCameraState().equals("control")) {
-            controllable.switchCameraState();
+        if (!isControllable(entity) && data.getCameraState().equals("control")) {
+            data.switchCameraState();
         }
 
         Stalker instance = Stalker.getInstanceOf(entity);
         if (instance != null) {
             instance.getPlayer().displayClientMessage(
-                    Component.translatable("message.diligentstalker." + controllable.getCameraState() + "_camera")
-                            .withStyle(ChatFormatting.BOLD), true);
+                    Component.translatable("message.diligentstalker." + data.getCameraState() + "_camera")
+                            .withStyle(ChatFormatting.BOLD),
+                    true
+            );
         }
     }
 
     public static void setCameraControlling(Entity entity) {
-        ControllableStorage controllable = getStorage(entity);
-        controllable.setCameraState("control");
+        var data = getData(entity);
+        data.setCameraState("control");
 
         Stalker instance = Stalker.getInstanceOf(entity);
         if (instance != null) {
             instance.getPlayer().displayClientMessage(
-                    Component.translatable("message.diligentstalker." + controllable.getCameraState() + "_camera")
-                            .withStyle(ChatFormatting.BOLD), true);
+                    Component.translatable("message.diligentstalker." + data.getCameraState() + "_camera")
+                            .withStyle(ChatFormatting.BOLD),
+                    true
+            );
         }
     }
 
+
     public static int getSignalRadius(Entity entity) {
-        return getStorage(entity).getSignalRadius();
+        return getData(entity).getSignalRadius();
     }
 
     public static void setSignalRadius(Entity entity, int value) {
-        getStorage(entity).setSignalRadius(value);
+        getData(entity).setSignalRadius(value);
     }
 
     public static Vec3 tickServerControl(Entity entity, CompoundTag input, Vec3 motion) {
@@ -119,27 +126,28 @@ public class ControllableUtils {
     public static boolean isActionControlling(Entity entity) {
         if (!entity.level().isClientSide) {
             Stalker instance = Stalker.getInstanceOf(entity);
-            CompoundTag input = (CompoundTag) instance.getPlayer().getPersistentData().get(ControllableUtils.CONTROL_INPUT_KEY);
+            CompoundTag input = (CompoundTag) instance.getPlayer().getPersistentData().get(CONTROL_INPUT_KEY);
             return input != null && !input.isEmpty();
         } else {
-            return getStorage(entity).isActionControlling();
+            return getData(entity).isActionControlling();
         }
     }
 
     public static void turnActionControlling(Entity entity) {
-        ControllableStorage controllable = getStorage(entity);
-        controllable.turnActionControlling();
+        var data = getData(entity);
+        data.turnActionControlling();
 
-        if (!isControllable(entity) && controllable.isActionControlling()) {
-            controllable.turnActionControlling();
+        if (!isControllable(entity) && data.isActionControlling()) {
+            data.turnActionControlling();
         }
 
         Stalker instance = Stalker.getInstanceOf(entity);
         if (instance != null) {
             instance.getPlayer().displayClientMessage(
-                    Component.translatable("message.diligentstalker.action_control_" +
-                                    (controllable.isActionControlling() ? "on" : "off"))
-                            .withStyle(ChatFormatting.BOLD), true);
+                    Component.translatable("message.diligentstalker.action_control_" + (data.isActionControlling() ? "on" : "off"))
+                            .withStyle(ChatFormatting.BOLD),
+                    true
+            );
         }
     }
 }

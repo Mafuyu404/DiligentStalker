@@ -10,17 +10,17 @@
       "item": "diligentstalker:stalker_core"
     },
     "B": {
-      "item": "minecraft:ender_eye"
+      "item": "minecraft:amethyst_shard"
     },
     "C": {
-      "item": "minecraft:sugar"
+      "item": "minecraft:comparator"
     },
     "E": {
-      "item": "minecraft:glowstone_dust"
+      "item": "minecraft:sugar"
     }
   },
   "result": {
-    "item": "diligentstalker:void_stalker",
-    "count": 8
+    "id": "diligentstalker:stalker_master",
+    "count": 1
   }
 }

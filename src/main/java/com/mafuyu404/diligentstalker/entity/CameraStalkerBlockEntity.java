@@ -28,12 +28,16 @@ public class CameraStalkerBlockEntity extends BlockEntity {
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         super.saveAdditional(tag, provider);
-        tag.putUUID("CameraStalkerUUID", CameraStalkerUUID);
+        if (CameraStalkerUUID != null) {
+            tag.putUUID("CameraStalkerUUID", CameraStalkerUUID);
+        }
     }
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         super.loadAdditional(tag, provider);
-        CameraStalkerUUID = tag.getUUID("CameraStalkerUUID");
+        if (tag.hasUUID("CameraStalkerUUID")) {
+            CameraStalkerUUID = tag.getUUID("CameraStalkerUUID");
+        }
     }
 }

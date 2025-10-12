@@ -34,7 +34,7 @@ public class StalkerDataAttachments {
                             })
                             .copyOnDeath()
                             .sync(
-                                    (holder, player) -> holder instanceof ServerPlayer,
+                                    (holder, player) -> holder instanceof ServerPlayer sp && sp.equals(player),
                                     ControllableStorage.STREAM_CODEC
                             )
                             .build()

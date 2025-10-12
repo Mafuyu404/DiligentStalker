@@ -1,5 +1,6 @@
 package com.mafuyu404.diligentstalker.utils;
 
+import com.mafuyu404.diligentstalker.api.ObjectPool;
 import com.mafuyu404.diligentstalker.entity.VoidStalkerEntity;
 import com.mafuyu404.diligentstalker.registry.Config;
 import net.minecraft.nbt.CompoundTag;
@@ -11,12 +12,15 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class StalkerUtil {
+    private static final ConcurrentHashMap<String, Set<ChunkPos>> CHUNK_CACHE = new ConcurrentHashMap<>();
+    private static final long CHUNK_CACHE_EXPIRE = 5000;
     public static HashMap<String, Integer> ControlMap = new HashMap<>();
+    private static long lastChunkCacheCleanup = 0;
+    private static final ConcurrentHashMap<Long, ChunkPos> CHUNK_POS_CACHE = new ConcurrentHashMap<>();
 
     private static void initControlMap() {
         ControlMap.put("Up", 0);
@@ -90,61 +94,70 @@ public class StalkerUtil {
                 endPos,
                 ClipContext.Block.OUTLINE,
                 ClipContext.Fluid.NONE,
-                actor // 传入非空实体（如玩家）
+                actor
         );
 
         return world.clip(clipContext);
     }
 
-    // 使用对象池减少内存分配
-    private static final ConcurrentHashMap<String, ArrayList<ChunkPos>> CHUNK_CACHE = new ConcurrentHashMap<>();
-    private static final long CHUNK_CACHE_EXPIRE = 100; // 100ms 缓存
-    private static long lastChunkCacheCleanup = 0;
-
-    public static ArrayList<ChunkPos> getToLoadChunks(Entity stalker, int offset) {
-        if (stalker == null) return new ArrayList<>();
+    public static Set<ChunkPos> getToLoadChunks(Entity stalker, int offset) {
+        if (stalker == null) return Collections.emptySet();
 
         ChunkPos center = stalker.chunkPosition();
         int radius = Config.RENDER_RADIUS_NORMAL.get() + offset;
         if (stalker instanceof VoidStalkerEntity) radius = Config.RENDER_RADIUS_SPECIAL.get();
 
-        // 使用缓存键
         String cacheKey = center.x + "," + center.z + "," + radius;
 
-        // 检查缓存
-        ArrayList<ChunkPos> cached = CHUNK_CACHE.get(cacheKey);
+        Set<ChunkPos> cached = CHUNK_CACHE.get(cacheKey);
         if (cached != null) {
-            return new ArrayList<>(cached); // 返回副本避免并发修改
+            return cached;
         }
 
-        // 预分配容量减少扩容
         int expectedSize = (radius * 2 + 1) * (radius * 2 + 1);
-        ArrayList<ChunkPos> newChunks = new ArrayList<>(expectedSize);
+        Set<ChunkPos> newChunks = new HashSet<>(expectedSize);
 
         int radiusSquared = radius * radius;
         for (int x = -radius; x <= radius; x++) {
             for (int z = -radius; z <= radius; z++) {
                 int distanceSquared = x * x + z * z;
                 if (distanceSquared <= radiusSquared || radius < 5) {
-                    newChunks.add(new ChunkPos(center.x + x, center.z + z));
+                    newChunks.add(getCachedChunkPos(center.x + x, center.z + z));
                 }
             }
         }
 
-        // 缓存结果
-        CHUNK_CACHE.put(cacheKey, new ArrayList<>(newChunks));
+        Set<ChunkPos> immutableChunks = Collections.unmodifiableSet(newChunks);
+        CHUNK_CACHE.put(cacheKey, immutableChunks);
 
         // 定期清理缓存
         cleanupChunkCache();
 
-        return newChunks;
+        return immutableChunks;
+    }
+
+    private static ChunkPos getCachedChunkPos(int x, int z) {
+        long key = ChunkPos.asLong(x, z);
+        return CHUNK_POS_CACHE.computeIfAbsent(key, k -> new ChunkPos(x, z));
     }
 
     private static void cleanupChunkCache() {
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastChunkCacheCleanup > CHUNK_CACHE_EXPIRE) {
             CHUNK_CACHE.clear();
+            if (CHUNK_POS_CACHE.size() > 10000) {
+                CHUNK_POS_CACHE.clear();
+            }
             lastChunkCacheCleanup = currentTime;
         }
+    }
+
+    public static ArrayList<ChunkPos> getToLoadChunksAsList(Entity stalker, int offset) {
+        Set<ChunkPos> chunks = getToLoadChunks(stalker, offset);
+        if (chunks.isEmpty()) return new ArrayList<>();
+
+        ArrayList<ChunkPos> result = ObjectPool.getChunkPosList();
+        result.addAll(chunks);
+        return result;
     }
 }

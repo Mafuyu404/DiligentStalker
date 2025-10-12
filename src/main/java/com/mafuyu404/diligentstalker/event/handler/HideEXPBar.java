@@ -1,5 +1,6 @@
 package com.mafuyu404.diligentstalker.event.handler;
 
+import com.mafuyu404.diligentstalker.DiligentStalker;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
@@ -9,7 +10,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
-@EventBusSubscriber(value = Dist.CLIENT)
+@EventBusSubscriber(modid = DiligentStalker.MODID, value = Dist.CLIENT)
 public class HideEXPBar {
     @SubscribeEvent
     public static void onRenderExperienceBar(RenderGuiLayerEvent.Pre event) {
