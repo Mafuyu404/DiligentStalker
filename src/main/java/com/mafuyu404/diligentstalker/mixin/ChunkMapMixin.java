@@ -114,12 +114,12 @@ public abstract class ChunkMapMixin implements IChunkMap {
             } else {
                 reason = "pending_chunk";
             }
-            DS_LOGGER.info(
-                    "[DS][isChunkTracked=false] player={} x={} z={} reason={} originalContains={} pending={} hasStalkerConnection={} stalkerPos={} containsStalkerView={} viewDistance={} loadedVisible={}",
-                    player.getGameProfile().getName(), x, z,
-                    reason, originalContains, pending,
-                    hasStalkerConnection, stalkerPos, containsStalkerView, viewDistance, loadedVisible
-            );
+//            DS_LOGGER.info(
+//                    "[DS][isChunkTracked=false] player={} x={} z={} reason={} originalContains={} pending={} hasStalkerConnection={} stalkerPos={} containsStalkerView={} viewDistance={} loadedVisible={}",
+//                    player.getGameProfile().getName(), x, z,
+//                    reason, originalContains, pending,
+//                    hasStalkerConnection, stalkerPos, containsStalkerView, viewDistance, loadedVisible
+//            );
         } else {
             cir.setReturnValue(true);
             cir.cancel();
