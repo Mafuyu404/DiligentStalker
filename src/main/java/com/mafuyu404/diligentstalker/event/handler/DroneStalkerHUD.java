@@ -2,7 +2,7 @@ package com.mafuyu404.diligentstalker.event.handler;
 
 import com.mafuyu404.diligentstalker.DiligentStalker;
 import com.mafuyu404.diligentstalker.compat.KeyPrompts;
-import com.mafuyu404.diligentstalker.data.StalkerDataComponents;
+import com.mafuyu404.diligentstalker.component.StalkerDataComponents;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.item.StalkerMasterItem;
 import com.mafuyu404.diligentstalker.utils.ClientStalkerUtil;

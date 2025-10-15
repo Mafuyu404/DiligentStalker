@@ -14,7 +14,10 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import com.mojang.logging.LogUtils;
+import org.slf4j.Logger;
 
 import java.util.*;
 import java.util.function.Function;
@@ -24,6 +27,15 @@ public class ChunkLoadTask {
     public static final List<ClientboundLevelChunkWithLightPacket> TASK_LIST = Collections.synchronizedList(new ArrayList<>());
     public static final List<ClientboundLevelChunkWithLightPacket> WORK_LIST = new ArrayList<>();
     public static int channelLimit = 0;
+    private static final Logger DS_LOGGER = LogUtils.getLogger();
+    public static volatile float DESIRED_CHUNKS_PER_TICK = 20f;
+
+    public static void setDesiredChunksPerTick(float value) {
+        DESIRED_CHUNKS_PER_TICK = Math.max(1f, value);
+        if (!FMLLoader.isProduction()) {
+            DS_LOGGER.debug("[DS][client] update desiredChunksPerTick={}", DESIRED_CHUNKS_PER_TICK);
+        }
+    }
 
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Pre event) {
@@ -35,16 +47,15 @@ public class ChunkLoadTask {
         if (!Stalker.hasInstanceOf(player)) return;
 
         Entity stalker = Stalker.getInstanceOf(player).getStalker();
-        int timer = 10;
 
-        if (player.tickCount % timer == 0) {
-            synchronized (TASK_LIST) {
-                TASK_LIST.removeIf(Objects::isNull);
-                if (TASK_LIST.isEmpty()) return;
-
-                channelLimit = Math.max(1, (int) Math.ceil(TASK_LIST.size() / (double) timer));
-                WORK_LIST.clear();
+        synchronized (TASK_LIST) {
+            TASK_LIST.removeIf(Objects::isNull);
+            if (!TASK_LIST.isEmpty() && WORK_LIST.isEmpty()) {
                 WORK_LIST.addAll(createChunksLoadTask(stalker, TASK_LIST));
+                if (!FMLLoader.isProduction()) {
+                    DS_LOGGER.debug("[DS][client] schedule chunk tasks total={} selected={} desiredPerTick={}",
+                            TASK_LIST.size(), WORK_LIST.size(), DESIRED_CHUNKS_PER_TICK);
+                }
                 TASK_LIST.clear();
             }
         }
@@ -53,6 +64,8 @@ public class ChunkLoadTask {
 
         ClientPacketListener connection = mc.getConnection();
         if (connection == null) return;
+
+        channelLimit = Math.max(1, (int) Math.ceil(DESIRED_CHUNKS_PER_TICK));
 
         Iterator<ClientboundLevelChunkWithLightPacket> it = WORK_LIST.iterator();
         int count = 0;
@@ -64,8 +77,18 @@ public class ChunkLoadTask {
                 continue;
             }
 
-            if (!level.getChunkSource().hasChunk(packet.getX(), packet.getZ())) {
+            boolean hasBefore = level.getChunkSource().hasChunk(packet.getX(), packet.getZ());
+            if (!FMLLoader.isProduction()) {
+                DS_LOGGER.debug("[DS][client] send chunk x={} z={} hasBefore={}", packet.getX(), packet.getZ(), hasBefore);
+            }
+
+            if (!hasBefore) {
                 connection.handleLevelChunkWithLight(packet);
+            }
+
+            boolean hasAfter = level.getChunkSource().hasChunk(packet.getX(), packet.getZ());
+            if (!FMLLoader.isProduction()) {
+                DS_LOGGER.debug("[DS][client] handled chunk x={} z={} hasAfter={}", packet.getX(), packet.getZ(), hasAfter);
             }
 
             it.remove();

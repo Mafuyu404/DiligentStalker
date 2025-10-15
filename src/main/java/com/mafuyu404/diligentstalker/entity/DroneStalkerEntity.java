@@ -1,7 +1,7 @@
 package com.mafuyu404.diligentstalker.entity;
 
 import com.mafuyu404.diligentstalker.api.IControllable;
-import com.mafuyu404.diligentstalker.data.StalkerDataComponents;
+import com.mafuyu404.diligentstalker.component.StalkerDataComponents;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.registry.StalkerItems;
 import com.mafuyu404.diligentstalker.utils.ControllableUtils;

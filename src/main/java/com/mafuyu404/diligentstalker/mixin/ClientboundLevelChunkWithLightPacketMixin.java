@@ -10,9 +10,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(value = ClientboundLevelChunkWithLightPacket.class)
 public class ClientboundLevelChunkWithLightPacketMixin {
+
     @Inject(method = "handle(Lnet/minecraft/network/protocol/game/ClientGamePacketListener;)V", at = @At("HEAD"), cancellable = true)
     private void www(ClientGamePacketListener packetListener, CallbackInfo ci) {
-        boolean result = ClientStalkerUtil.handleChunkPacket((ClientboundLevelChunkWithLightPacket) (Object) this);
-        if (result) ci.cancel();
+        ClientboundLevelChunkWithLightPacket self = (ClientboundLevelChunkWithLightPacket)(Object)this;
+        boolean result = ClientStalkerUtil.handleChunkPacket(self);
+         if (result) ci.cancel();
     }
 }

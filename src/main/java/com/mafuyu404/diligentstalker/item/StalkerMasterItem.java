@@ -1,6 +1,6 @@
 package com.mafuyu404.diligentstalker.item;
 
-import com.mafuyu404.diligentstalker.data.StalkerDataComponents;
+import com.mafuyu404.diligentstalker.component.StalkerDataComponents;
 import com.mafuyu404.diligentstalker.event.handler.StalkerManage;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.utils.ClientStalkerUtil;

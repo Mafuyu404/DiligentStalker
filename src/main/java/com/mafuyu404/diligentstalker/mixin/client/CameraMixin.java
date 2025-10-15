@@ -10,6 +10,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -28,6 +31,26 @@ public abstract class CameraMixin {
     @Shadow
     private Vec3 position;
 
+    @Shadow
+    @Final
+    private Quaternionf rotation;
+
+    @Shadow
+    @Final
+    private Vector3f forwards;
+
+    @Shadow
+    @Final
+    private Vector3f up;
+
+    @Shadow
+    @Final
+    private Vector3f left;
+
+    private static final Vector3f FORWARDS = new Vector3f(0.0F, 0.0F, -1.0F);
+    private static final Vector3f UP = new Vector3f(0.0F, 1.0F, 0.0F);
+    private static final Vector3f LEFT = new Vector3f(-1.0F, 0.0F, 0.0F);
+
     @ModifyVariable(method = "setPosition(Lnet/minecraft/world/phys/Vec3;)V", at = @At("HEAD"), argsOnly = true)
     private Vec3 modifyPosition(Vec3 pos1) {
         Player player = Minecraft.getInstance().player;
@@ -43,14 +66,32 @@ public abstract class CameraMixin {
         return pos1;
     }
 
-    @Inject(method = "setRotation", at = @At("RETURN"))
-    private void modifyRotate(float p_90573_, float p_90574_, CallbackInfo ci) {
+    @Inject(method = "setRotation(FF)V", at = @At("RETURN"))
+    private void modifyRotate2Param(float yRot, float xRot, CallbackInfo ci) {
         Entity stalker = ClientStalkerUtil.getLocalStalker();
         if (stalker != null) {
             if (!ControllableUtils.isCameraFollowing(stalker)) {
-                this.xRot = StalkerControl.xRot;
-                this.yRot = StalkerControl.yRot;
+                updateCameraRotation(StalkerControl.yRot, StalkerControl.xRot, 0.0F);
             }
         }
+    }
+
+    @Inject(method = "setRotation(FFF)V", at = @At("RETURN"))
+    private void modifyRotate3Param(float yRot, float xRot, float roll, CallbackInfo ci) {
+        Entity stalker = ClientStalkerUtil.getLocalStalker();
+        if (stalker != null) {
+            if (!ControllableUtils.isCameraFollowing(stalker)) {
+                updateCameraRotation(StalkerControl.yRot, StalkerControl.xRot, 0.0F);
+            }
+        }
+    }
+
+    private void updateCameraRotation(float yRot, float xRot, float roll) {
+        this.xRot = xRot;
+        this.yRot = yRot;
+        this.rotation.rotationYXZ((float)Math.PI - yRot * ((float)Math.PI / 180F), -xRot * ((float)Math.PI / 180F), -roll * ((float)Math.PI / 180F));
+        FORWARDS.rotate(this.rotation, this.forwards);
+        UP.rotate(this.rotation, this.up);
+        LEFT.rotate(this.rotation, this.left);
     }
 }

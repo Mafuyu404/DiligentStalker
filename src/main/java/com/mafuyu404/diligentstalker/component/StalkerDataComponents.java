@@ -1,4 +1,4 @@
-package com.mafuyu404.diligentstalker.data;
+package com.mafuyu404.diligentstalker.component;
 
 import com.mafuyu404.diligentstalker.DiligentStalker;
 import net.minecraft.core.BlockPos;

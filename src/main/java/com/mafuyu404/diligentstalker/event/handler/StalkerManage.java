@@ -1,7 +1,7 @@
 package com.mafuyu404.diligentstalker.event.handler;
 
 import com.mafuyu404.diligentstalker.DiligentStalker;
-import com.mafuyu404.diligentstalker.data.StalkerDataComponents;
+import com.mafuyu404.diligentstalker.component.StalkerDataComponents;
 import com.mafuyu404.diligentstalker.entity.ArrowStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.CameraStalkerBlockEntity;
 import com.mafuyu404.diligentstalker.entity.VoidStalkerEntity;

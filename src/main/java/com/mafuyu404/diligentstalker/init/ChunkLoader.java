@@ -34,8 +34,8 @@ public class ChunkLoader {
             level.getChunkSource().addRegionTicket(
                     TicketType.FORCED,
                     chunkPos,
-                    2, // 加载半径（0=单区块），不然会动不了
-                    chunkPos // 标识
+                    2,
+                    chunkPos
             );
             forcedChunks.add(chunkPos);
         }
