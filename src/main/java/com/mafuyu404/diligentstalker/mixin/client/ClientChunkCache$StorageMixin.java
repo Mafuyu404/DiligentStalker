@@ -35,11 +35,13 @@ public class ClientChunkCache$StorageMixin {
 
             if (cachedChunks.contains(new ChunkPos(x, z))) {
                 cir.setReturnValue(true);
+                cir.cancel();
             }
         } else {
             if (ClientStalkerUtil.getVisualCenter() != null) {
                 if (new ChunkPos(ClientStalkerUtil.getVisualCenter()).equals(new ChunkPos(x, z))) {
                     cir.setReturnValue(true);
+                    cir.cancel();
                 }
             }
         }

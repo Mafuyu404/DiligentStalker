@@ -2,10 +2,13 @@ package com.mafuyu404.diligentstalker.mixin.client;
 
 import com.mafuyu404.diligentstalker.event.handler.ChunkLoadTask;
 import com.mafuyu404.diligentstalker.init.Stalker;
+import com.mafuyu404.diligentstalker.utils.ClientStalkerUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ChunkBatchSizeCalculator;
 import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundChunkBatchFinishedPacket;
+import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemStack;

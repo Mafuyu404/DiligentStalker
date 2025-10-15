@@ -5,6 +5,7 @@ import com.mafuyu404.diligentstalker.event.handler.StalkerControl;
 import com.mafuyu404.diligentstalker.init.NetworkHandler;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.network.ServerRemoteConnectPacket;
+import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
@@ -47,15 +48,28 @@ public class ClientStalkerUtil {
     }
 
     public static boolean handleChunkPacket(ClientboundLevelChunkWithLightPacket packet) {
-        Player player = Minecraft.getInstance().player;
-        if (new ChunkPos(packet.getX(), packet.getZ()).equals(new ChunkPos(BlockPos.containing(ClientStalkerUtil.getCameraPosition()))))
+        Minecraft mc = Minecraft.getInstance();
+        Player player = mc.player;
+        if (player == null) return false;
+
+        ChunkPos pos = new ChunkPos(packet.getX(), packet.getZ());
+        ChunkPos cameraPos = new ChunkPos(BlockPos.containing(ClientStalkerUtil.getCameraPosition()));
+
+        if (pos.equals(cameraPos)) {
+            LogUtils.getLogger().trace("[DS][client] skip current view chunk x={} z={}", pos.x, pos.z);
             return false;
+        }
+
         if (Stalker.hasInstanceOf(player)) {
-            ChunkLoadTask.TASK_LIST.add(packet);
+            ChunkLoadTask.enqueue(packet);
+            LogUtils.getLogger().debug("[DS][client] queued chunk packet x={} z={}", pos.x, pos.z);
             return true;
         }
+
+        LogUtils.getLogger().trace("[DS][client] pass normal chunk x={} z={}", pos.x, pos.z);
         return false;
     }
+
 
     private static Predicate<Entity> ConnectingTarget;
 

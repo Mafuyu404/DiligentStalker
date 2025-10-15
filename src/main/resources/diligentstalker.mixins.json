@@ -12,7 +12,8 @@
     "EntityMixin",
     "InventoryAccessor",
     "PlayerMixin",
-    "TrackedEntityMixin"
+    "TrackedEntityMixin",
+    "PlayerChunkSenderMixin"
   ],
   "client": [
     "client.CameraMixin",

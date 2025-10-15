@@ -1,6 +1,7 @@
 package com.mafuyu404.diligentstalker.mixin;
 
 import com.mafuyu404.diligentstalker.api.IChunkMap;
+import com.mafuyu404.diligentstalker.init.ChunkLoader;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.registry.Config;
 import com.mafuyu404.diligentstalker.utils.ServerStalkerUtil;
@@ -63,7 +64,11 @@ public abstract class ChunkMapMixin implements IChunkMap {
         int radius = Config.RENDER_RADIUS_NORMAL.get();
         for (int x = -radius; x <= radius; x++) {
             for (int z = -radius; z <= radius; z++) {
-                loadLevelChunk(player, new ChunkPos(center.x + x, center.z + z));
+                ChunkPos pos = new ChunkPos(center.x + x, center.z + z);
+                // 确保服务端真实持有这些区块
+                ChunkLoader.of(player.serverLevel()).addChunk(pos);
+                // 标记待发送（仅当 holder.ticking 不为 null 时会生效）
+                loadLevelChunk(player, pos);
             }
         }
         ci.cancel();

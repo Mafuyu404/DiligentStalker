@@ -20,12 +20,14 @@ import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Function;
 
 @EventBusSubscriber(modid = DiligentStalker.MODID, value = Dist.CLIENT)
 public class ChunkLoadTask {
-    public static final List<ClientboundLevelChunkWithLightPacket> TASK_LIST = Collections.synchronizedList(new ArrayList<>());
-    public static final List<ClientboundLevelChunkWithLightPacket> WORK_LIST = new ArrayList<>();
+    public static final Queue<ClientboundLevelChunkWithLightPacket> TASK_QUEUE = new ConcurrentLinkedQueue<>();
+    public static final Queue<ClientboundLevelChunkWithLightPacket> WORK_QUEUE = new ConcurrentLinkedQueue<>();
+
     public static int channelLimit = 0;
     private static final Logger DS_LOGGER = LogUtils.getLogger();
     public static volatile float DESIRED_CHUNKS_PER_TICK = 20f;
@@ -39,93 +41,104 @@ public class ChunkLoadTask {
 
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Pre event) {
+        long startTime = System.nanoTime();
+
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
         ClientLevel level = mc.level;
-
         if (player == null || level == null) return;
-        if (!Stalker.hasInstanceOf(player)) return;
 
+        if (!Stalker.hasInstanceOf(player)) return;
         Entity stalker = Stalker.getInstanceOf(player).getStalker();
 
-        synchronized (TASK_LIST) {
-            TASK_LIST.removeIf(Objects::isNull);
-            if (!TASK_LIST.isEmpty() && WORK_LIST.isEmpty()) {
-                WORK_LIST.addAll(createChunksLoadTask(stalker, TASK_LIST));
-                if (!FMLLoader.isProduction()) {
-                    DS_LOGGER.debug("[DS][client] schedule chunk tasks total={} selected={} desiredPerTick={}",
-                            TASK_LIST.size(), WORK_LIST.size(), DESIRED_CHUNKS_PER_TICK);
-                }
-                TASK_LIST.clear();
+        if (!TASK_QUEUE.isEmpty() && WORK_QUEUE.isEmpty()) {
+            List<ClientboundLevelChunkWithLightPacket> buffer = new ArrayList<>();
+            ClientboundLevelChunkWithLightPacket packet;
+            while ((packet = TASK_QUEUE.poll()) != null) {
+                buffer.add(packet);
+            }
+
+            if (!buffer.isEmpty()) {
+                DS_LOGGER.debug("[DS][client] preparing WORK_QUEUE: taskSize={}", buffer.size());
+                List<ClientboundLevelChunkWithLightPacket> sorted = createChunksLoadTask(stalker, buffer);
+                WORK_QUEUE.addAll(sorted);
+                DS_LOGGER.debug("[DS][client] WORK_QUEUE prepared: size={}", WORK_QUEUE.size());
             }
         }
 
-        if (WORK_LIST.isEmpty()) return;
-
+        if (WORK_QUEUE.isEmpty()) return;
         ClientPacketListener connection = mc.getConnection();
         if (connection == null) return;
 
         channelLimit = Math.max(1, (int) Math.ceil(DESIRED_CHUNKS_PER_TICK));
-
-        Iterator<ClientboundLevelChunkWithLightPacket> it = WORK_LIST.iterator();
         int count = 0;
 
-        while (it.hasNext() && count < channelLimit) {
-            ClientboundLevelChunkWithLightPacket packet = it.next();
-            if (packet == null) {
-                it.remove();
-                continue;
-            }
+        while (count < channelLimit) {
+            ClientboundLevelChunkWithLightPacket packet = WORK_QUEUE.poll();
+            if (packet == null) break;
 
-            boolean hasBefore = level.getChunkSource().hasChunk(packet.getX(), packet.getZ());
-            if (!FMLLoader.isProduction()) {
-                DS_LOGGER.debug("[DS][client] send chunk x={} z={} hasBefore={}", packet.getX(), packet.getZ(), hasBefore);
-            }
+            ChunkPos pos = new ChunkPos(packet.getX(), packet.getZ());
+            boolean hasBefore = level.getChunkSource().hasChunk(pos.x, pos.z);
+            DS_LOGGER.debug("[DS][client] begin send x={} z={} hasBefore={}", pos.x, pos.z, hasBefore);
 
             if (!hasBefore) {
                 connection.handleLevelChunkWithLight(packet);
             }
 
-            boolean hasAfter = level.getChunkSource().hasChunk(packet.getX(), packet.getZ());
-            if (!FMLLoader.isProduction()) {
-                DS_LOGGER.debug("[DS][client] handled chunk x={} z={} hasAfter={}", packet.getX(), packet.getZ(), hasAfter);
-            }
+            boolean hasAfter = level.getChunkSource().hasChunk(pos.x, pos.z);
+            DS_LOGGER.debug("[DS][client] end send x={} z={} hasAfter={} (sent={})",
+                    pos.x, pos.z, hasAfter, !hasBefore);
 
-            it.remove();
             count++;
         }
+
+        long elapsed = (System.nanoTime() - startTime) / 1_000_000;
+        DS_LOGGER.debug("[DS][client] tick done processed={} left={} took={}ms",
+                count, WORK_QUEUE.size(), elapsed);
     }
 
     public static List<ClientboundLevelChunkWithLightPacket> createChunksLoadTask(Entity stalker, List<ClientboundLevelChunkWithLightPacket> toLoadChunks) {
         List<ClientboundLevelChunkWithLightPacket> safeList = new ArrayList<>(toLoadChunks);
         safeList.removeIf(Objects::isNull);
+        if (safeList.isEmpty()) return safeList;
 
         Vec3 direction = StalkerUtil.calculateViewVector(StalkerControl.xRot, StalkerControl.yRot);
         Vec3 startCenter = stalker.chunkPosition().getWorldPosition().getCenter();
 
-        // 按视线方向排序
-        sortChunks(safeList, packet -> {
+        // 按chunk坐标去重，保留首次出现的顺序
+        Map<Long, ClientboundLevelChunkWithLightPacket> uniq = new LinkedHashMap<>();
+        for (ClientboundLevelChunkWithLightPacket packet : safeList) {
+            long key = ChunkPos.asLong(packet.getX(), packet.getZ());
+            uniq.putIfAbsent(key, packet);
+        }
+        List<ClientboundLevelChunkWithLightPacket> dedup = new ArrayList<>(uniq.values());
+
+        // 按视线方向优先
+        sortChunks(dedup, packet -> {
             Vec3 end = new ChunkPos(packet.getX(), packet.getZ()).getWorldPosition().getCenter();
             return -StalkerUtil.calculateViewAlignment(direction, startCenter, end);
         });
 
-        // 截取前 60%
-        int limit = (int) (safeList.size() * 0.6);
-        List<ClientboundLevelChunkWithLightPacket> result = new ArrayList<>(safeList.subList(0, Math.max(1, limit)));
-
-        // 后按距离排序
-        sortChunks(result, packet -> {
+        // 再按距离优先
+        sortChunks(dedup, packet -> {
             Vec3 end = new ChunkPos(packet.getX(), packet.getZ()).getWorldPosition().getCenter();
             return end.subtract(startCenter).length();
         });
 
-        return result;
+        DS_LOGGER.debug("[DS][client] createChunksLoadTask: total={} result={}", safeList.size(), dedup.size());
+        return dedup;
     }
 
     public static void sortChunks(List<ClientboundLevelChunkWithLightPacket> chunks, Function<ClientboundLevelChunkWithLightPacket, Double> handler) {
         if (chunks == null || chunks.size() <= 1) return;
         chunks.removeIf(Objects::isNull);
-
         chunks.sort(Comparator.comparingDouble(handler::apply));
+    }
+
+    public static void enqueue(ClientboundLevelChunkWithLightPacket packet) {
+        if (packet == null) return;
+        TASK_QUEUE.offer(packet);
+        DS_LOGGER.debug("[DS][client] enqueue chunk packet x={} z={} queueSize={}",
+                packet.getX(), packet.getZ(), TASK_QUEUE.size());
     }
 }
