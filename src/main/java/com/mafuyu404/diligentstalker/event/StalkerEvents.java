@@ -4,7 +4,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 
-public class StalkerEvents extends PlayerEvent {
+public abstract class StalkerEvents extends PlayerEvent {
     private final Entity stalker;
 
     public StalkerEvents(Player player, Entity stalker) {
