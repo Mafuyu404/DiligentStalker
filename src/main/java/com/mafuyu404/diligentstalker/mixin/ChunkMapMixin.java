@@ -1,11 +1,11 @@
 package com.mafuyu404.diligentstalker.mixin;
 
+import com.mafuyu404.diligentstalker.DiligentStalker;
 import com.mafuyu404.diligentstalker.api.IChunkMap;
 import com.mafuyu404.diligentstalker.init.ChunkLoader;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.registry.Config;
 import com.mafuyu404.diligentstalker.utils.ServerStalkerUtil;
-import com.mojang.logging.LogUtils;
 import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ChunkTrackingView;
@@ -13,7 +13,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.neoforged.neoforge.event.EventHooks;
-import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -35,8 +34,6 @@ public abstract class ChunkMapMixin implements IChunkMap {
     public abstract int getPlayerViewDistance(ServerPlayer player);
     @Shadow
     public abstract void waitForLightBeforeSending(ChunkPos chunkPos, int range);
-
-    private static final Logger DS_LOGGER = LogUtils.getLogger();
 
     @Inject(method = "move", at = @At("HEAD"), cancellable = true)
     private void diligentstalker$overrideMove(ServerPlayer player, CallbackInfo ci) {
@@ -119,8 +116,8 @@ public abstract class ChunkMapMixin implements IChunkMap {
             } else {
                 reason = "pending_chunk";
             }
-//            DS_LOGGER.info(
-//                    "[DS][isChunkTracked=false] player={} x={} z={} reason={} originalContains={} pending={} hasStalkerConnection={} stalkerPos={} containsStalkerView={} viewDistance={} loadedVisible={}",
+//            DiligentStalker.debug(ChunkMapMixin.class,
+//                    "player={} x={} z={} reason={} originalContains={} pending={} hasStalkerConnection={} stalkerPos={} containsStalkerView={} viewDistance={} loadedVisible={}",
 //                    player.getGameProfile().getName(), x, z,
 //                    reason, originalContains, pending,
 //                    hasStalkerConnection, stalkerPos, containsStalkerView, viewDistance, loadedVisible

@@ -14,10 +14,7 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
-import com.mojang.logging.LogUtils;
-import org.slf4j.Logger;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -29,20 +26,15 @@ public class ChunkLoadTask {
     public static final Queue<ClientboundLevelChunkWithLightPacket> WORK_QUEUE = new ConcurrentLinkedQueue<>();
 
     public static int channelLimit = 0;
-    private static final Logger DS_LOGGER = LogUtils.getLogger();
     public static volatile float DESIRED_CHUNKS_PER_TICK = 20f;
 
     public static void setDesiredChunksPerTick(float value) {
         DESIRED_CHUNKS_PER_TICK = Math.max(1f, value);
-        if (!FMLLoader.isProduction()) {
-            DS_LOGGER.debug("[DS][client] update desiredChunksPerTick={}", DESIRED_CHUNKS_PER_TICK);
-        }
+            DiligentStalker.debug(ChunkLoadTask.class, "update desiredChunksPerTick={}", DESIRED_CHUNKS_PER_TICK);
     }
 
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Pre event) {
-        long startTime = System.nanoTime();
-
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
         ClientLevel level = mc.level;
@@ -59,10 +51,10 @@ public class ChunkLoadTask {
             }
 
             if (!buffer.isEmpty()) {
-                DS_LOGGER.debug("[DS][client] preparing WORK_QUEUE: taskSize={}", buffer.size());
+                DiligentStalker.debug(ChunkLoadTask.class, "preparing WORK_QUEUE: taskSize={}", buffer.size());
                 List<ClientboundLevelChunkWithLightPacket> sorted = createChunksLoadTask(stalker, buffer);
                 WORK_QUEUE.addAll(sorted);
-                DS_LOGGER.debug("[DS][client] WORK_QUEUE prepared: size={}", WORK_QUEUE.size());
+                DiligentStalker.debug(ChunkLoadTask.class, "WORK_QUEUE prepared: size={}", WORK_QUEUE.size());
             }
         }
 
@@ -79,22 +71,18 @@ public class ChunkLoadTask {
 
             ChunkPos pos = new ChunkPos(packet.getX(), packet.getZ());
             boolean hasBefore = level.getChunkSource().hasChunk(pos.x, pos.z);
-            DS_LOGGER.debug("[DS][client] begin send x={} z={} hasBefore={}", pos.x, pos.z, hasBefore);
+            DiligentStalker.debug(ChunkLoadTask.class, "begin send x={} z={} hasBefore={}", pos.x, pos.z, hasBefore);
 
             if (!hasBefore) {
                 connection.handleLevelChunkWithLight(packet);
             }
 
             boolean hasAfter = level.getChunkSource().hasChunk(pos.x, pos.z);
-            DS_LOGGER.debug("[DS][client] end send x={} z={} hasAfter={} (sent={})",
+            DiligentStalker.debug(ChunkLoadTask.class, "end send x={} z={} hasAfter={} (sent={})",
                     pos.x, pos.z, hasAfter, !hasBefore);
 
             count++;
         }
-
-        long elapsed = (System.nanoTime() - startTime) / 1_000_000;
-        DS_LOGGER.debug("[DS][client] tick done processed={} left={} took={}ms",
-                count, WORK_QUEUE.size(), elapsed);
     }
 
     public static List<ClientboundLevelChunkWithLightPacket> createChunksLoadTask(Entity stalker, List<ClientboundLevelChunkWithLightPacket> toLoadChunks) {
@@ -125,7 +113,7 @@ public class ChunkLoadTask {
             return end.subtract(startCenter).length();
         });
 
-        DS_LOGGER.debug("[DS][client] createChunksLoadTask: total={} result={}", safeList.size(), dedup.size());
+        DiligentStalker.debug(ChunkLoadTask.class, "createChunksLoadTask: total={} result={}", safeList.size(), dedup.size());
         return dedup;
     }
 
@@ -138,7 +126,7 @@ public class ChunkLoadTask {
     public static void enqueue(ClientboundLevelChunkWithLightPacket packet) {
         if (packet == null) return;
         TASK_QUEUE.offer(packet);
-        DS_LOGGER.debug("[DS][client] enqueue chunk packet x={} z={} queueSize={}",
+        DiligentStalker.debug(ChunkLoadTask.class, "enqueue chunk packet x={} z={} queueSize={}",
                 packet.getX(), packet.getZ(), TASK_QUEUE.size());
     }
 }

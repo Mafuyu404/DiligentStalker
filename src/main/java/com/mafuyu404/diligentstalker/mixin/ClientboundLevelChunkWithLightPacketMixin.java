@@ -1,5 +1,6 @@
 package com.mafuyu404.diligentstalker.mixin;
 
+import com.mafuyu404.diligentstalker.DiligentStalker;
 import com.mafuyu404.diligentstalker.utils.ClientStalkerUtil;
 
 import com.mojang.logging.LogUtils;
@@ -19,12 +20,12 @@ public class ClientboundLevelChunkWithLightPacketMixin {
         boolean intercepted = ClientStalkerUtil.handleChunkPacket(self);
 
         if (intercepted) {
-            LogUtils.getLogger().debug("[DS][client] intercept chunk packet x={} z={} -> redirected to task",
+            DiligentStalker.debug(ClientboundLevelChunkWithLightPacketMixin.class, "intercept chunk packet x={} z={} -> redirected to task",
                     self.getX(), self.getZ());
             ci.cancel();
         } else {
-            LogUtils.getLogger().trace("[DS][client] pass through chunk packet x={} z={}",
-                    self.getX(), self.getZ());
+//            DiligentStalker.trace("[DS][client] pass through chunk packet x={} z={}",
+//                    self.getX(), self.getZ());
         }
     }
 }

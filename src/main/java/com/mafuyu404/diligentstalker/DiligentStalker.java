@@ -9,6 +9,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.loading.FMLLoader;
 import org.slf4j.Logger;
 
 @Mod(DiligentStalker.MODID)
@@ -16,6 +17,24 @@ public class DiligentStalker {
     public static final String MODID = "diligentstalker";
 
     public static final Logger LOGGER = LogUtils.getLogger();
+    public static final boolean IS_DEVELOPMENT_ENV = !FMLLoader.isProduction();
+
+    public static void debug(Object source, String msg, Object... params) {
+        if (IS_DEVELOPMENT_ENV) {
+            String className = source instanceof Class<?> c ? c.getSimpleName() :
+                    source.getClass().getSimpleName();
+            LOGGER.debug("[DEBUG][{}] {}", className, String.format(msg, params));
+        }
+    }
+
+    public static void debug(Object source, String msg) {
+        if (IS_DEVELOPMENT_ENV) {
+            String className = source instanceof Class<?> c ? c.getSimpleName() :
+                    source.getClass().getSimpleName();
+            LOGGER.debug("[DEBUG][{}] {}", className, msg);
+        }
+    }
+
 
     public DiligentStalker(IEventBus modEventBus, ModContainer modContainer) {
         registerConfig(modContainer);

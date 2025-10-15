@@ -1,5 +1,6 @@
 package com.mafuyu404.diligentstalker.utils;
 
+import com.mafuyu404.diligentstalker.DiligentStalker;
 import com.mafuyu404.diligentstalker.event.handler.ChunkLoadTask;
 import com.mafuyu404.diligentstalker.event.handler.StalkerControl;
 import com.mafuyu404.diligentstalker.init.NetworkHandler;
@@ -56,17 +57,15 @@ public class ClientStalkerUtil {
         ChunkPos cameraPos = new ChunkPos(BlockPos.containing(ClientStalkerUtil.getCameraPosition()));
 
         if (pos.equals(cameraPos)) {
-            LogUtils.getLogger().trace("[DS][client] skip current view chunk x={} z={}", pos.x, pos.z);
             return false;
         }
 
         if (Stalker.hasInstanceOf(player)) {
             ChunkLoadTask.enqueue(packet);
-            LogUtils.getLogger().debug("[DS][client] queued chunk packet x={} z={}", pos.x, pos.z);
+            DiligentStalker.debug(ClientStalkerUtil.class, "queued chunk packet x={} z={}", pos.x, pos.z);
             return true;
         }
 
-        LogUtils.getLogger().trace("[DS][client] pass normal chunk x={} z={}", pos.x, pos.z);
         return false;
     }
 
