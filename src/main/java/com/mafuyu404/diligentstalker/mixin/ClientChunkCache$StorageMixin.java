@@ -23,7 +23,7 @@ public class ClientChunkCache$StorageMixin {
     private void modifyRange(int x, int z, CallbackInfoReturnable<Boolean> cir) {
         Player player = Minecraft.getInstance().player;
         Stalker instance = Stalker.getInstanceOf(player);
-        
+
         if (instance != null) {
             long currentTime = System.currentTimeMillis();
 
@@ -31,14 +31,16 @@ public class ClientChunkCache$StorageMixin {
                 cachedChunks = StalkerUtil.getToLoadChunks(instance.getStalker(), 1);
                 lastCacheTime = currentTime;
             }
-            
+
             if (cachedChunks.contains(new ChunkPos(x, z))) {
                 cir.setReturnValue(true);
+                cir.cancel();
             }
         } else {
             if (ClientStalkerUtil.getVisualCenter() != null) {
                 if (new ChunkPos(ClientStalkerUtil.getVisualCenter()).equals(new ChunkPos(x, z))) {
                     cir.setReturnValue(true);
+                    cir.cancel();
                 }
             }
         }

@@ -26,6 +26,7 @@ public class VoidStalkerEntity extends ThrowableItemProjectile implements HasCon
     public VoidStalkerEntity(EntityType<? extends VoidStalkerEntity> p_37391_, Level p_37392_) {
         super(p_37391_, p_37392_);
     }
+
     public VoidStalkerEntity(LivingEntity owner, Level level) {
         super(StalkerEntities.VOID_STALKER, owner, level);
         this.setNoGravity(true);

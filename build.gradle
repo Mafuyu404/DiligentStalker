@@ -7,9 +7,19 @@ version = project.mod_version
 group = project.maven_group
 
 base {
-    archivesName = project.archives_base_name
+    archivesName = "${mod_id}-fabric-${minecraft_version}"
 }
 
+loom {
+    runs {
+        client {
+            programArgs "--username", "Flechazo"
+        }
+    }
+    mixin {
+        add sourceSets.main, "diligentstalker.refmap.json"
+    }
+}
 
 repositories {
     // Add repositories to retrieve artifacts from in here.

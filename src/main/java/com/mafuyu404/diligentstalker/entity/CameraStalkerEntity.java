@@ -14,6 +14,7 @@ import net.minecraft.world.level.Level;
 public class CameraStalkerEntity extends Entity implements HasControllableStorage, HasStalkerData {
     private final ControllableStorage diligentstalker$storage = new ControllableStorage();
     private final IStalkerData diligentstalker$stalkerData = new StalkerDataComponent();
+
     public CameraStalkerEntity(EntityType<?> p_19870_, Level p_19871_) {
         super(p_19870_, p_19871_);
         this.noPhysics = true;

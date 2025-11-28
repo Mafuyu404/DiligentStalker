@@ -1,10 +1,10 @@
 package com.mafuyu404.diligentstalker.init;
 
+import com.mafuyu404.diligentstalker.data.ModLookupApi;
 import com.mafuyu404.diligentstalker.event.StalkerEvents;
 import com.mafuyu404.diligentstalker.event.handler.StalkerControl;
 import com.mafuyu404.diligentstalker.network.StalkerSyncPacket;
 import com.mafuyu404.diligentstalker.utils.ClientStalkerUtil;
-import com.mafuyu404.diligentstalker.data.ModLookupApi;
 import com.mafuyu404.diligentstalker.utils.ServerStalkerUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;

@@ -27,6 +27,7 @@ public class ArrowStalkerEntity extends AbstractArrow implements HasControllable
     public ArrowStalkerEntity(EntityType<? extends AbstractArrow> type, Level level) {
         super(type, level);
     }
+
     public ArrowStalkerEntity(LivingEntity shooter, Level level) {
         super(StalkerEntities.ARROW_STALKER, shooter, level);
     }

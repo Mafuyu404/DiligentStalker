@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ObjectPool {
     private static final ConcurrentLinkedQueue<ArrayList<ChunkPos>> CHUNK_LIST_POOL = new ConcurrentLinkedQueue<>();
     private static final AtomicInteger CHUNK_LIST_POOL_SIZE = new AtomicInteger(0);
-    
+
     private static final int MAX_POOL_SIZE = 1000;
 
     public static ArrayList<ChunkPos> getChunkPosList() {
