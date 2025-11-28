@@ -1,7 +1,6 @@
 package com.mafuyu404.diligentstalker.utils;
 
 import com.mafuyu404.diligentstalker.api.IControllable;
-import com.mafuyu404.diligentstalker.api.IControllableStorage;
 import com.mafuyu404.diligentstalker.init.ControllableStorageProvider;
 import com.mafuyu404.diligentstalker.init.NetworkHandler;
 import com.mafuyu404.diligentstalker.init.Stalker;
@@ -30,18 +29,21 @@ public class ControllableUtils {
             controllable.setMaxFuel(maxFuel);
         });
     }
+
     public static void setFuel(Entity entity, int amount) {
         entity.getCapability(ControllableStorageProvider.CONTROLLABLE_STORAGE).ifPresent(controllable -> {
             controllable.setFuel(amount);
             syneFuel(entity, controllable.getFuel());
         });
     }
+
     public static void consumeFuel(Entity entity, int amount) {
         entity.getCapability(ControllableStorageProvider.CONTROLLABLE_STORAGE).ifPresent(controllable -> {
             controllable.consumeFuel(amount);
             syneFuel(entity, controllable.getFuel());
         });
     }
+
     public static int getFuel(Entity entity) {
         AtomicInteger fuel = new AtomicInteger();
         entity.getCapability(ControllableStorageProvider.CONTROLLABLE_STORAGE).ifPresent(controllable -> {
@@ -49,6 +51,7 @@ public class ControllableUtils {
         });
         return fuel.get();
     }
+
     public static float getFuelPercent(Entity entity) {
         final float[] fuel = {0};
         entity.getCapability(ControllableStorageProvider.CONTROLLABLE_STORAGE).ifPresent(controllable -> {
@@ -56,6 +59,7 @@ public class ControllableUtils {
         });
         return fuel[0];
     }
+
     public static void syneFuel(Entity controllable, int fuel) {
         if (controllable.level().isClientSide) return;
         if (!isControllable(controllable)) return;
@@ -73,6 +77,7 @@ public class ControllableUtils {
         });
         return result.get();
     }
+
     public static boolean isCameraControlling(Entity entity) {
         AtomicBoolean result = new AtomicBoolean(false);
         entity.getCapability(ControllableStorageProvider.CONTROLLABLE_STORAGE).ifPresent(controllable -> {
@@ -80,6 +85,7 @@ public class ControllableUtils {
         });
         return result.get();
     }
+
     public static String getCameraState(Entity entity) {
         AtomicReference<String> result = new AtomicReference<>("free");
         entity.getCapability(ControllableStorageProvider.CONTROLLABLE_STORAGE).ifPresent(controllable -> {
@@ -87,6 +93,7 @@ public class ControllableUtils {
         });
         return result.get();
     }
+
     public static void switchCameraState(Entity entity) {
         entity.getCapability(ControllableStorageProvider.CONTROLLABLE_STORAGE).ifPresent(controllable -> {
             controllable.switchCameraState();
@@ -99,6 +106,7 @@ public class ControllableUtils {
             }
         });
     }
+
     public static void setCameraControlling(Entity entity) {
         entity.getCapability(ControllableStorageProvider.CONTROLLABLE_STORAGE).ifPresent(controllable -> {
             controllable.setCameraState("control");
@@ -116,6 +124,7 @@ public class ControllableUtils {
         });
         return result.get();
     }
+
     public static void setSignalRadius(Entity entity, int value) {
         entity.getCapability(ControllableStorageProvider.CONTROLLABLE_STORAGE).ifPresent(controllable -> {
             controllable.setSignalRadius(value);
@@ -142,6 +151,7 @@ public class ControllableUtils {
             return result.get();
         }
     }
+
     public static void turnActionControlling(Entity entity) {
         entity.getCapability(ControllableStorageProvider.CONTROLLABLE_STORAGE).ifPresent(controllable -> {
             controllable.turnActionControlling();

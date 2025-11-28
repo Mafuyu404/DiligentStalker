@@ -75,27 +75,33 @@ public class ChunkLoadTask {
     public static List<ClientboundLevelChunkWithLightPacket> createChunksLoadTask(Entity stalker, List<ClientboundLevelChunkWithLightPacket> toLoadChunks) {
         List<ClientboundLevelChunkWithLightPacket> safeList = new ArrayList<>(toLoadChunks);
         safeList.removeIf(Objects::isNull);
+        if (safeList.isEmpty()) return safeList;
 
         Vec3 direction = StalkerUtil.calculateViewVector(StalkerControl.xRot, StalkerControl.yRot);
         Vec3 startCenter = stalker.chunkPosition().getWorldPosition().getCenter();
 
-        // 按视线方向排序
-        sortChunks(safeList, packet -> {
+        // 按chunk坐标去重，保留首次出现的顺序
+        Map<Long, ClientboundLevelChunkWithLightPacket> uniq = new LinkedHashMap<>();
+        for (ClientboundLevelChunkWithLightPacket packet : safeList) {
+            long key = ChunkPos.asLong(packet.getX(), packet.getZ());
+            uniq.putIfAbsent(key, packet);
+        }
+
+        List<ClientboundLevelChunkWithLightPacket> dedup = new ArrayList<>(uniq.values());
+
+        // 按视线方向优先
+        sortChunks(dedup, packet -> {
             Vec3 end = new ChunkPos(packet.getX(), packet.getZ()).getWorldPosition().getCenter();
             return -StalkerUtil.calculateViewAlignment(direction, startCenter, end);
         });
 
-        // 截取前 60%
-        int limit = (int) (safeList.size() * 0.6);
-        List<ClientboundLevelChunkWithLightPacket> result = new ArrayList<>(safeList.subList(0, Math.max(1, limit)));
-
-        // 后按距离排序
-        sortChunks(result, packet -> {
+        // 再按距离优先
+        sortChunks(dedup, packet -> {
             Vec3 end = new ChunkPos(packet.getX(), packet.getZ()).getWorldPosition().getCenter();
             return end.subtract(startCenter).length();
         });
 
-        return result;
+        return dedup;
     }
 
     public static void sortChunks(List<ClientboundLevelChunkWithLightPacket> chunks, Function<ClientboundLevelChunkWithLightPacket, Double> handler) {

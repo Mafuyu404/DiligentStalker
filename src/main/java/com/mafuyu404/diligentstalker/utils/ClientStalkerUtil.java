@@ -30,6 +30,7 @@ public class ClientStalkerUtil {
         Entity entity = level.getEntity(id);
         ControllableUtils.setFuel(entity, fuel);
     }
+
     public static void updateStorage() {
 
     }
@@ -47,7 +48,8 @@ public class ClientStalkerUtil {
 
     public static boolean handleChunkPacket(ClientboundLevelChunkWithLightPacket packet) {
         Player player = Minecraft.getInstance().player;
-        if (new ChunkPos(packet.getX(), packet.getZ()).equals(new ChunkPos(BlockPos.containing(ClientStalkerUtil.getCameraPosition())))) return false;
+        if (new ChunkPos(packet.getX(), packet.getZ()).equals(new ChunkPos(BlockPos.containing(ClientStalkerUtil.getCameraPosition()))))
+            return false;
         if (Stalker.hasInstanceOf(player)) {
             ChunkLoadTask.TASK_LIST.add(packet);
             return true;
@@ -56,9 +58,11 @@ public class ClientStalkerUtil {
     }
 
     private static Predicate<Entity> ConnectingTarget;
+
     public static void setConnectingTarget(Predicate<Entity> predicate) {
         ConnectingTarget = predicate;
     }
+
     public static boolean matchConnectingTarget(Entity entity) {
         if (ConnectingTarget != null) {
             return ConnectingTarget.test(entity);
@@ -67,10 +71,12 @@ public class ClientStalkerUtil {
     }
 
     private static BlockPos VisualCenter;
+
     public static void setVisualCenter(BlockPos blockPos) {
         if (Stalker.hasInstanceOf(Minecraft.getInstance().player)) return;
         VisualCenter = blockPos;
     }
+
     public static BlockPos getVisualCenter() {
         if (VisualCenter == null) return null;
         return VisualCenter.equals(BlockPos.ZERO) ? null : VisualCenter;
@@ -81,6 +87,7 @@ public class ClientStalkerUtil {
         NetworkHandler.CHANNEL.sendToServer(new ServerRemoteConnectPacket(center));
         setConnectingTarget(predicate);
     }
+
     public static void cancelRemoteConnect() {
         setVisualCenter(BlockPos.ZERO);
         NetworkHandler.CHANNEL.sendToServer(new ServerRemoteConnectPacket(BlockPos.ZERO));
@@ -96,6 +103,7 @@ public class ClientStalkerUtil {
     public static void setLocalViewXRot(float value) {
         StalkerControl.xRot = value;
     }
+
     public static void setLocalViewYRot(float value) {
         StalkerControl.yRot = value;
     }
@@ -103,6 +111,7 @@ public class ClientStalkerUtil {
     public static float getCameraXRot() {
         return Minecraft.getInstance().gameRenderer.getMainCamera().getXRot();
     }
+
     public static float getCameraYRot() {
         return Minecraft.getInstance().gameRenderer.getMainCamera().getYRot();
     }
