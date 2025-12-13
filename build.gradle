@@ -9,7 +9,7 @@ version = mod_version
 group = mod_group_id
 
 base {
-    archivesName = mod_id
+    archivesName = "${mod_id}-neoforge-${minecraft_version}"
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
@@ -40,7 +40,7 @@ neoForge {
 
         server {
             server()
-            programArgument '--nogui'
+//            programArgument '--nogui'
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
 
@@ -123,8 +123,9 @@ dependencies {
     // Example mod dependency using a file as dependency
     // implementation files("libs/coolmod-${mc_version}-${coolmod_version}.jar")
     implementation "dev.architectury:architectury-neoforge:13.0.8"
-    implementation "curse.maven:smart-key-prompts-1300195:6911666"
+    implementation "curse.maven:smart-key-prompts-1300195:7271215"
     implementation "maven.modrinth:AANobbMI:Pb3OXVqC"
+    implementation "maven.modrinth:oelib:yqTQVe4s"
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

@@ -39,6 +39,12 @@ public class NetworkHandler {
                 ServerRemoteConnectPacket::handle
         );
 
+        registrar.playToServer(
+                StalkerMasterUsePacket.TYPE,
+                StalkerMasterUsePacket.STREAM_CODEC,
+                StalkerMasterUsePacket::handle
+        );
+
         registrar.playToClient(
                 ClientFuelPacket.TYPE,
                 ClientFuelPacket.STREAM_CODEC,
@@ -49,6 +55,12 @@ public class NetworkHandler {
                 ClientStalkerPacket.TYPE,
                 ClientStalkerPacket.STREAM_CODEC,
                 ClientStalkerPacket::handle
+        );
+
+        registrar.playToClient(
+                ClientRemoteConnectPacket.TYPE,
+                ClientRemoteConnectPacket.STREAM_CODEC,
+                ClientRemoteConnectPacket::handle
         );
     }
 

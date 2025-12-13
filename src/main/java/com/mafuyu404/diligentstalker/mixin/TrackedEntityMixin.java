@@ -28,7 +28,8 @@ public abstract class TrackedEntityMixin {
     @Final
     ChunkMap this$0;
 
-    @Shadow public abstract int getEffectiveRange();
+    @Shadow
+    public abstract int getEffectiveRange();
 
     @Inject(method = "updatePlayer", at = @At("HEAD"))
     private void logUpdatePlayer(ServerPlayer player, CallbackInfo ci) {

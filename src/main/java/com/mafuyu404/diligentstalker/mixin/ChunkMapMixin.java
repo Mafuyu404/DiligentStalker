@@ -1,6 +1,5 @@
 package com.mafuyu404.diligentstalker.mixin;
 
-import com.mafuyu404.diligentstalker.DiligentStalker;
 import com.mafuyu404.diligentstalker.api.IChunkMap;
 import com.mafuyu404.diligentstalker.init.ChunkLoader;
 import com.mafuyu404.diligentstalker.init.Stalker;
@@ -29,9 +28,12 @@ public abstract class ChunkMapMixin implements IChunkMap {
     public abstract ChunkHolder getVisibleChunkIfPresent(long chunkPos);
 
     @Shadow
-    private void applyChunkTrackingView(ServerPlayer player, ChunkTrackingView view) {}
+    private void applyChunkTrackingView(ServerPlayer player, ChunkTrackingView view) {
+    }
+
     @Shadow
     public abstract int getPlayerViewDistance(ServerPlayer player);
+
     @Shadow
     public abstract void waitForLightBeforeSending(ChunkPos chunkPos, int range);
 

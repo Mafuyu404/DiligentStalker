@@ -30,7 +30,7 @@ public class ChunkLoadTask {
 
     public static void setDesiredChunksPerTick(float value) {
         DESIRED_CHUNKS_PER_TICK = Math.max(1f, value);
-            DiligentStalker.debug(ChunkLoadTask.class, "update desiredChunksPerTick={}", DESIRED_CHUNKS_PER_TICK);
+        DiligentStalker.debug(ChunkLoadTask.class, "update desiredChunksPerTick={}", DESIRED_CHUNKS_PER_TICK);
     }
 
     @SubscribeEvent

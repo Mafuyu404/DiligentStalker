@@ -12,8 +12,8 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class PlayerChunkSenderMixin {
 
     @Redirect(
-        method = "sendNextChunks",
-        at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;chunkPosition()Lnet/minecraft/world/level/ChunkPos;")
+            method = "sendNextChunks",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;chunkPosition()Lnet/minecraft/world/level/ChunkPos;")
     )
     private ChunkPos ds$useStalkerViewCenterForSend(ServerPlayer player) {
         if (Stalker.hasInstanceOf(player)) {

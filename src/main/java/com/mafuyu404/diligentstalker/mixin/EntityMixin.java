@@ -16,7 +16,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.Map;
 import java.util.UUID;
 
 @Mixin(value = Entity.class)
@@ -87,22 +86,7 @@ public abstract class EntityMixin {
 //            if (!StalkerManage.DronePosition.containsKey(this.uuid)) return;
             String levelKey = this.level.dimension().toString();
             BlockPos blockPos = this.blockPosition();
-            StalkerManage.DronePosition.put(this.uuid, new Map.Entry<>() {
-                @Override
-                public String getKey() {
-                    return levelKey;
-                }
-
-                @Override
-                public BlockPos getValue() {
-                    return blockPos;
-                }
-
-                @Override
-                public BlockPos setValue(BlockPos value) {
-                    return null;
-                }
-            });
+            StalkerManage.DronePosition.put(this.uuid, new StalkerManage.DroneLocation(levelKey, blockPos));
         }
     }
 }

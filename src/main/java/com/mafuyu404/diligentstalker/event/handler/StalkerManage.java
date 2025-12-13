@@ -38,14 +38,15 @@ import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
-import java.util.AbstractMap;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 @EventBusSubscriber(modid = DiligentStalker.MODID)
 public class StalkerManage {
-    public static final HashMap<UUID, Map.Entry<String, BlockPos>> DronePosition = new HashMap<>();
+    public record DroneLocation(String levelKey, BlockPos position) {
+    }
+
+    public static final HashMap<UUID, DroneLocation> DronePosition = new HashMap<>();
 
     @SubscribeEvent
     public static void onServerTick(ServerTickEvent.Pre event) {
@@ -75,7 +76,7 @@ public class StalkerManage {
             CompoundTag input = (CompoundTag) player.getPersistentData().get(ControllableUtils.CONTROL_INPUT_KEY);
             if (input != null && !input.isEmpty()) {
                 if (input.contains("xRot")) stalker.setXRot(input.getFloat("xRot"));
-                if (input.contains("yRot")) stalker.setXRot(input.getFloat("yRot"));
+                if (input.contains("yRot")) stalker.setYRot(input.getFloat("yRot"));
 
                 Vec3 direction = stalker.position().subtract(player.position());
                 int distance = (int) direction.length();
@@ -146,12 +147,12 @@ public class StalkerManage {
                 if (entityUUID == null) return;
 
                 if (DronePosition.containsKey(entityUUID)) {
-                    BlockPos pos = DronePosition.get(entityUUID).getValue();
+                    BlockPos pos = DronePosition.get(entityUUID).position();
                     itemStack.set(StalkerDataComponents.STALKER_POSITION.get(), pos);
                 } else {
                     BlockPos pos = itemStack.get(StalkerDataComponents.STALKER_POSITION.get());
                     if (pos != null) {
-                        DronePosition.put(entityUUID, new AbstractMap.SimpleEntry<>(levelKey, pos));
+                        DronePosition.put(entityUUID, new DroneLocation(levelKey, pos));
                     }
                 }
             }

@@ -89,7 +89,7 @@ public abstract class CameraMixin {
     private void updateCameraRotation(float yRot, float xRot, float roll) {
         this.xRot = xRot;
         this.yRot = yRot;
-        this.rotation.rotationYXZ((float)Math.PI - yRot * ((float)Math.PI / 180F), -xRot * ((float)Math.PI / 180F), -roll * ((float)Math.PI / 180F));
+        this.rotation.rotationYXZ((float) Math.PI - yRot * ((float) Math.PI / 180F), -xRot * ((float) Math.PI / 180F), -roll * ((float) Math.PI / 180F));
         FORWARDS.rotate(this.rotation, this.forwards);
         UP.rotate(this.rotation, this.up);
         LEFT.rotate(this.rotation, this.left);
