@@ -54,7 +54,7 @@ public class ClientSetup implements ClientModInitializer {
     private void setup() {
         NetworkHandler.registerClient();
         ChunkLoadTask.initClientTick();
-        DroneStalkerHUD.initHud();
+        DroneStalkerHUD.init();
         HideEXPBar.onRenderExperienceBar();
         StalkerControl.initClientEvents();
     }

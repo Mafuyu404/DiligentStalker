@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.10-SNAPSHOT'
+    id 'fabric-loom' version '1.14-SNAPSHOT'
     id 'maven-publish'
 }
 
@@ -79,6 +79,10 @@ dependencies {
     modImplementation "maven.modrinth:AANobbMI:OihdIimA"
     modApi "me.shedaniel.cloth:cloth-config-fabric:11.1.136"
     modImplementation("com.terraformersmc:modmenu:${project.modmenu_version}")
+    modImplementation files("libs/smartkeyprompts-fabric-1.20.1-1.1.2.jar")
+    modImplementation "maven.modrinth:oelib:GEs5sHZe"
+    modImplementation "maven.modrinth:forge-config-api-port:HvR3IdRE"
+    implementation 'org.mvel:mvel2:2.5.0.Final'
 }
 
 fabricApi {

@@ -1,6 +1,7 @@
 package com.mafuyu404.diligentstalker.event.handler;
 
 import com.mafuyu404.diligentstalker.DiligentStalker;
+import com.mafuyu404.diligentstalker.compat.KeyPrompts;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.item.StalkerMasterItem;
 import com.mafuyu404.diligentstalker.utils.ClientStalkerUtil;
@@ -9,6 +10,7 @@ import com.mafuyu404.diligentstalker.utils.StalkerUtil;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -28,8 +30,16 @@ public class DroneStalkerHUD {
     public static boolean RPress = false;
     private static int SIGNAL_RADIUS = 0;
 
-    public static void initHud() {
+    public static void init() {
         HudRenderCallback.EVENT.register(DroneStalkerHUD::onRenderGameOverlay);
+        ClientTickEvents.END_CLIENT_TICK.register(DroneStalkerHUD::skp);
+    }
+
+    public static void skp(Minecraft client) {
+        if (Stalker.hasInstanceOf(Minecraft.getInstance().player)) {
+            KeyPrompts.show("key.diligentstalker.view.desc");
+            KeyPrompts.show("key.diligentstalker.control.desc");
+        }
     }
 
     public static void onRenderGameOverlay(GuiGraphics guiGraphics, float tickDelta) {

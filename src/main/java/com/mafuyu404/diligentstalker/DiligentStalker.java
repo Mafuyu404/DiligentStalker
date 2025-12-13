@@ -1,5 +1,6 @@
 package com.mafuyu404.diligentstalker;
 
+import com.mafuyu404.diligentstalker.compat.KeyPrompts;
 import com.mafuyu404.diligentstalker.event.handler.ModSetup;
 import com.mafuyu404.diligentstalker.event.handler.StalkerManage;
 import com.mafuyu404.diligentstalker.init.NetworkHandler;
@@ -15,6 +16,7 @@ public class DiligentStalker implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        KeyPrompts.init();
         ModConfig.register();
         NetworkHandler.register();
         StalkerBlocks.register();
