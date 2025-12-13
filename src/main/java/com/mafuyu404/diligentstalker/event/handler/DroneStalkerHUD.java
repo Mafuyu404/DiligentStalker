@@ -222,18 +222,10 @@ public class DroneStalkerHUD {
         );
     }
 
-    private static class ArcSection {
-        final float centerAngle; // 中心角度（度）
-        final float percentage;  // 占比
-        final float r, g, b, a;
-
-        ArcSection(float center, float percent, float r, float g, float b, float a) {
-            this.centerAngle = center;
-            this.percentage = percent;
-            this.r = r;
-            this.g = g;
-            this.b = b;
-            this.a = a;
-        }
+    /**
+     * @param centerAngle 中心角度（度）
+     * @param percentage  占比
+     */
+    private record ArcSection(float centerAngle, float percentage, float r, float g, float b, float a) {
     }
 }

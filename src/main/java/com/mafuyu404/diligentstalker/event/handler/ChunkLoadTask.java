@@ -14,7 +14,6 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.function.ToDoubleFunction;
 
 public class ChunkLoadTask {
     public static final List<ClientboundLevelChunkWithLightPacket> TASK_LIST = Collections.synchronizedList(new ArrayList<>());

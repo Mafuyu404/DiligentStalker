@@ -27,7 +27,8 @@
     "MinecraftMixin",
     "PlayerRendererMixin",
     "client.GuiMixin",
-    "client.MouseHandlerMixin"
+    "client.MouseHandlerMixin",
+    "client.LivingEntityClientMixin"
   ],
   "injectors": {
     "defaultRequire": 1
