@@ -26,6 +26,8 @@ public class NetworkHandler {
         CHANNEL.registerMessage(packetId++, ClientFuelPacket.class, ClientFuelPacket::encode, ClientFuelPacket::decode, ClientFuelPacket::handle);
         CHANNEL.registerMessage(packetId++, ClientStalkerPacket.class, ClientStalkerPacket::encode, ClientStalkerPacket::decode, ClientStalkerPacket::handle);
         CHANNEL.registerMessage(packetId++, ServerRemoteConnectPacket.class, ServerRemoteConnectPacket::encode, ServerRemoteConnectPacket::decode, ServerRemoteConnectPacket::handle);
+        CHANNEL.registerMessage(packetId++, ClientRemoteConnectPacket.class, ClientRemoteConnectPacket::encode, ClientRemoteConnectPacket::decode, ClientRemoteConnectPacket::handle);
+        CHANNEL.registerMessage(packetId++, StalkerMasterUsePacket.class, StalkerMasterUsePacket::encode, StalkerMasterUsePacket::decode, StalkerMasterUsePacket::handle);
 
     }
 
