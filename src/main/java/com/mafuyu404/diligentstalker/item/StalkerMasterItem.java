@@ -1,8 +1,8 @@
 package com.mafuyu404.diligentstalker.item;
 
-import com.mafuyu404.diligentstalker.event.handler.StalkerManage;
+import com.mafuyu404.diligentstalker.init.NetworkHandler;
 import com.mafuyu404.diligentstalker.init.Stalker;
-import com.mafuyu404.diligentstalker.utils.ClientStalkerUtil;
+import com.mafuyu404.diligentstalker.network.StalkerMasterUsePacket;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -20,36 +20,11 @@ import net.minecraft.world.level.Level;
 import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 public class StalkerMasterItem extends Item {
     public StalkerMasterItem() {
         super(new Properties());
-    }
-
-    public static Map.Entry<String, BlockPos> entryOfUsingStalkerMaster(Player player) {
-        if (player != null && player.isUsingItem()) {
-            if (player.getMainHandItem().getItem() instanceof StalkerMasterItem) {
-                CompoundTag tag = player.getMainHandItem().getOrCreateTag();
-                if (tag.contains("StalkerId") && StalkerManage.DronePosition.containsKey(tag.getUUID("StalkerId"))) {
-                    return StalkerManage.DronePosition.get(tag.getUUID("StalkerId"));
-                }
-            }
-        }
-        return null;
-    }
-
-    public static UUID uuidOfUsingStalkerMaster(Player player) {
-        if (player != null && player.isUsingItem()) {
-            if (player.getMainHandItem().getItem() instanceof StalkerMasterItem) {
-                CompoundTag tag = player.getMainHandItem().getOrCreateTag();
-                if (tag.contains("StalkerId")) {
-                    return tag.getUUID("StalkerId");
-                }
-            }
-        }
-        return null;
     }
 
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
@@ -59,12 +34,8 @@ public class StalkerMasterItem extends Item {
             if (Stalker.hasInstanceOf(player)) return InteractionResultHolder.fail(itemStack);
             if (!tag.contains("StalkerId")) return InteractionResultHolder.fail(itemStack);
             player.startUsingItem(hand);
-            if (player.isLocalPlayer() && !Stalker.hasInstanceOf(player)) {
-                BlockPos center = entryOfUsingStalkerMaster(player).getValue();
-                UUID entityUUID = uuidOfUsingStalkerMaster(player);
-                if (center != null && entityUUID != null) {
-                    ClientStalkerUtil.tryRemoteConnect(center, entity -> entity.getUUID().equals(entityUUID));
-                }
+            if (level.isClientSide && player.isLocalPlayer() && !Stalker.hasInstanceOf(player)) {
+                NetworkHandler.sendToServer(NetworkHandler.STALKER_MASTER_USE_PACKET, new StalkerMasterUsePacket());
             }
         }
         return InteractionResultHolder.fail(itemStack);

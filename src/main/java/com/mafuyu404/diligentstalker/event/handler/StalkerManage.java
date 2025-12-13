@@ -38,11 +38,13 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 public class StalkerManage {
-    public static final HashMap<UUID, Map.Entry<String, BlockPos>> DronePosition = new HashMap<>();
+    public record DroneLocation(String levelKey, BlockPos position) {
+    }
+
+    public static final HashMap<UUID, DroneLocation> DronePosition = new HashMap<>();
 
     public static void initServerEvents() {
         ServerTickEvents.START_SERVER_TICK.register(StalkerManage::onServerTick);
@@ -145,26 +147,12 @@ public class StalkerManage {
                 if (!tag.contains("StalkerId")) return;
                 UUID entityUUID = tag.getUUID("StalkerId");
                 if (DronePosition.containsKey(entityUUID)) {
-                    BlockPos pos = DronePosition.get(entityUUID).getValue();
+                    BlockPos pos = DronePosition.get(entityUUID).position();
                     tag.putIntArray("StalkerPosition", new int[]{pos.getX(), pos.getY(), pos.getZ()});
                 } else if (tag.contains("StalkerPosition")) {
                     int[] pos = tag.getIntArray("StalkerPosition");
-                    DronePosition.put(entityUUID, new Map.Entry<>() {
-                        @Override
-                        public String getKey() {
-                            return levelKey;
-                        }
-
-                        @Override
-                        public BlockPos getValue() {
-                            return new BlockPos(pos[0], pos[1], pos[2]);
-                        }
-
-                        @Override
-                        public BlockPos setValue(BlockPos value) {
-                            return null;
-                        }
-                    });
+                    BlockPos blockPos = new BlockPos(pos[0], pos[1], pos[2]);
+                    DronePosition.put(entityUUID, new DroneLocation(levelKey, blockPos));
                 }
             }
         });

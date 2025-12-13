@@ -15,7 +15,9 @@ public class NetworkHandler {
     public static final ResourceLocation STALKER_SYNC_PACKET = new ResourceLocation(DiligentStalker.MODID, "stalker_sync");
     public static final ResourceLocation CLIENT_FUEL_PACKET = new ResourceLocation(DiligentStalker.MODID, "client_fuel");
     public static final ResourceLocation CLIENT_STALKER_PACKET = new ResourceLocation(DiligentStalker.MODID, "client_stalker");
+    public static final ResourceLocation CLIENT_REMOTE_CONNECT_PACKET = new ResourceLocation(DiligentStalker.MODID, "client_remote_connect");
     public static final ResourceLocation SERVER_REMOTE_CONNECT_PACKET = new ResourceLocation(DiligentStalker.MODID, "server_remote_connect");
+    public static final ResourceLocation STALKER_MASTER_USE_PACKET = new ResourceLocation(DiligentStalker.MODID, "stalker_master_use");
 
     public static void register() {
         ServerPlayNetworking.registerGlobalReceiver(RCLICK_BLOCK_PACKET, (server, player, handler, buf, responseSender) -> {
@@ -34,6 +36,10 @@ public class NetworkHandler {
             var msg = ServerRemoteConnectPacket.decode(buf);
             ServerRemoteConnectPacket.handle(server, player, msg);
         });
+        ServerPlayNetworking.registerGlobalReceiver(STALKER_MASTER_USE_PACKET, (server, player, handler, buf, responseSender) -> {
+            var msg = StalkerMasterUsePacket.decode(buf);
+            StalkerMasterUsePacket.handle(server, player, msg);
+        });
     }
 
     public static void registerClient() {
@@ -44,6 +50,10 @@ public class NetworkHandler {
         ClientPlayNetworking.registerGlobalReceiver(CLIENT_STALKER_PACKET, (client, handler, buf, responseSender) -> {
             var msg = ClientStalkerPacket.decode(buf);
             ClientStalkerPacket.handle(msg, client);
+        });
+        ClientPlayNetworking.registerGlobalReceiver(CLIENT_REMOTE_CONNECT_PACKET, (client, handler, buf, responseSender) -> {
+            var msg = ClientRemoteConnectPacket.decode(buf);
+            ClientRemoteConnectPacket.handle(msg, client);
         });
     }
 

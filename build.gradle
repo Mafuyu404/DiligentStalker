@@ -14,6 +14,7 @@ loom {
     runs {
         client {
             programArgs "--username", "Flechazo"
+            property "sodium.checks.issue2561", "false"
         }
     }
     mixin {
