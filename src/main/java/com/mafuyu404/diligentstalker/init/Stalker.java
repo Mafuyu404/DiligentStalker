@@ -1,9 +1,10 @@
 package com.mafuyu404.diligentstalker.init;
 
 import com.mafuyu404.diligentstalker.event.StalkerControl;
+import com.mafuyu404.diligentstalker.api.remote.RemoteViewManager;
 import com.mafuyu404.diligentstalker.network.StalkerSyncPacket;
 import com.mafuyu404.diligentstalker.utils.ClientStalkerUtil;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -38,6 +39,8 @@ public class Stalker {
         if (level.isClientSide) {
             NetworkHandler.CHANNEL.sendToServer(new StalkerSyncPacket(this.stalkerId, false));
             ClientStalkerUtil.cancelRemoteConnect();
+        } else if (getPlayer() instanceof ServerPlayer serverPlayer) {
+            RemoteViewManager.restorePlayerView(serverPlayer);
         }
 
         DisconnectEvent event = new DisconnectEvent(getPlayer(), getStalker());
@@ -130,6 +133,9 @@ public class Stalker {
             Entity stalker = level.getEntity(stalkerId);
 
             if (player == null || stalker == null) {
+                if (player instanceof ServerPlayer serverPlayer) {
+                    RemoteViewManager.restorePlayerView(serverPlayer);
+                }
                 StalkerToPlayerMap.remove(stalkerId);
                 return true;
             }

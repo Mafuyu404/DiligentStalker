@@ -45,11 +45,50 @@ public class ClientStalkerUtil {
         return Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
     }
 
+    public static ChunkPos getRemoteChunkCenter() {
+        Entity stalker = getLocalStalker();
+        if (stalker != null) {
+            return stalker.chunkPosition();
+        }
+        BlockPos visualCenter = getVisualCenter();
+        if (visualCenter != null) {
+            return new ChunkPos(visualCenter);
+        }
+        return null;
+    }
+
+    public static boolean hasRemoteChunkCenter() {
+        return getRemoteChunkCenter() != null;
+    }
+
+    public static void applyRemoteChunkCenter() {
+        Minecraft minecraft = Minecraft.getInstance();
+        ClientLevel level = minecraft.level;
+        ChunkPos center = getRemoteChunkCenter();
+        if (level != null && center != null) {
+            level.getChunkSource().updateViewCenter(center.x, center.z);
+        }
+    }
+
+    public static void applyPlayerChunkCenter() {
+        Minecraft minecraft = Minecraft.getInstance();
+        ClientLevel level = minecraft.level;
+        LocalPlayer player = minecraft.player;
+        if (level != null && player != null) {
+            ChunkPos center = player.chunkPosition();
+            level.getChunkSource().updateViewCenter(center.x, center.z);
+        }
+    }
+
     public static boolean handleChunkPacket(ClientboundLevelChunkWithLightPacket packet) {
+        return queueRemoteChunkPacket(packet);
+    }
+
+    public static boolean queueRemoteChunkPacket(ClientboundLevelChunkWithLightPacket packet) {
         Player player = Minecraft.getInstance().player;
         if (new ChunkPos(packet.getX(), packet.getZ()).equals(new ChunkPos(BlockPos.containing(ClientStalkerUtil.getCameraPosition())))) return false;
-        if (Stalker.hasInstanceOf(player)) {
-            ChunkLoadTask.TaskList.add(packet);
+        if (Stalker.hasInstanceOf(player) || hasRemoteChunkCenter()) {
+            ChunkLoadTask.add(packet);
             return true;
         }
         return false;
@@ -71,6 +110,9 @@ public class ClientStalkerUtil {
         if (Stalker.hasInstanceOf(Minecraft.getInstance().player)) return;
         VisualCenter = blockPos;
     }
+    public static void clearVisualCenter() {
+        VisualCenter = null;
+    }
     public static BlockPos getVisualCenter() {
         if (VisualCenter == null) return null;
         return VisualCenter.equals(BlockPos.ZERO) ? null : VisualCenter;
@@ -82,9 +124,11 @@ public class ClientStalkerUtil {
         setConnectingTarget(predicate);
     }
     public static void cancelRemoteConnect() {
-        setVisualCenter(BlockPos.ZERO);
+        clearVisualCenter();
+        applyPlayerChunkCenter();
         NetworkHandler.CHANNEL.sendToServer(new ServerRemoteConnectPacket(BlockPos.ZERO));
         setConnectingTarget(null);
+        ChunkLoadTask.clear();
     }
 
     public static Entity getLocalStalker() {

@@ -1,5 +1,6 @@
 package com.mafuyu404.diligentstalker.network;
 
+import com.mafuyu404.diligentstalker.api.remote.RemoteViewManager;
 import com.mafuyu404.diligentstalker.entity.ArrowStalkerEntity;
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.registry.StalkerItems;
@@ -35,24 +36,29 @@ public class StalkerSyncPacket {
             ServerPlayer player = ctx.get().getSender();
             if (player == null) return;
             Level level = player.level();
-            Entity stalker = level.getEntity(msg.entityId);
-            if (stalker == null) return;
+
             if (msg.state) {
-                // 创建跟踪狂实例
+                Entity stalker = level.getEntity(msg.entityId);
+                if (stalker == null) return;
                 if (!Stalker.hasInstanceOf(player) && !Stalker.hasInstanceOf(stalker)) {
                     Stalker.connect(player, stalker);
                 }
+                return;
+            }
+
+            Stalker stalkerInstance = Stalker.getInstanceOf(player);
+            Entity stalker = stalkerInstance == null ? level.getEntity(msg.entityId) : stalkerInstance.getStalker();
+            if (stalkerInstance != null) {
+                stalkerInstance.disconnect();
             } else {
-                // 删除跟踪狂实例
-                if (Stalker.hasInstanceOf(player)) {
-                    Stalker.getInstanceOf(player).disconnect();
-                }
-                player.inventoryMenu.sendAllDataToRemote();
-                player.getPersistentData().putBoolean("LoadingCacheChunk", true);
-                if (stalker instanceof ArrowStalkerEntity arrowStalker) {
-                    arrowStalker.spawnAtLocation(new ItemStack(StalkerItems.ARROW_STALKER.get()));
-                    arrowStalker.discard();
-                }
+                RemoteViewManager.restorePlayerView(player);
+            }
+
+            player.inventoryMenu.sendAllDataToRemote();
+
+            if (stalker instanceof ArrowStalkerEntity arrowStalker) {
+                arrowStalker.spawnAtLocation(new ItemStack(StalkerItems.ARROW_STALKER.get()));
+                arrowStalker.discard();
             }
         });
         ctx.get().setPacketHandled(true);

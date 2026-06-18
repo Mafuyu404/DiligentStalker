@@ -4,6 +4,10 @@ import com.mafuyu404.diligentstalker.DiligentStalker;
 import com.mafuyu404.diligentstalker.entity.ArrowStalkerEntity;
 import com.mafuyu404.diligentstalker.entity.CameraStalkerBlockEntity;
 import com.mafuyu404.diligentstalker.entity.VoidStalkerEntity;
+import com.mafuyu404.diligentstalker.api.remote.RemoteChunkWatcher;
+import com.mafuyu404.diligentstalker.api.remote.RemoteViewSession;
+import com.mafuyu404.diligentstalker.api.remote.RemoteViewManager;
+import com.mafuyu404.diligentstalker.api.remote.RemoteViewSessions;
 import com.mafuyu404.diligentstalker.init.NetworkHandler;
 import com.mafuyu404.diligentstalker.item.StalkerMasterItem;
 import com.mafuyu404.diligentstalker.network.ClientStalkerPacket;
@@ -39,7 +43,9 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Mod.EventBusSubscriber(modid = DiligentStalker.MODID)
@@ -66,16 +72,24 @@ public class StalkerManage {
 
     private static void onPlayerTick(ServerPlayer player) {
         if (player.tickCount % 20 == 0) syncMasterTag(player);
+        int timer = 10;
+        if (player.tickCount % timer == 0) {
+            if (player.getPersistentData().getBoolean("LoadingCacheChunk")) {
+                RemoteViewManager.restorePlayerView(player);
+            } else {
+                RemoteViewManager.update(player);
+            }
+        }
+
         if (!Stalker.hasInstanceOf(player)) {
             return;
         }
         Entity stalker = Stalker.getInstanceOf(player).getStalker();
-        int timer = 10;
         if (ControllableUtils.isControllable(stalker)) {
             CompoundTag input = (CompoundTag) player.getPersistentData().get(ControllableUtils.CONTROL_INPUT_KEY);
             if (input != null && !input.isEmpty()) {
                 if (input.contains("xRot")) stalker.setXRot(input.getFloat("xRot"));
-                if (input.contains("yRot")) stalker.setXRot(input.getFloat("yRot"));
+                if (input.contains("yRot")) stalker.setYRot(input.getFloat("yRot"));
 
                 Vec3 direction = stalker.position().subtract(player.position());
                 int distance = (int) direction.length();
@@ -92,16 +106,11 @@ public class StalkerManage {
 //                NetworkHandler.sendToClient(player, new ClientFuelPacket(stalker.getId(), droneStalker.getFuel()));
             }
         }
-        if (player.tickCount % timer == 0) {
-//            player.serverLevel().getChunkSource().move(player);
-            player.teleportRelative(0, 0, 0);
-        }
     }
 
     private static void onLevelTick(ServerLevel level) {
         ChunkLoader chunkLoader = ChunkLoader.of(level);
-
-        chunkLoader.removeAll();
+        Set<UUID> activeOwners = new HashSet<>();
 
         level.getEntities().getAll().forEach(entity -> {
             if (Stalker.hasInstanceOf(entity)) {
@@ -109,28 +118,26 @@ public class StalkerManage {
                 boolean isArrowStalker = entity instanceof ArrowStalkerEntity;
                 boolean isVoidStalker = entity instanceof VoidStalkerEntity;
                 if (isControllable || isArrowStalker || isVoidStalker) {
-                    StalkerUtil.getToLoadChunks(entity, 0).forEach(chunkLoader::addChunk);
+                    UUID owner = entity.getUUID();
+                    activeOwners.add(owner);
+                    chunkLoader.setOwnedChunks(owner, StalkerUtil.getToLoadChunks(entity, 0));
                 }
             }
         });
         level.players().forEach(player -> {
-            if (ServerStalkerUtil.hasVisualCenter(player)) {
-                ChunkPos center = new ChunkPos(ServerStalkerUtil.getVisualCenter(player));
-                chunkLoader.addChunk(center);
+            RemoteViewSession session = RemoteViewSessions.get(player);
+            if (session != null && session.dimension() == level.dimension()) {
+                UUID owner = player.getUUID();
+                activeOwners.add(owner);
+                chunkLoader.setOwnedChunks(owner, session.loadChunks());
             }
         });
+        chunkLoader.keepOnlyOwners(activeOwners);
     }
 
     @SubscribeEvent
     public static void onServerLaunch(ServerAboutToStartEvent event) {
         ChunkLoader.init();
-    }
-
-    @SubscribeEvent
-    public static void onUnload(EntityLeaveLevelEvent event) {
-        if (Stalker.hasInstanceOf(event.getEntity())) {
-            Stalker.getInstanceOf(event.getEntity()).disconnect();
-        }
     }
 
     private static void syncMasterTag(ServerPlayer player) {
@@ -194,6 +201,9 @@ public class StalkerManage {
     @SubscribeEvent
     public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         Player player = event.getEntity();
+        if (player instanceof ServerPlayer serverPlayer) {
+            RemoteChunkWatcher.clear(serverPlayer);
+        }
         if (Stalker.hasInstanceOf(player)) {
             Stalker stalkerInstance = Stalker.getInstanceOf(player);
             if (stalkerInstance != null) {
@@ -219,9 +229,17 @@ public class StalkerManage {
         Entity entity = event.getEntity();
         if (Stalker.hasInstanceOf(entity)) {
             if (entity instanceof Player) {
+                if (entity instanceof ServerPlayer serverPlayer) {
+                    RemoteChunkWatcher.clear(serverPlayer);
+                }
                 Stalker.cleanupPlayer(entity.getUUID());
             } else {
-                Stalker.cleanupStalker(entity.getId());
+                Stalker stalkerInstance = Stalker.getInstanceOf(entity);
+                if (stalkerInstance != null) {
+                    stalkerInstance.disconnect();
+                } else {
+                    Stalker.cleanupStalker(entity.getId());
+                }
             }
         }
     }
@@ -252,9 +270,12 @@ public class StalkerManage {
                 if (stalkerInstance != null) {
                     Entity stalker = stalkerInstance.getStalker();
                     if (stalker == null || !stalker.isAlive()) {
+                        RemoteChunkWatcher.clear(player);
                         stalkerInstance.disconnect();
                     }
                 }
+            } else if (!ServerStalkerUtil.hasVisualCenter(player)) {
+                RemoteChunkWatcher.clear(player);
             }
         });
     }

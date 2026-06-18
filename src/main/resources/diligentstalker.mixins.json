@@ -8,7 +8,6 @@
   "mixins": [
     "ChunkMap$TrackedEntityMixin",
     "ChunkMapMixin",
-    "ClientboundLevelChunkWithLightPacketMixin",
     "EntityMixin",
     "InventoryAccessor",
     "PlayerMixin"
@@ -16,7 +15,6 @@
   "client": [
     "CameraMixin",
     "ClientChunkCache$StorageMixin",
-    "ClientChunkCacheMixin",
     "ClientPacketListenerMixin",
     "GameRendererMixin",
     "LevelRendererMixin",

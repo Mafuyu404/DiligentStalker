@@ -13,6 +13,8 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class StalkerUtil {
@@ -107,8 +109,7 @@ public class StalkerUtil {
         if (stalker == null) return new ArrayList<>();
 
         ChunkPos center = stalker.chunkPosition();
-        int radius = Config.RENDER_RADIUS_NORMAL.get() + offset;
-        if (stalker instanceof VoidStalkerEntity) radius = Config.RENDER_RADIUS_SPECIAL.get();
+        int radius = getLoadRadius(stalker, offset);
 
         // 使用缓存键
         String cacheKey = center.x + "," + center.z + "," + radius;
@@ -123,15 +124,7 @@ public class StalkerUtil {
         int expectedSize = (radius * 2 + 1) * (radius * 2 + 1);
         ArrayList<ChunkPos> newChunks = new ArrayList<>(expectedSize);
 
-        int radiusSquared = radius * radius;
-        for (int x = -radius; x <= radius; x++) {
-            for (int z = -radius; z <= radius; z++) {
-                int distanceSquared = x * x + z * z;
-                if (distanceSquared <= radiusSquared || radius < 5) {
-                    newChunks.add(new ChunkPos(center.x + x, center.z + z));
-                }
-            }
-        }
+        newChunks.addAll(getChunksAround(center, radius));
 
         // 缓存结果
         CHUNK_CACHE.put(cacheKey, new ArrayList<>(newChunks));
@@ -140,6 +133,41 @@ public class StalkerUtil {
         cleanupChunkCache();
 
         return newChunks;
+    }
+
+    public static int getLoadRadius(Entity stalker, int offset) {
+        int radius = Config.RENDER_RADIUS_NORMAL.get() + offset;
+        if (stalker instanceof VoidStalkerEntity) radius = Config.RENDER_RADIUS_SPECIAL.get();
+        return Math.max(0, radius);
+    }
+
+    public static int getFixedCenterRadius(int offset) {
+        return Math.max(0, Config.RENDER_RADIUS_NORMAL.get() + offset);
+    }
+
+    public static Set<ChunkPos> getChunksAround(ChunkPos center, int radius) {
+        Set<ChunkPos> chunks = new LinkedHashSet<>();
+        int radiusSquared = radius * radius;
+        for (int x = -radius; x <= radius; x++) {
+            for (int z = -radius; z <= radius; z++) {
+                if (isChunkOffsetInRadius(x, z, radius, radiusSquared)) {
+                    chunks.add(new ChunkPos(center.x + x, center.z + z));
+                }
+            }
+        }
+        return chunks;
+    }
+
+    public static boolean isChunkInRadius(ChunkPos center, int x, int z, int radius) {
+        int dx = x - center.x;
+        int dz = z - center.z;
+        if (Math.abs(dx) > radius || Math.abs(dz) > radius) return false;
+        return isChunkOffsetInRadius(dx, dz, radius, radius * radius);
+    }
+
+    private static boolean isChunkOffsetInRadius(int x, int z, int radius, int radiusSquared) {
+        int distanceSquared = x * x + z * z;
+        return distanceSquared <= radiusSquared || radius < 5;
     }
 
     private static void cleanupChunkCache() {

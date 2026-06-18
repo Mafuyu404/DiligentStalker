@@ -59,6 +59,7 @@ public class DroneStalkerEntity extends Boat implements HasCustomInventoryScreen
 
     public DroneStalkerEntity(EntityType<? extends Boat> p_219869_, Level level) {
         super(p_219869_, level);
+        ControllableUtils.setFuel(this, 0);
         ControllableUtils.setMaxFuel(this, MAX_FUEL);
         ControllableUtils.setSignalRadius(this, SIGNAL_RADIUS);
     }

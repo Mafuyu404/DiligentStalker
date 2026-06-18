@@ -1,5 +1,6 @@
 package com.mafuyu404.diligentstalker.network;
 
+import com.mafuyu404.diligentstalker.api.remote.RemoteViewManager;
 import com.mafuyu404.diligentstalker.utils.ServerStalkerUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
@@ -26,7 +27,11 @@ public class ServerRemoteConnectPacket {
     public static void handle(ServerRemoteConnectPacket msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
             ServerPlayer player = ctx.get().getSender();
+            if (player == null) return;
             ServerStalkerUtil.setVisualCenter(player, msg.blockPos);
+            if (msg.blockPos.equals(BlockPos.ZERO)) {
+                RemoteViewManager.restorePlayerView(player);
+            }
         });
         ctx.get().setPacketHandled(true);
     }

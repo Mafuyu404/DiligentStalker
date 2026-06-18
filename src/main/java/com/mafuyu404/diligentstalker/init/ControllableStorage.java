@@ -15,7 +15,7 @@ public class ControllableStorage implements IControllableStorage {
 
     public static final List<String> CAMERA_STATE_TYPE = List.of("free", "follow", "control");
 
-    private int fuel = 0;
+    private int fuel = 100;
     private int maxFuel = 100;
     private String cameraState = CAMERA_STATE_TYPE.get(0);
     private int signalRadius = 256;

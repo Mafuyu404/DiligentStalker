@@ -5,4 +5,10 @@ import net.minecraft.world.level.ChunkPos;
 
 public interface IChunkMap {
     void loadLevelChunk(ServerPlayer player, ChunkPos chunkPos);
+
+    boolean watchRemoteChunk(ServerPlayer player, ChunkPos chunkPos);
+
+    void unwatchRemoteChunk(ServerPlayer player, ChunkPos chunkPos);
+
+    void refreshPlayerChunks(ServerPlayer player);
 }

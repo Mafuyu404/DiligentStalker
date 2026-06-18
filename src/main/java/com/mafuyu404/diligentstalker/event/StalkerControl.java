@@ -188,7 +188,7 @@ public class StalkerControl {
         updateControlMap();
         CompoundTag input = StalkerControl.handleInput();
         Entity stalker = ClientStalkerUtil.getLocalStalker();
-        if (stalker != null) {
+        if (ControllableUtils.isControllable(stalker)) {
             ((IControllable) stalker).pushAdditionalControl(input);
             if (!ControllableUtils.isActionControlling(stalker)) input = new CompoundTag();
         }

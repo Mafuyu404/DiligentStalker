@@ -1,15 +1,18 @@
 package com.mafuyu404.diligentstalker.mixin;
 
 import com.mafuyu404.diligentstalker.api.IChunkMap;
-import com.mafuyu404.diligentstalker.utils.ServerStalkerUtil;
-import com.mafuyu404.diligentstalker.init.Stalker;
-import com.mafuyu404.diligentstalker.registry.Config;
+import com.mafuyu404.diligentstalker.api.remote.RemoteChunkWatcher;
+import com.mafuyu404.diligentstalker.api.remote.RemoteViewSession;
+import com.mafuyu404.diligentstalker.api.remote.RemoteViewSessions;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
+import net.minecraft.network.protocol.game.ClientboundSetChunkCacheCenterPacket;
 import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.ChunkMap;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraftforge.event.ForgeEventFactory;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -28,34 +31,42 @@ public abstract class ChunkMapMixin implements IChunkMap {
     @Shadow
     protected abstract void playerLoadedChunk(ServerPlayer p_183761_, MutableObject<ClientboundLevelChunkWithLightPacket> p_183762_, LevelChunk p_183763_);
 
+    @Shadow
+    private int viewDistance;
+
     @Inject(method = "move", at = @At("HEAD"), cancellable = true)
     private void wwaaa(ServerPlayer player, CallbackInfo ci) {
-        if (ServerStalkerUtil.hasVisualCenter(player)) {
-            loadLevelChunk(player, new ChunkPos(ServerStalkerUtil.getVisualCenter(player)));
+        RemoteViewSession session = RemoteViewSessions.get(player);
+        if (session == null) {
+            RemoteChunkWatcher.clear(player);
         }
-        ChunkPos center = null;
-        if (Stalker.hasInstanceOf(player)) {
-            center = Stalker.getInstanceOf(player).getStalker().chunkPosition();
-        }
-        if (player.getPersistentData().getBoolean("LoadingCacheChunk")) {
-            center = player.chunkPosition();
-            player.getPersistentData().putBoolean("LoadingCacheChunk", false);
-        }
-        if (center == null) return;
-        int radius = Config.RENDER_RADIUS_NORMAL.get();
-        for (int x = -radius; x <= radius; x++) {
-            for (int z = -radius; z <= radius; z++) {
-                loadLevelChunk(player, new ChunkPos(center.x + x, center.z + z));
-            }
-        }
-        ci.cancel();
     }
 
     public void loadLevelChunk(ServerPlayer player, ChunkPos chunkPos) {
+        watchRemoteChunk(player, chunkPos);
+    }
+
+    public boolean watchRemoteChunk(ServerPlayer player, ChunkPos chunkPos) {
         ChunkHolder chunkholder = this.getVisibleChunkIfPresent(chunkPos.toLong());
-        if (chunkholder == null) return;
+        if (chunkholder == null) return false;
         LevelChunk levelchunk = chunkholder.getTickingChunk();
-        if (levelchunk == null) return;
+        if (levelchunk == null) return false;
         this.playerLoadedChunk(player, new MutableObject<>(), levelchunk);
+        return true;
+    }
+
+    public void unwatchRemoteChunk(ServerPlayer player, ChunkPos chunkPos) {
+        player.untrackChunk(chunkPos);
+        ForgeEventFactory.fireChunkUnWatch(player, chunkPos, (ServerLevel) player.level());
+    }
+
+    public void refreshPlayerChunks(ServerPlayer player) {
+        ChunkPos center = player.chunkPosition();
+        player.connection.send(new ClientboundSetChunkCacheCenterPacket(center.x, center.z));
+        for (int x = center.x - this.viewDistance; x <= center.x + this.viewDistance; x++) {
+            for (int z = center.z - this.viewDistance; z <= center.z + this.viewDistance; z++) {
+                watchRemoteChunk(player, new ChunkPos(x, z));
+            }
+        }
     }
 }
