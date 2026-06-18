@@ -16,7 +16,8 @@ import javax.annotation.Nullable;
 
 public class ControllableStorageProvider implements ICapabilityProvider, INBTSerializable<CompoundTag> {
     public static final Capability<IControllableStorage> CONTROLLABLE_STORAGE =
-            CapabilityManager.get(new CapabilityToken<>() {});
+            CapabilityManager.get(new CapabilityToken<>() {
+            });
 
     private IControllableStorage state = null;
     private final LazyOptional<IControllableStorage> opt = LazyOptional.of(this::createControllableStorage);

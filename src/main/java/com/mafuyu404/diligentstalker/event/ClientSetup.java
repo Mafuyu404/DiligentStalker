@@ -2,7 +2,6 @@ package com.mafuyu404.diligentstalker.event;
 
 import com.mafuyu404.diligentstalker.DiligentStalker;
 import com.mafuyu404.diligentstalker.compat.KeyPrompts;
-import com.mafuyu404.diligentstalker.registry.KeyBindings;
 import com.mafuyu404.diligentstalker.registry.StalkerBlockEntities;
 import com.mafuyu404.diligentstalker.registry.StalkerEntities;
 import com.mafuyu404.diligentstalker.render.ArrowStalkerRender;
@@ -14,7 +13,6 @@ import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;

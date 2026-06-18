@@ -2,7 +2,6 @@ package com.mafuyu404.diligentstalker.mixin;
 
 import com.mafuyu404.diligentstalker.init.Stalker;
 import com.mafuyu404.diligentstalker.utils.ServerStalkerUtil;
-import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
